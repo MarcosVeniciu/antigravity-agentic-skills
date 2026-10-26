@@ -14,9 +14,8 @@ from pathlib import Path
 
 # Add script locations to sys.path so we can import their modules
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(REPO_ROOT / "skills" / "review-architecture" / "scripts"))
-sys.path.insert(0, str(REPO_ROOT / "skills" / "review-security" / "scripts"))
-sys.path.insert(0, str(REPO_ROOT / "skills" / "review-quality" / "scripts"))
+sys.path.insert(0, str(REPO_ROOT / "skills" / "review" / "scripts"))
+sys.path.insert(0, str(REPO_ROOT / "skills" / "refactor" / "scripts"))
 
 import check_arch_boundaries
 import scan_sinks

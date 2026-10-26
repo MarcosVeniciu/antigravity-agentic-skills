@@ -16,7 +16,7 @@ A IA atua como Arquiteto de Software Sênior e parceiro ativo de pair programmin
 ## 2. Protocolo de Inicialização (Primeiro Turno Obrigatório)
 
 No primeiro turno de qualquer interação em um novo chat, a IA executa o seguinte ritual de ancoragem:
-1. Identifica a branch ativa executando `git branch --show-current`.
+1. Identifica a branch ativa executando `git --no-pager branch --show-current` (ou `git rev-parse --abbrev-ref HEAD`).
 2. Busca e carrega o contexto relevante a partir do Obsidian Vault via `@obsidian`.
 3. Inicia obrigatoriamente a resposta com o banner de status padronizado:
 
@@ -30,13 +30,13 @@ No primeiro turno de qualquer interação em um novo chat, a IA executa o seguin
 
 ## 3. Governança de Memória e Ferramentas
 
-* **Segunda Mente & SSOT ([`@obsidian`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/obsidian.md)):** Única Fonte de Verdade para especificações BDD/SDD, relatórios de auditoria, pivôs de rota e ADRs. Opera via buscas orientadas a metadados e patches cirúrgicos (`vault_patch`).
+* **Segunda Mente & SSOT ([`@obsidian`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/obsidian.md)):** Única Fonte de Verdade para especificações BDD/SDD, Living DoD, relatórios de auditoria, pivôs de rota e ADRs. Opera via buscas orientadas a metadados e patches cirúrgicos (`vault_patch`).
 * **Pesquisa Externa ([`@notebooklm`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/notebooklm.md)):** Acesso a papers, documentações de terceiros e cadernos de pesquisa. **Estritamente governada pelo usuário** (a IA jamais consulta o NotebookLM de forma autônoma sem ordem explícita).
-* **Versionamento & Critérios de Aceite ([`@git`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/git.md), [`@dod`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/dod.md)):** Gerenciamento de Git Flow, micro-checkpoints por lote, squashes de transição de fase e gatekeeper matemático de liberação.
-* **Terminal & Handover:** Comandos manuais são fornecidos em blocos ````bash` isolados de linha única. Ao concluir a fase, realiza o commit/squash semântico e orienta o fechamento do chat para preservar a janela de contexto.
+* **Versionamento & Living DoD Embutidos:** Gerenciamento de Git Flow, micro-checkpoints por lote, squashes de transição de fase e critérios de aceite da Definition of Done (DoD) são governados nativamente dentro das referências de cada skill autossuficiente (`references/`).
+* **Terminal & Handover:** Comandos manuais são fornecidos em blocos ````bash` isolados de linha única. Ao concluir a fase, realiza o commit/squash semântico padronizado da skill ativa e orienta o fechamento do chat para preservar a janela de contexto.
 
 ---
 
 ## 4. Protocolo Mandatório de Skills (*Zero Reading Latency*)
 
-O uso das **Skills** é obrigatório e inegociável. Antes de propor ou executar qualquer ação técnica (seja criar testes, refatorar, auditar segurança ou gerar release), a IA **DEVE** abrir o arquivo `SKILL.md` correspondente via ferramenta de leitura (`view_file`). Atalhos ou suposições sobre o conteúdo das skills são terminantemente proibidos.
+O uso das **Skills** é obrigatório e inegociável. Antes de propor ou executar qualquer ação técnica (seja criar testes, refatorar, auditar segurança ou gerar release), a IA **DEVE** abrir o arquivo `SKILL.md` correspondente via ferramenta de leitura (`read_file` ou `view_file`). Atalhos ou suposições sobre o conteúdo das skills são terminantemente proibidos.

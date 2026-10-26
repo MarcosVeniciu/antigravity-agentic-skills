@@ -27,7 +27,7 @@ flowchart TD
 ---
 
 ### Etapa 1: Resolução de Contexto & Escopo
-1. Identifica a branch ativa via `git branch --show-current`.
+1. Identifica a branch ativa via `git --no-pager branch --show-current` (ou `git rev-parse --abbrev-ref HEAD`).
 2. Lê as notas de concepção no Obsidian Vault (`01-concepcao/bdd-[slug].md`, `sdd-[slug].md`) e o histórico do Living DoD (`01-concepcao/dod-[slug].md`).
 3. Inspeciona os manifestos do projeto (`package.json`, `pyproject.toml`, `pubspec.yaml`, etc.) para extrair os comandos reais e versões ativas das dependências.
 

@@ -5,6 +5,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ---
 
+## Release Notes - `v1.0.0` (2026-10-26)
+
+### New Features
+- `[feat: skills]`: Complete migration from legacy workflows into 12 self-sufficient modern Agent Skills (`skills/`) complying with Google Antigravity 2.0 standards:
+  - `ask`, `debug`, `decompose`, `docs`, `implement`, `infra`, `obsidian`, `plan`, `refactor`, `release`, `review`, and `test-fix`.
+  - Enforced strict three-tiered package architecture across every skill: `references/` (operational documentation), `resources/` (pure unpopulated templates), and `scripts/` (cross-platform CLI tools).
+- `[feat: audit-reports]`: Standardized forensic audit and traceability reporting templates based on formal international engineering standards:
+  - **ISO 19011 & IEEE 829**: Added canonical 5-domain audit report template in `skills/review/resources/audit-report-template.md` featuring Executive Summary, Semaphore Traceability Matrix (🟢/🟡/🔴), Detailed Forensic Findings with clickable IDE links (`file:///...#Lxx`), and Remediation Checkpoints.
+  - **NIST SP 800-86 & ISO 27037**: Enhanced `skills/debug/resources/rca-template.md` with Forensic Traceability & Hypothesis Matrix connecting stack traces directly to empirical evidence, 5 Whys, and Root Cause Isolation.
+  - **ISO 19011 & Clean Architecture**: Added `skills/refactor/resources/refactor-report-template.md` for refactoring consolidation with AST complexity tracking ($V(G) \le 10$) and public contract invariance guarantees.
+  - **IEEE 829 & ISO 29119 (RTM)**: Integrated Requirements Traceability Matrix into `skills/plan/resources/plan-template.md` linking BDD scenarios to SDD contracts and Living DoD gates.
+  - **ISO 19011 Compliance Matrix**: Upgraded pre-release verification gate in `skills/release/resources/release-template.md` to a structured Quality & Verification Audit Sign-Off matrix.
+  - **ISO/IEC/IEEE 29119-3**: Added `skills/test-fix/resources/diagnostic-report-template.md` for structured test failure triage, 1-sentence root cause derivation, and isolated verification plans.
+- `[feat: validation]`: Automated integrity test suite (`tests/test_flow_skills_integrity.py` and `tests/skills/test_scanners.py`) validating directory separation, YAML frontmatter, 3rd-person descriptions, referential integrity (zero broken links and zero orphan assets), and script compilation across all 13 canonical skills.
+
+### Breaking Changes
+- `[breaking: architecture]`: Deprecated and permanently removed legacy `workflows/` directory and old 24 fragmented skill subdirectories in favor of the unified 12-skill architecture.
+
+---
+
 ## Release Notes - `v0.9.0` (2026-09-09)
 
 ### New Features

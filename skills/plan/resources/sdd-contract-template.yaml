@@ -1,0 +1,70 @@
+# Pure YAML Contract Specification Template
+# Schema definition for Software Design Description (SDD) Contracts
+schema_version: "1.0.0"
+feature: "{{FEATURE_SLUG}}"
+module: "{{MODULE_NAME}}"
+bounded_context: "{{BOUNDED_CONTEXT}}"
+
+contracts:
+  - name: "{{CONTRACT_NAME}}"
+    description: "{{CONTRACT_DESCRIPTION}}"
+    endpoint: "{{HTTP_METHOD_AND_PATH}}"
+    
+    request:
+      type: "object"
+      required:
+        - "identifier"
+        - "name"
+      properties:
+        identifier:
+          type: "string"
+          format: "uuid"
+          description: "Unique entity identifier"
+        name:
+          type: "string"
+          min_length: 2
+          max_length: 100
+          description: "Entity descriptive name"
+          
+    response:
+      status: 201
+      type: "object"
+      required:
+        - "id"
+        - "status"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        status:
+          type: "string"
+          enum: ["active", "pending", "disabled"]
+
+    exceptions:
+      - name: "DuplicateEntityError"
+        status_code: 409
+        message: "Entity with specified identifier already exists"
+      - name: "ValidationError"
+        status_code: 422
+        message: "Input validation constraints violated"
+
+interfaces:
+  - name: "I{{ENTITY_NAME}}Repository"
+    type: "port"
+    methods:
+      - name: "save"
+        args:
+          - name: "entity"
+            type: "{{ENTITY_NAME}}"
+        returns: "{{ENTITY_NAME}}"
+      - name: "find_by_id"
+        args:
+          - name: "id"
+            type: "string"
+        returns: "Optional[{{ENTITY_NAME}}]"
+
+test_doubles:
+  - name: "InMemory{{ENTITY_NAME}}Repository"
+    type: "fake"
+    implements: "I{{ENTITY_NAME}}Repository"
+    storage_mechanism: "in-memory dict"
