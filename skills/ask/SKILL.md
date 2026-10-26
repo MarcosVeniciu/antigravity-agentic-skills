@@ -15,7 +15,7 @@ Operates as the **knowledge consultation bridge** across the project repository,
   - Creating, updating, appending to, or deleting any file in the workspace or Obsidian Vault is strictly forbidden.
 - **Zero Mutating Commands:**
   - Running modifying terminal commands (package installations, database migrations, build scripts that generate tracked artifacts, Git commits, branch checkouts) is strictly prohibited.
-  - Permitted terminal usage is strictly limited to non-modifying diagnostics (`git log`, `git status`, `python --version`).
+  - Permitted terminal usage is strictly limited to non-modifying diagnostics (`git --no-pager log`, `git status`, `python --version`).
 - **Grounded Evidence Requirement:**
   - Speculation, guessing, and hallucinating system behavior are strictly prohibited.
   - Every technical claim must be explicitly anchored in code lines (`file:///path#L10-L25`) or Obsidian Vault notes (`[[note]]`).

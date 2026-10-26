@@ -33,7 +33,7 @@ tests/unit/test_checkout.py ............................                [100%]
 ### Domain 1: Architecture & Boundary Isolation
 - **Scanner Command:**
   ```text
-  $ python workflows-skill/review/scripts/check_arch_boundaries.py src/domain/checkout.py
+  $ python skills/review/scripts/check_arch_boundaries.py src/domain/checkout.py
   🔴 [VIOLATION] Architectural Leakage in Domain Layer
      📍 Location: src/domain/checkout.py:4
      🔎 Import:   import requests
@@ -54,7 +54,7 @@ tests/unit/test_checkout.py ............................                [100%]
 ### Domain 2: OWASP Security & Dangerous Sinks
 - **Scanner Command:**
   ```text
-  $ python workflows-skill/review/scripts/scan_sinks.py src/api/checkout_routes.py
+  $ python skills/review/scripts/scan_sinks.py src/api/checkout_routes.py
   🔴 [HIGH] SEC-CMD-01 - OS Command Injection (shell=True / exec)
      📍 Location: src/api/checkout_routes.py:38
      🔎 Snippet:  subprocess.run(f"generate_receipt --order {order_id}", shell=True)
@@ -75,7 +75,7 @@ tests/unit/test_checkout.py ............................                [100%]
 ### Domain 3: Code Quality & AST Complexity
 - **Scanner Command:**
   ```text
-  $ python workflows-skill/review/scripts/ast_complexity.py src/services/order_service.py
+  $ python skills/review/scripts/ast_complexity.py src/services/order_service.py
   🔴 HIGH CYCLOMATIC COMPLEXITY V(G) > 10:
      * src/services/order_service.py:45 - Function 'process_order_discounts' has V(G) = 13
   🟡 ASYMPTOTIC HEURISTIC WARNINGS:

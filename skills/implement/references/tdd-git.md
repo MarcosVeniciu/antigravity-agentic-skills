@@ -51,7 +51,7 @@ When 100% of the batches in `task_list.md` are completed, all unit tests are gre
 
 1. **Locate Phase 2 Start Commit:**
    ```bash
-   git log --oneline -n 10
+   git --no-pager log --oneline -n 10
    ```
    Identify `<PHASE_START_HASH>` (the commit from Phase 1 `/plan`).
 

@@ -63,12 +63,12 @@ This guide governs the surgical audit and hardening of network timeouts, retries
 
 ---
 
-## Phase 3 — Audit Report Table Format
+## Phase 3 — Audit Report Format
 
-When recording findings for `02-auditorias/audit-resilience-[slug].md`, use this standardized schema:
+When recording findings for `02-auditorias/audit-resilience-[slug].md`, instantiate [`../resources/audit-report-template.md`](../resources/audit-report-template.md) and populate the Forensic Traceability Matrix and detailed findings:
 
 ```markdown
-| ID | File / Line | Failure Scenario | Idempotent? | Severity | Confidence | Disposition | Operational Risk / Root Cause |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `RES-01` | `src/adapters/sms.py:33` | Downstream SMS Gateway Timeout | No | High | High | Confirmed | Missing timeout on HTTP client; requests can hang indefinitely |
+| ID | File & Line | Failure Scenario / Dependency | Primary Evidence / Policy | Severity | Status & Traceability |
+| :--- | :--- | :--- | :--- | :---: | :---: |
+| `RES-01` | `src/adapters/sms.py:33` | Downstream SMS Gateway Timeout | Missing httpx.Timeout | High | 🔴 **Non-Compliant** ([see Finding 1](#-finding-1-missing-gateway-timeout)) |
 ```

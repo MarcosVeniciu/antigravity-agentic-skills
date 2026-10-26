@@ -69,7 +69,7 @@ At the conclusion of Phase 3, once all refactoring tasks in `task_list.md` are c
    *(Must be completely clean with zero uncommitted changes)*.
 2. **Identify Base Commit Prior to Phase 3:**
    ```bash
-   git log --oneline develop..HEAD
+   git --no-pager log --oneline develop..HEAD
    ```
    Identify the commit hash immediately preceding the Phase 3 `checkpoint(refactor)` commits.
 3. **Execute Soft Reset (Squash):**
@@ -91,5 +91,5 @@ At the conclusion of Phase 3, once all refactoring tasks in `task_list.md` are c
 5. **Verify Clean Log & State:**
    ```bash
    git status
-   git log -1
+   git --no-pager log -1
    ```

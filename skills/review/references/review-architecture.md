@@ -8,7 +8,7 @@ This guide governs the surgical audit of architectural boundary isolation, layer
 
 Run the boundary linter against modified files to rapidly identify known boundary violations:
 ```bash
-python workflows-skill/review/scripts/check_arch_boundaries.py <modified_files>
+python skills/review/scripts/check_arch_boundaries.py <modified_files>
 ```
 
 ### Evaluation Protocol:
@@ -64,12 +64,12 @@ python workflows-skill/review/scripts/check_arch_boundaries.py <modified_files>
 
 ---
 
-## Phase 3 — Audit Report Table Format
+## Phase 3 — Audit Report Format
 
-When recording findings for `02-auditorias/audit-architecture-[slug].md`, use this standardized schema:
+When recording findings for `02-auditorias/audit-architecture-[slug].md`, instantiate [`../resources/audit-report-template.md`](../resources/audit-report-template.md) and populate the Forensic Traceability Matrix and detailed findings:
 
 ```markdown
-| ID | File / Line | Architectural Principle | Severity | Confidence | Disposition | Impact / Description |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `ARC-01` | `src/domain/order.py:14` | Layer Boundary Isolation | High | High | Confirmed | Domain entity imports SQLAlchemy Session directly |
+| ID | File & Line | Architectural Principle | Primary Evidence / Tool | Severity | Status & Traceability |
+| :--- | :--- | :--- | :--- | :---: | :---: |
+| `ARC-01` | `src/domain/order.py:14` | Layer Boundary Isolation | check_arch_boundaries.py | High | 🔴 **Non-Compliant** ([see Finding 1](#-finding-1-direct-orm-import)) |
 ```

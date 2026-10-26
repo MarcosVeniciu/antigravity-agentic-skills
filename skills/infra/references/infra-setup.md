@@ -73,8 +73,8 @@ If any critical match is found in `.env.example` or committed files, the script 
 
 ```bash
 # Validate template syntax and check for leaked secrets
-python workflows-skill/infra/scripts/validate_env.py .env.example
+python skills/infra/scripts/validate_env.py .env.example
 
 # Validate local .env against .env.example (detecting missing variables)
-python workflows-skill/infra/scripts/validate_env.py --env .env --example .env.example --strict
+python skills/infra/scripts/validate_env.py --env .env --example .env.example --strict
 ```

@@ -30,7 +30,7 @@ flowchart TD
 ---
 
 ### Etapa 1: Ingestão de Contexto e Ativação
-1. Identifica a branch ativa (`git branch --show-current`) e consulta os contratos no SDD (`01-concepcao/sdd-[slug].md`).
+1. Identifica a branch ativa (`git --no-pager branch --show-current` ou `git rev-parse --abbrev-ref HEAD`) e consulta os contratos no SDD (`01-concepcao/sdd-[slug].md`).
 2. Recebe a mensagem de erro e o traceback completo do terminal fornecidos pelo desenvolvedor.
 * 💡 **Skill Utilizada:** [`skills/test-fix`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/test-fix.md)
 

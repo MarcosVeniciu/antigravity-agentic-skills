@@ -39,7 +39,7 @@ TypeError: unsupported operand type(s) for *: 'NoneType' and 'float'   <-- 0. Ex
 
 ## 2. The 1-Sentence Root Cause Isolation Formula
 
-Before editing any code, the exact root cause must be synthesized into **exactly one sentence** adhering to this formula:
+Before editing any code, the exact root cause must be synthesized into **exactly one sentence** adhering to the formula in [`../resources/diagnostic-report-template.md`](../resources/diagnostic-report-template.md):
 
 $$\text{[Category]}: \text{[Target Function/Component]} \text{ fails because } \text{[exact defect mechanism]}, \text{ causing } \text{[observed failure]}.$$
 

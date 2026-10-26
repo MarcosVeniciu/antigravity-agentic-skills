@@ -34,7 +34,7 @@ flowchart TD
 1. Verify workspace status using non-destructive diagnostics:
    ```bash
    git status --short
-   git branch --show-current
+   git --no-pager branch --show-current
    ```
 2. Ingest the user-provided terminal output, capturing:
    - Failing test identifier (`path/to/test_file.py::test_name`).
@@ -49,7 +49,7 @@ flowchart TD
    - **Missing Import / Name Resolution:** Unresolved identifier or broken module import path.
    - **Logic / Calculation Defect:** Incorrect conditional branch, off-by-one index, or invalid return value calculation.
    - **Mock / Fixture Misconfiguration:** Missing mock attribute, mock return value mismatch, or leaky state in test fixture.
-2. Isolate the root cause into **exactly one sentence** following the canonical formula:
+2. Isolate the root cause into **exactly one sentence** following [`./resources/diagnostic-report-template.md`](./resources/diagnostic-report-template.md):
    > **Root Cause:** `[Error Category]: [Component/Function] fails because [exact defect mechanism], resulting in [observed failure].`
 3. Identify the precise file path and line numbers requiring modification.
 
@@ -86,6 +86,8 @@ flowchart TD
 
 ## Bundled References & Concrete Examples
 
+- **Pure Templates:**
+  - [`resources/diagnostic-report-template.md`](./resources/diagnostic-report-template.md) — Standardized test failure diagnostic report with Executive Summary, Triage Matrix, 1-Sentence RCA, and Verification Plan.
 - **Operational Guide:**
   - [`references/test-fix-protocol.md`](./references/test-fix-protocol.md) — Comprehensive operational protocol covering traceback triage, the 1-sentence RCA formula, surgical fix constraints, isolated test commands, and the Double-Strike recovery procedure.
 - **Concrete Walkthrough:**

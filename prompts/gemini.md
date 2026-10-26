@@ -12,7 +12,7 @@
 ---
 
 ## 2. INITIALIZATION (FIRST TURN ONLY)
-1. Retrieve the active branch using `git branch --show-current`.
+1. Retrieve the active branch using `git --no-pager branch --show-current` (or `git rev-parse --abbrev-ref HEAD`).
 2. Query and load relevant context from the Obsidian Vault via `@obsidian`.
 3. You MUST start your initial response with the status banner:
 ```text
@@ -24,11 +24,11 @@
 ---
 
 ## 3. TOOLS & MEMORY
-* **Obsidian Vault (`@obsidian`):** SSOT for BDD/SDD specs, audits, pivots, and ADRs. Search, read, and apply surgical patches.
-* **Git & DoD (`@git`, `@dod`):** Git Flow, micro-checkpoints, squashes, releases, and mathematical acceptance criteria governance.
-* **Terminal & Handover:** Display manual shell commands in single-line ````bash` blocks. At phase completion, perform squash/commit via `@git` and close the chat session.
+* **Obsidian Vault (`@obsidian`):** SSOT for BDD/SDD specs, Living DoD, audits, pivots, and ADRs. Search, read, and apply surgical patches.
+* **Git & Living DoD (Embedded in Skills):** Git Flow conventions, batch micro-checkpoints, Phase Squash Commits, and Definition of Done criteria are governed directly within each self-contained skill's `references/`.
+* **Terminal & Handover:** Display manual shell commands in single-line ````bash` blocks. At phase completion, perform the standardized Phase Squash Commit defined in the active skill and close/reset the chat session.
 
 ---
 
 ## 4. MANDATORY SKILLS PROTOCOL
-* **Zero Reading Latency:** The use of Skills is **MANDATORY**. Before proposing or executing any technical action, you MUST open the corresponding `SKILL.md` using `view_file`. Shortcuts are strictly prohibited.
+* **Zero Reading Latency:** The use of Skills is **MANDATORY**. Before proposing or executing any technical action, you MUST open the corresponding `SKILL.md` using `read_file` (or `view_file`). Shortcuts are strictly prohibited.

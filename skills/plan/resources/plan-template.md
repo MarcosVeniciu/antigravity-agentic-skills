@@ -149,7 +149,27 @@ class ResponseDTO(BaseModel):
 
 ---
 
-## 6. File Impact Analysis
+## 6. Requirements & Architectural Traceability Matrix (RTM)
+
+> **Traceability Standard:** Aligned with IEEE 829 and ISO/IEC/IEEE 29119 (Requirements Traceability Matrix).
+
+| BDD Scenario / User Requirement | SDD Contract / Component | Impacted Source Files | Living DoD Acceptance Gate | Traceability Status |
+| :--- | :--- | :--- | :--- | :---: |
+| `@happy-path` (Scenario 1) | `FeatureController.handle_request` | `src/api/routes.py` | 100% Green Unit Tests | 🟢 **Mapped** |
+| `@unhappy-path` (Scenario 2) | `RequestDTO.identifier` validation | `src/domain/entities.py` | HTTP 422 Rejection Test | 🟢 **Mapped** |
+| Boundary Integration | `IFeaturePort.save` / Adapter | `src/infra/repo.py` | Contract Test with Fake/Mock | 🟡 **Attention** ([see Architectural Point 1](#-architectural-point-1)) |
+
+### Architectural Points of Attention & Trade-Offs
+
+#### 📌 Architectural Point 1: [Critical Integration / Trade-off Description]
+* **Target Interface / Component:** `[path/to/component.py]`
+* **Identified Risk / Tension:** [e.g., Latency impact, external dependency availability, strict boundary isolation]
+* **Mitigation Strategy:** [e.g., Asynchronous worker, fallback cache, interface inversion via Port]
+* **Verification Criteria:** [How the automated test suite will prove this point is resolved]
+
+---
+
+## 7. File Impact Analysis
 
 | File / Module | Change Type | Risk Level | Description & Rationale |
 |---|---|---|---|
@@ -160,7 +180,7 @@ class ResponseDTO(BaseModel):
 
 ---
 
-## 7. Living Definition of Done (DoD) Setup
+## 8. Living Definition of Done (DoD) Setup
 
 - [x] Phase 1: Architectural Conception & Planning completed
 - [ ] Phase 2: Iterative TDD Implementation (`/implement`)

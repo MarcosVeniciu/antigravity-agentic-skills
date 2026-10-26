@@ -59,7 +59,7 @@ flowchart TD
 1. Validate that the current repository state is not located on a protected base branch (`main`, `master`, `develop`, `production`).
 2. Run the automated cross-platform branch validator:
    ```bash
-   python workflows-skill/plan/scripts/validate_branch.py
+   python skills/plan/scripts/validate_branch.py
    ```
 3. If on a base branch or unbranchable state, create and checkout the isolated feature branch:
    ```bash
@@ -94,7 +94,7 @@ flowchart TD
 5. Compile the File Impact Analysis table (Additive vs. Mutative file modifications with risk grading).
 6. Validate the SDD specification syntax and Mermaid quotation rules:
    ```bash
-   python workflows-skill/plan/scripts/validate_sdd_contracts.py 01-concepcao/sdd-[slug].md
+   python skills/plan/scripts/validate_sdd_contracts.py 01-concepcao/sdd-[slug].md
    ```
 - **Operational Guide:** [`references/plan-sdd.md`](./references/plan-sdd.md)
 - **Schema Template:** [`resources/sdd-contract-template.yaml`](./resources/sdd-contract-template.yaml)

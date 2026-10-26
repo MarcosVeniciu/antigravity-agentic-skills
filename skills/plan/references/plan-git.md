@@ -13,7 +13,7 @@ Planning or implementing features directly on shared base branches is **strictly
 ### Automated Validation:
 Execute the cross-platform branch validator:
 ```bash
-python workflows-skill/plan/scripts/validate_branch.py
+python skills/plan/scripts/validate_branch.py
 ```
 - If exit code is `1`, the phase gate blocks further progress until a proper working branch is created.
 - If exit code is `0`, the active branch adheres to project Git Flow standards.

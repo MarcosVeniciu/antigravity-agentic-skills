@@ -41,7 +41,7 @@ OPENAI_API_KEY=sk-proj-placeholder_key_here
 ## 4. Step 3: Running Validator on `.env.example`
 
 ```bash
-python workflows-skill/infra/scripts/validate_env.py .env.example
+python skills/infra/scripts/validate_env.py .env.example
 ```
 
 **Output:**
@@ -66,7 +66,7 @@ OPENAI_API_KEY=sk-abcdef1234567890abcdef1234567890abcdef1234
 
 Running the parity and security check:
 ```bash
-python workflows-skill/infra/scripts/validate_env.py --env .env --example .env.example
+python skills/infra/scripts/validate_env.py --env .env --example .env.example
 ```
 
 **Output:**
@@ -95,7 +95,7 @@ OPENAI_API_KEY=sk-proj-placeholder_key_here
 
 Re-running validation:
 ```bash
-python workflows-skill/infra/scripts/validate_env.py --env .env --example .env.example
+python skills/infra/scripts/validate_env.py --env .env --example .env.example
 ```
 
 **Output:**

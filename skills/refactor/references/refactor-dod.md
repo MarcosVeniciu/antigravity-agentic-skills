@@ -30,7 +30,7 @@ Before concluding Phase 3, the agent must verify and check all items under Phase
 
 ## 2. Refactoring Evidence Matrix Standard
 
-Upon completing the refactoring iterations, compile and present the **Refactoring Evidence Matrix**. This matrix must be documented in the chat handover and preserved in the execution log.
+Upon completing the refactoring iterations, compile and present the **Refactoring Evidence Matrix** using [`../resources/refactor-report-template.md`](../resources/refactor-report-template.md). This report must be documented in the chat handover and preserved in the execution log.
 
 ### Matrix Structure:
 

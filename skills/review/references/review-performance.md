@@ -62,12 +62,12 @@ Every performance observation must be evaluated against the feature's operationa
 
 ---
 
-## Phase 3 — Audit Report Table Format
+## Phase 3 — Audit Report Format
 
-When recording findings for `02-auditorias/audit-performance-[slug].md`, use this standardized schema:
+When recording findings for `02-auditorias/audit-performance-[slug].md`, instantiate [`../resources/audit-report-template.md`](../resources/audit-report-template.md) and populate the Forensic Traceability Matrix and detailed findings:
 
 ```markdown
-| ID | File / Line | Pattern Detected | Cost Category | Severity | Confidence | Disposition | Impact / Evidence |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `PRF-01` | `src/services/report.py:88` | N+1 Database Query in Loop | Network I/O Latency | High | High | Confirmed | 100 items produce 101 database round-trips; batch via IN clause |
+| ID | File & Line | Pattern Detected / Resource | Primary Evidence / Tool | Severity | Status & Traceability |
+| :--- | :--- | :--- | :--- | :---: | :---: |
+| `PRF-01` | `src/services/report.py:88` | N+1 Database Query in Loop | Query Profiler / AST Scan | High | 🔴 **Non-Compliant** ([see Finding 1](#-finding-1-n1-query-batching)) |
 ```

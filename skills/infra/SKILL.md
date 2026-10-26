@@ -63,11 +63,11 @@ flowchart TD
 
 1. Execute the multiplatform Python environment validator to confirm syntactic integrity, variable parity, and zero exposed credentials:
    ```bash
-   python workflows-skill/infra/scripts/validate_env.py .env.example
+   python skills/infra/scripts/validate_env.py .env.example
    ```
 2. If verifying local development setup, validate `.env` against `.env.example`:
    ```bash
-   python workflows-skill/infra/scripts/validate_env.py --env .env --example .env.example
+   python skills/infra/scripts/validate_env.py --env .env --example .env.example
    ```
 3. Issue the standard phase completion handover notice:
    > **[NEXT STEP]** *"Environment and dependencies updated successfully! Proceed with the development lifecycle via `/implement` or validate changes using `/test-fix`."*

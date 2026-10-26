@@ -49,8 +49,8 @@ flowchart TD
    ```
 2. Mescla cada feature candidata aprovada:
    ```bash
-   git merge --no-ff feature/[slug-1]
-   git merge --no-ff feature/[slug-2]
+   git merge --no-ff feature/[slug-1] -m "merge: feature/[slug-1] into release"
+   git merge --no-ff feature/[slug-2] -m "merge: feature/[slug-2] into release"
    ```
 * 💡 **Skill Utilizada:** [`skills/git`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/git.md) (Modo 5: Release Strategy)
 
@@ -83,10 +83,10 @@ flowchart TD
    ```bash
    git commit -am "chore(release): prepare release v[VERSION]"
    git checkout main
-   git merge --no-ff release/v[VERSION]
+   git merge --no-ff release/v[VERSION] -m "release: v[VERSION]"
    git tag -a v[VERSION] -m "Release v[VERSION]"
    git checkout develop
-   git merge --no-ff release/v[VERSION]
+   git merge --no-ff release/v[VERSION] -m "merge: sync release v[VERSION] back to develop"
    git branch -d release/v[VERSION]
    git branch -d feature/[slug-1]
    git branch -d feature/[slug-2]

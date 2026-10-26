@@ -24,7 +24,7 @@ This rule is formally documented in the architectural conventions:
 
 #### 2. Automated Static Enforcement
 Layer boundaries are automatically validated in Phase 4 (`/review`) by an AST boundary scanner:
-- Script: `check_arch_boundaries.py#L45-L88` (`workflows-skill/review/scripts/check_arch_boundaries.py#L45-L88`)
+- Script: `check_arch_boundaries.py#L45-L88` (`skills/review/scripts/check_arch_boundaries.py#L45-L88`)
 - The scanner parses imports in `domain/` and `use_cases/`, failing with exit code 1 if unauthorized imports (`sqlalchemy`, `httpx`, `requests`) are detected.
 
 ---

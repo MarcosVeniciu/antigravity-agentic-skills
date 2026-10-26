@@ -65,7 +65,7 @@ class OrderService:
 
 The agent executes the AST complexity scanner:
 ```bash
-python workflows-skill/refactor/scripts/ast_complexity.py src/services/order_service.py --threshold 10
+python skills/refactor/scripts/ast_complexity.py src/services/order_service.py --threshold 10
 ```
 
 ### Terminal Output:
@@ -164,7 +164,7 @@ class OrderService:
 
 ### 4.1. AST Complexity Re-scan:
 ```bash
-python workflows-skill/refactor/scripts/ast_complexity.py src/services/order_service.py --threshold 10
+python skills/refactor/scripts/ast_complexity.py src/services/order_service.py --threshold 10
 ```
 
 ```text

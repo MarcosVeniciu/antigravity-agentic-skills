@@ -99,7 +99,7 @@ Populating [`../resources/release-template.md`](../resources/release-template.md
 
 Run the validator script:
 ```bash
-python workflows-skill/release/scripts/validate_release.py \
+python skills/release/scripts/validate_release.py \
   --version v1.2.0 \
   --branch release/v1.2.0 \
   --changelog CHANGELOG.md \

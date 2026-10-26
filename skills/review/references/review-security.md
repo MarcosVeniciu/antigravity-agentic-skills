@@ -8,7 +8,7 @@ This guide governs the surgical audit and remediation of security vulnerabilitie
 
 Run the automated sink scanner against modified files to rapidly identify high-risk patterns:
 ```bash
-python workflows-skill/review/scripts/scan_sinks.py <modified_files>
+python skills/review/scripts/scan_sinks.py <modified_files>
 ```
 
 ### Evaluation Protocol:
@@ -91,13 +91,13 @@ python workflows-skill/review/scripts/scan_sinks.py <modified_files>
 
 ---
 
-## Phase 3 — Audit Report Table Format
+## Phase 3 — Audit Report Format
 
-When recording findings for `02-auditorias/audit-security-[slug].md`, use this standardized schema:
+When recording findings for `02-auditorias/audit-security-[slug].md`, instantiate [`../resources/audit-report-template.md`](../resources/audit-report-template.md) and populate the Forensic Traceability Matrix and detailed findings:
 
 ```markdown
-| ID | File / Line | OWASP / ASVS Category | Severity | Confidence | Disposition | Impact / Description |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `SEC-01` | `src/api/routes.py:42` | Command Injection (A03:2021) | High | High | Confirmed | Subprocess invocation with shell=True and user-controlled path |
+| ID | File & Line | OWASP / ASVS Category | Primary Evidence / Tool | Severity | Status & Traceability |
+| :--- | :--- | :--- | :--- | :---: | :---: |
+| `SEC-01` | `src/api/routes.py:42` | Command Injection (A03:2021) | scan_sinks.py (shell=True) | High | 🔴 **Non-Compliant** ([see Finding 1](#-finding-1-shell-command-injection)) |
 ```
 *(Always redact sensitive credentials in evidence: use `***REDACTED***`).*

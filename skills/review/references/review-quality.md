@@ -8,7 +8,7 @@ This guide governs the audit of cyclomatic complexity, cognitive load, asymptoti
 
 Run the AST complexity scanner against modified Python files:
 ```bash
-python workflows-skill/review/scripts/ast_complexity.py <modified_files>
+python skills/review/scripts/ast_complexity.py <modified_files>
 ```
 
 ### Governance Rules:
@@ -69,12 +69,12 @@ python workflows-skill/review/scripts/ast_complexity.py <modified_files>
 
 ---
 
-## Phase 3 — Audit Report Table Format
+## Phase 3 — Audit Report Format
 
-When recording findings for `02-auditorias/audit-quality-[slug].md`, use this standardized schema:
+When recording findings for `02-auditorias/audit-quality-[slug].md`, instantiate [`../resources/audit-report-template.md`](../resources/audit-report-template.md) and populate the Forensic Traceability Matrix and detailed findings:
 
 ```markdown
-| ID | File / Line | Element / Function | Metric / Issue | Severity | Confidence | Disposition | Description & Recommendation |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `QLT-01` | `src/services/billing.py:55` | `calculate_invoice` | V(G) = 14 | Medium | High | Confirmed | Decompose tiered calculation into private helper functions |
+| ID | File & Line | Element / Function | Primary Evidence / Metric | Severity | Status & Traceability |
+| :--- | :--- | :--- | :--- | :---: | :---: |
+| `QLT-01` | `src/services/billing.py:55` | `calculate_invoice` | ast_complexity.py (V(G) = 14) | Medium | 🟡 **Attention** ([see Finding 1](#-finding-1-cyclomatic-complexity)) |
 ```

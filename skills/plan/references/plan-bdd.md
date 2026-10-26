@@ -61,5 +61,5 @@ Feature: [Feature Name]
 ## 4. Artifact Storage & Integration
 
 - Specifications are saved at `01-concepcao/bdd-[slug].md` in the Obsidian Vault or documentation directory using the format in [`resources/plan-template.md`](../resources/plan-template.md).
-- BDD scenarios serve as the direct input to Phase 2 unit tests ([`workflows-skill/implement`](../SKILL.md)).
+- BDD scenarios serve as the direct input to Phase 2 unit tests ([`skills/implement`](../SKILL.md)).
 - See a complete working example in [`examples/plan-example.md`](../examples/plan-example.md).

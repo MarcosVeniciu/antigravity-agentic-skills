@@ -30,7 +30,7 @@ flowchart TD
 ```
 
 ### Step 1: Context & Scope Resolution
-1. Identify the active feature branch using `git branch --show-current`.
+1. Identify the active feature branch using `git --no-pager branch --show-current` (or `git rev-parse --abbrev-ref HEAD`).
 2. Locate and inspect feature specifications in the Obsidian Vault:
    - BDD Scenarios: `01-concepcao/bdd-[slug].md`
    - SDD Blueprint: `01-concepcao/sdd-[slug].md`

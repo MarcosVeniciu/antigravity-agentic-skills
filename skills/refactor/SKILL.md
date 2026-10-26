@@ -45,7 +45,7 @@ flowchart TD
    *(Fallback to `main...HEAD` if `develop` does not exist)*.
 3. **Execute Baseline AST Complexity Scan:**
    ```bash
-   python workflows-skill/refactor/scripts/ast_complexity.py <MODIFIED_PYTHON_FILES> --threshold 10
+   python skills/refactor/scripts/ast_complexity.py <MODIFIED_PYTHON_FILES> --threshold 10
    ```
    Record any functions exceeding $V(G) > 10$ or triggering nested loop warnings.
 
@@ -69,7 +69,7 @@ For each refactoring target in `task_list.md`:
 1. **Apply Targeted Transformation:** Apply Clean Code and SOLID patterns as guided by [`./references/solid-catalog.md`](./references/solid-catalog.md).
 2. **Re-scan AST Complexity:**
    ```bash
-   python workflows-skill/refactor/scripts/ast_complexity.py <MODIFIED_FILE> --threshold 10
+   python skills/refactor/scripts/ast_complexity.py <MODIFIED_FILE> --threshold 10
    ```
    Confirm $V(G) \le 10$ and zero asymptotic warnings.
 3. **Run Regression Tests:**
@@ -86,7 +86,7 @@ For each refactoring target in `task_list.md`:
 5. Mark the task item complete (`[x]`) in `task_list.md`.
 
 ### Step 4: Refactoring Evidence Matrix, DoD Update & Phase Squash
-1. **Compile Refactoring Evidence Matrix:** Present the before/after change matrix as detailed in [`./references/refactor-dod.md`](./references/refactor-dod.md):
+1. **Compile Refactoring Evidence Matrix:** Present the before/after change matrix conforming to [`./resources/refactor-report-template.md`](./resources/refactor-report-template.md) and [`./references/refactor-dod.md`](./references/refactor-dod.md):
    ```markdown
    | Target File & Function | Code Smell / SOLID Violation | Transformation Applied | V(G) Before | V(G) After | Tests |
    | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -109,6 +109,8 @@ For each refactoring target in `task_list.md`:
 
 ## Supporting References & Tooling Index
 
+- **Pure Templates:**
+  - [`resources/refactor-report-template.md`](./resources/refactor-report-template.md) — Standardized refactoring consolidation report with Executive Summary, Complexity Matrix, Detailed Transformations, and Handover.
 - **Operational Guides:**
   - [`references/solid-catalog.md`](./references/solid-catalog.md) — SOLID patterns, Clean Code transformations, and AST complexity reduction guide.
   - [`references/refactor-git.md`](./references/refactor-git.md) — Git Flow operational modes: scope discovery, micro-checkpoints, zero-regression rollback, and Phase Squash.

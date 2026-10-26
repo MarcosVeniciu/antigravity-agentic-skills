@@ -120,7 +120,7 @@ Before code changes are made in Phase 2, classify every anticipated file alterat
 
 Validate the completed SDD artifact using the validator script:
 ```bash
-python workflows-skill/plan/scripts/validate_sdd_contracts.py 01-concepcao/sdd-[slug].md
+python skills/plan/scripts/validate_sdd_contracts.py 01-concepcao/sdd-[slug].md
 ```
 - **Validation Script:** [`scripts/validate_sdd_contracts.py`](../scripts/validate_sdd_contracts.py)
 - **Contract Schema Template:** [`resources/sdd-contract-template.yaml`](../resources/sdd-contract-template.yaml)

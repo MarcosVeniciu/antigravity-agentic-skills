@@ -78,7 +78,7 @@ flowchart TD
 
 1. Execute the multiplatform release validation utility to verify version formatting, changelog presence, and DoD completeness:
    ```bash
-   python workflows-skill/release/scripts/validate_release.py --version v[VERSION] --branch release/v[VERSION] --changelog CHANGELOG.md --check-dod "01-concepcao/dod-*.md"
+   python skills/release/scripts/validate_release.py --version v[VERSION] --branch release/v[VERSION] --changelog CHANGELOG.md --check-dod "01-concepcao/dod-*.md"
    ```
 2. Commit release preparations on the release branch:
    ```bash

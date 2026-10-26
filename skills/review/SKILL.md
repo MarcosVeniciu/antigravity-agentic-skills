@@ -15,7 +15,7 @@ Orchestrates **Phase 4 (Chat 4)** of the feature development lifecycle, conducti
    - Inspects modified files and lines across the branch diff.
    - Runs automated domain scanners to prioritize inspection.
    - Conducts taint analysis and call hierarchy inspection (1-2 levels outside diff).
-   - Maps confirmed findings, assesses severity/confidence, and generates domain audit reports in `02-auditorias/audit-[domain]-[slug].md`.
+   - Maps confirmed findings, assesses severity/confidence, and generates standardized domain audit reports in `02-auditorias/audit-[domain]-[slug].md` conforming to [`./resources/audit-report-template.md`](./resources/audit-report-template.md).
    - Updates the Living Definition of Done in `01-concepcao/dod-[slug].md`.
    - **STRICT RULE:** Do NOT modify source code files. Do NOT execute `git commit` or `git add`.
 
@@ -88,7 +88,7 @@ flowchart LR
 #### 2.1. Domain 1: Architecture & Boundary Isolation
 1. **Run Scanner:**
    ```bash
-   python workflows-skill/review/scripts/check_arch_boundaries.py <modified_files>
+   python skills/review/scripts/check_arch_boundaries.py <modified_files>
    ```
 2. **Inspect Code:** Evaluate layer boundaries, Dependency Inversion (DIP), DTO encapsulation, and God Class decomposition.
 3. **Reference Guide:** [`references/review-architecture.md`](./references/review-architecture.md)
@@ -100,7 +100,7 @@ flowchart LR
 #### 2.2. Domain 2: OWASP Security & Dangerous Sinks
 1. **Run Scanner:**
    ```bash
-   python workflows-skill/review/scripts/scan_sinks.py <modified_files>
+   python skills/review/scripts/scan_sinks.py <modified_files>
    ```
 2. **Inspect Code:** Trace dangerous sinks (`eval`, `exec`, `subprocess`, SQL interpolation), perform taint analysis on user inputs, verify server-side ownership (IDOR/BPOA), TOCTOU concurrency, PII masking, and secret management.
 3. **Reference Guide:** [`references/review-security.md`](./references/review-security.md)
@@ -113,7 +113,7 @@ flowchart LR
 #### 2.3. Domain 3: Code Quality & AST Complexity
 1. **Run Scanner:**
    ```bash
-   python workflows-skill/review/scripts/ast_complexity.py <modified_files>
+   python skills/review/scripts/ast_complexity.py <modified_files>
    ```
 2. **Inspect Code:** Ensure cyclomatic complexity $V(G) \le 10$ per function/method. Check for nested loops ($O(N^2)$), linear searches in loops, deep pyramid nesting (> 3 levels), and absence of guard clauses.
 3. **Reference Guide:** [`references/review-quality.md`](./references/review-quality.md)
@@ -168,6 +168,8 @@ flowchart LR
   - [`references/review-quality.md`](./references/review-quality.md) — AST complexity $V(G) \le 10$, cognitive load, Clean Code standards.
   - [`references/review-performance.md`](./references/review-performance.md) — N+1 query patterns, algorithmic bottlenecks, memory streaming.
   - [`references/review-resilience.md`](./references/review-resilience.md) — Mandatory timeouts, idempotent retries, circuit breakers, fail-secure fallbacks.
+- **Pure Templates:**
+  - [`resources/audit-report-template.md`](./resources/audit-report-template.md) — Standardized audit report template with Executive Summary, Traceability Matrix, Forensic Findings, and Action Plan.
 - **Automated CLI Scanners:**
   - [`scripts/check_arch_boundaries.py`](./scripts/check_arch_boundaries.py) — Clean Architecture layer boundary linter.
   - [`scripts/scan_sinks.py`](./scripts/scan_sinks.py) — OWASP v2 dangerous sinks & code crawler.

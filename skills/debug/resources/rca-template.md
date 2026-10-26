@@ -1,5 +1,7 @@
 # Root Cause Analysis (RCA) — [INCIDENT_TITLE_OR_SLUG]
 
+> **Forensic Standard:** Aligned with NIST SP 800-86 (Forensic Techniques in Incident Response) and ISO/IEC 27037 (Digital Evidence Handling & Chain of Custody).
+
 **Incident Date:** [YYYY-MM-DD]  
 **Severity:** [P1 - Critical / P2 - High / P3 - Medium]  
 **Component:** `[path/to/affected/component.py]`  
@@ -39,16 +41,27 @@
 
 ---
 
-## 3. Hypothesis Evaluation Matrix
+## 3. Forensic Traceability & Hypothesis Matrix
 
-| ID | Hypothesis Description | Invalidation / Falsification Probe | Evidence & Observed Result | Conclusion |
-| :--- | :--- | :--- | :--- | :--- |
-| **H1** | [Hypothesis 1] | [How H1 was probed or tested] | [Concrete log or metric observed] | [Falsified / Confirmed] |
-| **H2** | [Hypothesis 2] | [How H2 was probed or tested] | [Concrete log or metric observed] | [Falsified / Confirmed] |
+| ID | Component & Frame | Investigated Hypothesis / Defect Mechanism | Primary Evidence / Falsification Probe | Diagnostic Status & Traceability |
+| :--- | :--- | :--- | :--- | :---: |
+| **H1** | `[path/to/caller.py:42]` | [Hypothesis 1: External gateway timeout or network degradation] | [Probe with network latency simulation in MRE] | 🟢 **Falsified** |
+| **H2** | `[path/to/component.py:88]` | [Hypothesis 2: Unhandled exception leads to connection pool leak] | [Monitor pool.checkedout() count during simulated failure] | 🔴 **Confirmed Root Cause** ([see Finding 1](#-finding-1-root-cause-isolation)) |
 
 ---
 
-## 4. Solution Alternatives & Trade-Offs
+## 4. Forensic Findings & Root Cause Isolation
+
+#### 📌 Finding 1: [Root Cause Isolation Title]
+* **Location:** `[path/to/component.py:L88]` (format in report as clickable IDE link `file:///absolute/path/to/component.py#L88`)
+* **Observed Condition:** [Exact defect mechanism, unhandled edge condition, or leaky state in production code]
+* **Real Evidence & Ground Truth:** [Deterministic reproduction trace, log hash, or pool metric evidence]
+* **Derivation from 5 Whys:** [Summary of Why 1 through Why 5 chain]
+* **Recommended Surgical Action:** [Minimal, targeted code fix to eradicate defect mechanism]
+
+---
+
+## 5. Solution Alternatives & Trade-Offs
 
 ### Option A: Recommended Surgical Fix
 * **Description:** [Detailed description of surgical changes in production code]
@@ -66,15 +79,15 @@
 
 ---
 
-## 5. Verification & Regression Prevention Plan
+## 6. Verification & Regression Prevention Plan
 
-### 5.1. Minimal Reproducible Example (MRE) / Test Plan
+### 6.1. Minimal Reproducible Example (MRE) / Test Plan
 ```bash
 # Command to execute isolated reproduction test
 python -m pytest [path/to/test_regression.py] -v
 ```
 
-### 5.2. Permanent Regression Test Specification
+### 6.2. Permanent Regression Test Specification
 * **New Test Location:** `tests/regression/test_[slug]_regression.py`
 * **Verification Criteria:**
   - [ ] Test fails deterministically against unpatched code.
@@ -83,7 +96,7 @@ python -m pytest [path/to/test_regression.py] -v
 
 ---
 
-## 6. Living Knowledge & Vault Archiving
+## 7. Living Knowledge & Vault Archiving
 
 - [ ] Persist incident summary and lessons learned to Obsidian Vault: `02-auditorias/pivots-[slug].md`.
 - [ ] If architectural guidelines require updating, log ADR proposal in `00-core-rules/adrs/`.
