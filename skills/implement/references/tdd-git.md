@@ -72,7 +72,7 @@ When 100% of the batches in `task_list.md` are completed, all unit tests are gre
      * Green: Minimal typed production code adhering to Clean Architecture
      * Blue: Local micro-refactoring, SRP adherence, zero magic constants
    - Living DoD Updated: 01-concepcao/dod-{{FEATURE_SLUG}}.md
-   - Recommended Next Step: Run /refactor in Chat 3 for feature macro-refactoring"
+   - Recommended Next Step: Run /refactor for feature macro-refactoring"
    ```
 
 ---

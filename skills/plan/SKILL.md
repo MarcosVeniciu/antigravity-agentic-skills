@@ -5,7 +5,7 @@ description: Orchestrates Phase 1 architectural conception, outcome-based scope 
 
 # Skill: Architectural Conception & Planning (`/plan`)
 
-Orchestrates **Phase 1 (Chat 1)** of the feature development lifecycle, transforming business requirements into formal behavioral specifications (BDD Gherkin), robust technical blueprints with typed contracts (SDD), and an initialized Living Definition of Done (DoD), all under strict Git Flow branch isolation.
+Orchestrates **Phase 1** of the feature development lifecycle, transforming business requirements into formal behavioral specifications (BDD Gherkin), robust technical blueprints with typed contracts (SDD), and an initialized Living Definition of Done (DoD), all under strict Git Flow branch isolation.
 
 ---
 
@@ -112,7 +112,7 @@ flowchart TD
    git commit -m "docs(conception): BDD, SDD, and DoD specifications for [slug]"
    ```
 5. Emit the mandatory session handover recommendation:
-   > **[NEXT STEP]** *"Phase 1 (Conception & Architecture) completed successfully with validated BDD scenarios, typed SDD contracts, and initialized Living DoD! Open a **NEW CHAT (Chat 2)** and run `/implement` to initiate the iterative TDD development cycle."*
+   > **[NEXT STEP]** *"Phase 1 (Conception & Architecture) completed successfully with validated BDD scenarios, typed SDD contracts, and initialized Living DoD! Open a **NEW CHAT** and run `/implement` to initiate the iterative TDD development cycle."*
 - **Operational Guide:** [`references/plan-dod.md`](./references/plan-dod.md)
 
 ---

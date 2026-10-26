@@ -45,4 +45,4 @@ Before issuing the handover to `/refactor`, verify:
 - [ ] Zero unhandled architectural deviations (all deviations documented in `02-auditorias/pivots-[slug].md`).
 - [ ] Mode 3 Phase Squash commit recorded with complete semantic summary.
 - [ ] Mandatory handover recommendation issued:
-  > **[NEXT STEP]** *"Phase 2 (TDD) completed with 100% unit tests passing green! Open a **NEW CHAT (Chat 3)** and run `/refactor` to consolidate code design with Clean Code and SOLID principles."*
+  > **[NEXT STEP]** *"Phase 2 (TDD) completed with 100% unit tests passing green! Open a **NEW CHAT** and run `/refactor` to consolidate code design with Clean Code and SOLID principles."*

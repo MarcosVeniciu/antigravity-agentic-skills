@@ -67,7 +67,7 @@ flowchart TD
    ```bash
    git switch develop && git pull --ff-only && git switch -c feature/[first-feature-slug]
    ```
-   > **[NEXT STEP]** *"Macro-architecture decomposition complete! Run the git command above, open a **NEW CHAT (Chat 1)**, and execute `/plan` to initiate Phase 1 feature conception."*
+   > **[NEXT STEP]** *"Macro-architecture decomposition complete! Run the git command above, open a **NEW CHAT**, and execute `/plan` to initiate Phase 1 feature conception."*
 
 ---
 

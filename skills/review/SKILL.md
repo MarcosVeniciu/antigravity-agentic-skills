@@ -5,7 +5,7 @@ description: Conducts rigorous, script-first multi-domain code reviews across th
 
 # Skill: Specialized Multi-Domain Code Review (`/review`)
 
-Orchestrates **Phase 4 (Chat 4)** of the feature development lifecycle, conducting exhaustive, script-first architectural, security, and quality code audits across all changes introduced in the feature branch.
+Orchestrates **Phase 4** of the feature development lifecycle, conducting exhaustive, script-first architectural, security, and quality code audits across all changes introduced in the feature branch.
 
 ---
 
@@ -156,7 +156,7 @@ flowchart LR
    git commit -m "audit(review): specialized domain audits completed for [slug]"
    ```
 2. Output the mandatory phase transition handover recommendation:
-   > **[NEXT STEP]** *"Phase 4 (Audits) completed! Review findings documented in audit reports under `02-auditorias/`. Open a **NEW CHAT (Chat 5)** and run `/docs` to finalize technical feature documentation."*
+   > **[NEXT STEP]** *"Phase 4 (Audits) completed! Review findings documented in audit reports under `02-auditorias/`. Open a **NEW CHAT** and run `/docs` to finalize technical feature documentation."*
 
 ---
 

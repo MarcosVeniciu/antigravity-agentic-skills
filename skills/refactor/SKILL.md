@@ -5,7 +5,7 @@ description: Executes macro-refactoring across the entire feature git diff (deve
 
 # Skill: Consolidation Macro-Refactoring (`/refactor`)
 
-Orchestrates **Phase 3 (Chat 3)** of the feature development lifecycle, consolidating architectural design across the complete feature changeset (`git diff develop...HEAD`) while keeping the test suite 100% green and verifying AST cyclomatic complexity ($V(G) \le 10$).
+Orchestrates **Phase 3** of the feature development lifecycle, consolidating architectural design across the complete feature changeset (`git diff develop...HEAD`) while keeping the test suite 100% green and verifying AST cyclomatic complexity ($V(G) \le 10$).
 
 ---
 
@@ -103,7 +103,7 @@ For each refactoring target in `task_list.md`:
    git commit -m "refactor(consolidation): apply Clean Code and SOLID for [slug]"
    ```
 4. **Issue Handover Recommendation:** Output the mandatory phase transition prompt:
-   > **[NEXT STEP]** *"Phase 3 (Macro-Refactoring) completed with 100% green tests and AST complexity V(G) <= 10 across all feature files! Open a **NEW CHAT (Chat 4)** and run `/review` to begin specialized 5-domain code audits (Architecture, OWASP Security, AST Quality, Performance, Resilience)."*
+   > **[NEXT STEP]** *"Phase 3 (Macro-Refactoring) completed with 100% green tests and AST complexity V(G) <= 10 across all feature files! Open a **NEW CHAT** and run `/review` to begin specialized 5-domain code audits (Architecture, OWASP Security, AST Quality, Performance, Resilience)."*
 
 ---
 
