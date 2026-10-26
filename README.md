@@ -152,7 +152,6 @@ antigravity-agentic-workflows/
 │   ├── release/                  # SemVer 2.0.0 calculation & cumulative changelog generation
 │   ├── git/                      # Central Git Flow (5 Modes: Branch, Checkpoint, Squash, Rollback, Release)
 │   ├── obsidian/                 # SSOT Vault governance, metadata search & surgical patching
-│   ├── notebooklm/               # User-governed external paper & documentation research
 │   ├── ask/                      # Strictly read-only investigation guidelines & citations
 │   ├── debug/                    # 5 Whys framework & root cause analysis
 │   └── infra/                    # Manifest management, Docker & safe environment variables
@@ -299,7 +298,6 @@ All 24 skills strictly adhere to the Single Responsibility Principle (SRP) and a
 
 | Category | Skills & Documentation | Primary SRP Responsibility |
 | :--- | :--- | :--- |
-| **1. Foundation & Cross-Cutting** | [`git`](docs/skills/git.md), [`dod`](docs/skills/dod.md), [`obsidian`](docs/skills/obsidian.md), [`notebooklm`](docs/skills/notebooklm.md) | Git Flow branch/checkpoint/rollback governance, Living DoD tracking, SSOT Vault integrity, and user-governed research. |
 | **2. Macro & Conception** | [`plan-decompose`](docs/skills/plan-decompose.md), [`plan-debate`](docs/skills/plan-debate.md), [`plan-bdd`](docs/skills/plan-bdd.md), [`plan-sdd`](docs/skills/plan-sdd.md) | Monotonic vertical slicing, Outcome-Based debate, Gherkin BDD specifications, and SDD typed boundary contracts. |
 | **3. TDD Construction** | [`tdd-plan`](docs/skills/tdd-plan.md), [`tdd-tests`](docs/skills/tdd-tests.md), [`tdd-code`](docs/skills/tdd-code.md), [`test-fix`](docs/skills/test-fix.md) | Context batching, AAA unit test suites with mocks, minimal SOLID code, and surgical traceback root cause fixes. |
 | **4. Refactoring & Design** | [`refactor`](docs/skills/refactor.md) | Clean Code & SOLID refactoring strictly scoped to branch diff (`git diff develop...HEAD`) preserving 100% green tests. |

@@ -84,8 +84,8 @@ $script:TxModified = @()
 $script:TxAdded = @()
 
 # Validate sources (only mandatory when performing installation)
-if (-not $Restore -and -not $Uninstall -and (-not (Test-Path $SourceWorkflows) -or -not (Test-Path $SourceSkills))) {
-    Write-Host "[ERROR] 'workflows' or 'skills' directories not found in: $RepoRoot" -ForegroundColor Red
+if (-not $Restore -and -not $Uninstall -and -not (Test-Path $SourceSkills)) {
+    Write-Host "[ERROR] 'skills' directory not found in: $RepoRoot" -ForegroundColor Red
     Write-Host "Make sure you are running the script from the root of the cloned/extracted repository." -ForegroundColor Yellow
     exit 1
 }
@@ -714,12 +714,14 @@ else {
     Write-Warn "Source file $SourceGeminiRule not found."
 }
 
-# 2. Install Workflows
-Write-Header "2. Installing Workflows (Slash Commands)"
-$workflowFiles = Get-ChildItem -Path $SourceWorkflows -Filter "*.md" -File
-foreach ($wf in $workflowFiles) {
-    $destWf = Join-Path $TargetWorkflowsDir $wf.Name
-    Install-SingleFile -SourceFile $wf.FullName -DestFile $destWf -RelativeBackupSubpath (Join-Path "workflows" $wf.Name)
+# 2. Install Workflows (Legacy backward-compatibility, if present)
+if (Test-Path $SourceWorkflows) {
+    Write-Header "2. Installing Legacy Workflows (if present)"
+    $workflowFiles = Get-ChildItem -Path $SourceWorkflows -Filter "*.md" -File
+    foreach ($wf in $workflowFiles) {
+        $destWf = Join-Path $TargetWorkflowsDir $wf.Name
+        Install-SingleFile -SourceFile $wf.FullName -DestFile $destWf -RelativeBackupSubpath (Join-Path "workflows" $wf.Name)
+    }
 }
 
 # 3. Install Skills
