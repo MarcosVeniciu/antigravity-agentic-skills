@@ -34,6 +34,6 @@ A análise investiga a cadeia causal regressiva para encontrar o defeito de desi
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/debug/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/debug/SKILL.md)
-* **Manual da Metodologia dos 5 Whys:** [`skills/debug/references/5_whys_framework.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/debug/references/5_whys_framework.md)
-* **Template de Causa Raiz (RCA):** [`skills/debug/resources/template_root_cause.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/debug/resources/template_root_cause.md)
+* **Instruções Principais:** [`skills/debug/SKILL.md`](../../skills/debug/SKILL.md)
+* **Manual da Metodologia dos 5 Whys:** [`skills/debug/references/5_whys_framework.md`](../../skills/debug/references/debug-methodology.md)
+* **Template de Causa Raiz (RCA):** [`skills/debug/resources/template_root_cause.md`](../../skills/debug/resources/rca-template.md)

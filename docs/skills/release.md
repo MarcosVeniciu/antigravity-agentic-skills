@@ -27,13 +27,13 @@ flowchart TD
    * ⚡ **Performance & Refatoração:** Commits com prefixos `perf:` e `refactor:`.
    * ⚠️ **Alterações Quebrantes (Breaking Changes):** Detalhes da quebra e instrução de migração.
 2. **Atualização Cumulativa na Raiz:**
-   * Adiciona o novo bloco de versão no topo do arquivo [`CHANGELOG.md`](file:///e:/Codigos/antigravity-agentic-workflows/CHANGELOG.md) do repositório, preservando integralmente o histórico das releases passadas.
+   * Adiciona o novo bloco de versão no topo do arquivo [`CHANGELOG.md`](../../CHANGELOG.md) do repositório, preservando integralmente o histórico das releases passadas.
 3. **Persistência na Segunda Mente:**
    * Salva uma cópia imutável em `03-releases/changelog-v[VERSION].md` no Obsidian Vault com tags `#phase/release` e metadados de auditoria.
 
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/release/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/release/SKILL.md)
-* **Matriz de Regras SemVer:** [`skills/release/references/semver_rules.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/release/references/semver_rules.md)
-* **Template do Changelog:** [`skills/release/resources/template_changelog.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/release/resources/template_changelog.md)
+* **Instruções Principais:** [`skills/release/SKILL.md`](../../skills/release/SKILL.md)
+* **Matriz de Regras SemVer:** [`skills/release/references/semver_rules.md`](../../skills/release/references/release-checklist.md)
+* **Template do Changelog:** [`skills/release/resources/template_changelog.md`](../../skills/release/resources/release-template.md)

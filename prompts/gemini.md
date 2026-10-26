@@ -27,6 +27,7 @@
 * **Obsidian Vault (`@obsidian`):** SSOT for BDD/SDD specs, Living DoD, audits, pivots, and ADRs. Search, read, and apply surgical patches.
 * **Git & Living DoD (Embedded in Skills):** Git Flow conventions, batch micro-checkpoints, Phase Squash Commits, and Definition of Done criteria are governed directly within each self-contained skill's `references/`.
 * **Terminal & Handover:** Display manual shell commands in single-line ````bash` blocks. At phase completion, perform the standardized Phase Squash Commit defined in the active skill and close/reset the chat session.
+* **Worktree & Branch Lifecycle Cleanup:** At the conclusion of each task, when merging back into the original base branch (e.g. `develop` / `main`), you MUST remove the created worktree (`git worktree remove <path>`) and delete the task branch (`git branch -d <branch>`). Ao final de cada tarefa (ao mesclar com o ramo original), remova obrigatoriamente a worktree e o ramo criados.
 
 ---
 

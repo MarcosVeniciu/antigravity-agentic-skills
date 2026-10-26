@@ -41,6 +41,6 @@ flowchart TD
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/test-fix/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/test-fix/SKILL.md)
-* **Manual de Depuração:** [`skills/test-fix/references/EXECUTION.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/test-fix/references/EXECUTION.md)
-* **Template do Checklist de Diagnóstico:** [`skills/test-fix/resources/error_checklist_template.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/test-fix/resources/error_checklist_template.md)
+* **Instruções Principais:** [`skills/test-fix/SKILL.md`](../../skills/test-fix/SKILL.md)
+* **Manual de Depuração:** [`skills/test-fix/references/EXECUTION.md`](../../skills/test-fix/references/test-fix-protocol.md)
+* **Template do Checklist de Diagnóstico:** [`skills/test-fix/resources/error_checklist_template.md`](../../skills/test-fix/resources/diagnostic-report-template.md)

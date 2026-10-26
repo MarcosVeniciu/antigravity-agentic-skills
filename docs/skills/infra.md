@@ -32,4 +32,4 @@ flowchart TD
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/infra/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/infra/SKILL.md)
+* **Instruções Principais:** [`skills/infra/SKILL.md`](../../skills/infra/SKILL.md)

@@ -2,7 +2,7 @@
 
 O agente de **Auditoria Especializada** atua na **Fase 4 (Chat 4)** do ciclo de desenvolvimento de features. Sua missão é submeter o código refatorado a um rigoroso escrutínio multidomínio sob 5 óticas especializadas antes da publicação da branch de release.
 
-Alinhado com o [OWASP Code Review Guide v2](file:///e:/Codigos/antigravity-agentic-workflows/docs/references/OWASP_Code_Review_Guide_v2.pdf), o agente opera sob a estratégia **Script-First** e aplica **Taint Analysis** quando dados não confiáveis trafegam entre fronteiras.
+Alinhado com o [OWASP Code Review Guide v2](../references/OWASP_Code_Review_Guide_v2.pdf), o agente opera sob a estratégia **Script-First** e aplica **Taint Analysis** quando dados não confiáveis trafegam entre fronteiras.
 
 ---
 
@@ -38,13 +38,13 @@ flowchart LR
     D --> E["5. Resiliência"]
 ```
 
-| Domínio | Script Automatizado Executado Primeiro | Skill Especializada | Foco da Auditoria |
+| Domínio | Script Automatizado Executado Primeiro | Referência Operacional | Foco da Auditoria |
 | :--- | :--- | :--- | :--- |
-| **1. Arquitetura** | `python skills/review-architecture/scripts/check_arch_boundaries.py <arquivos>` | [`review-architecture`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/review-architecture.md) | Isolamento de camadas de domínio, Inversão de Dependência (DIP) e God Classes. |
-| **2. Segurança** | `python skills/review-security/scripts/scan_sinks.py <arquivos>` | [`review-security`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/review-security.md) | Sinks perigosos (OWASP v2), Race Conditions (TOCTOU), CSRF, CORS, CSPRNG e IDOR. |
-| **3. Qualidade** | `python skills/review-quality/scripts/ast_complexity.py <arquivos>` | [`review-quality`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/review-quality.md) | Complexidade ciclomática $V(G) \le 10$, aninhamento excessivo e legibilidade. |
-| **4. Performance** | Verificação de queries e loops $O(N^2)$ | [`review-performance`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/review-performance.md) | Queries N+1, lookups lineares repetitivos em loops e vazamento de sessões/handles. |
-| **5. Resiliência** | Inspeção de timeouts e retries | [`review-resilience`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/review-resilience.md) | Timeouts explícitos em chamadas externas, backoff exponencial e fallbacks. |
+| **1. Arquitetura** | `python skills/review/scripts/check_arch_boundaries.py <arquivos>` | [`review-architecture.md`](../../skills/review/references/review-architecture.md) | Isolamento de camadas de domínio, Inversão de Dependência (DIP) e God Classes. |
+| **2. Segurança** | `python skills/review/scripts/scan_sinks.py <arquivos>` | [`review-security.md`](../../skills/review/references/review-security.md) | Sinks perigosos (OWASP v2), Race Conditions (TOCTOU), CSRF, CORS, CSPRNG e IDOR. |
+| **3. Qualidade** | `python skills/review/scripts/ast_complexity.py <arquivos>` | [`review-quality.md`](../../skills/review/references/review-quality.md) | Complexidade ciclomática $V(G) \le 10$, aninhamento excessivo e legibilidade. |
+| **4. Performance** | Verificação de queries e loops $O(N^2)$ | [`review-performance.md`](../../skills/review/references/review-performance.md) | Queries N+1, lookups lineares repetitivos em loops e vazamento de sessões/handles. |
+| **5. Resiliência** | Inspeção de timeouts e retries | [`review-resilience.md`](../../skills/review/references/review-resilience.md) | Timeouts explícitos em chamadas externas, backoff exponencial e fallbacks. |
 
 **Para cada domínio:**
 1. Roda o script automatizado correspondente.
@@ -68,14 +68,21 @@ flowchart LR
 
 ---
 
-## 🔀 Arquitetura Router & Skills
+## 🧰 Estrutura da Skill no Antigravity 2.0
 
-* **Workflow Roteador:** [`workflows/review.md`](file:///e:/Codigos/antigravity-agentic-workflows/workflows/review.md)
-* **Skills Especializadas (Documentação & Instruções):**
-  * [`review-architecture`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/review-architecture.md) ([`skills/review-architecture/`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-architecture/))
-  * [`review-security`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/review-security.md) ([`skills/review-security/`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/))
-  * [`review-quality`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/review-quality.md) ([`skills/review-quality/`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-quality/))
-  * [`review-performance`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/review-performance.md) ([`skills/review-performance/`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-performance/))
-  * [`review-resilience`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/review-resilience.md) ([`skills/review-resilience/`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-resilience/))
-* **Referência de Conformidade:** [`docs/references/OWASP_Code_Review_Guide_v2.pdf`](file:///e:/Codigos/antigravity-agentic-workflows/docs/references/OWASP_Code_Review_Guide_v2.pdf)
-
+* **Manifesto da Skill (`SKILL.md`):** [`skills/review/SKILL.md`](../../skills/review/SKILL.md)
+* **Guias Operacionais (`references/`):**
+  * [`review-architecture.md`](../../skills/review/references/review-architecture.md) — Isolamento de camadas, acoplamento e DIP
+  * [`review-security.md`](../../skills/review/references/review-security.md) — Auditoria OWASP v2, Code Crawling e Taint Analysis
+  * [`review-quality.md`](../../skills/review/references/review-quality.md) — Análise estática AST e complexidade ciclomática
+  * [`review-performance.md`](../../skills/review/references/review-performance.md) — Volumetria, consultas N+1 e memória
+  * [`review-resilience.md`](../../skills/review/references/review-resilience.md) — Timeouts, retries com backoff e fallbacks
+* **Templates de Relatório (`resources/`):**
+  * [`audit-report-template.md`](../../skills/review/resources/audit-report-template.md) — Relatório pericial padrão ISO 19011
+* **Scripts Automatizados (`scripts/`):**
+  * [`check_arch_boundaries.py`](../../skills/review/scripts/check_arch_boundaries.py)
+  * [`scan_sinks.py`](../../skills/review/scripts/scan_sinks.py)
+  * [`ast_complexity.py`](../../skills/review/scripts/ast_complexity.py)
+* **Exemplos Práticos (`examples/`):**
+  * [`review-example.md`](../../skills/review/examples/review-example.md)
+* **Padrão de Conformidade:** [`OWASP Code Review Guide v2`](../references/OWASP_Code_Review_Guide_v2.pdf)

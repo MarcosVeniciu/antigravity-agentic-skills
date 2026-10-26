@@ -50,7 +50,7 @@ flowchart LR
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/review-quality/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-quality/SKILL.md)
-* **Script de Análise AST:** [`skills/review-quality/scripts/ast_complexity.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-quality/scripts/ast_complexity.py)
-* **Checklist de Qualidade:** [`skills/review-quality/references/checklist_quality.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-quality/references/checklist_quality.md)
-* **Template de Relatório:** [`skills/review-quality/resources/template_quality.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-quality/resources/template_quality.md)
+* **Instruções Principais:** [`skills/review-quality/SKILL.md`](../../skills/review/SKILL.md)
+* **Script de Análise AST:** [`skills/review-quality/scripts/ast_complexity.py`](../../skills/review/scripts/ast_complexity.py)
+* **Checklist de Qualidade:** [`skills/review-quality/references/checklist_quality.md`](../../skills/review/references/review-quality.md)
+* **Template de Relatório:** [`skills/review-quality/resources/template_quality.md`](../../skills/review/resources/audit-report-template.md)

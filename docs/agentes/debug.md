@@ -1,73 +1,54 @@
-# Agente Investigador Forense (`/debug`) - Análise de Causa Raiz (5 Whys)
+# Agente de Investigação Forense (`/debug`) - Root Cause Analysis (5 Whys)
 
-O agente **Investigador Forense** atua na resolução de bugs críticos, crashes de runtime, falhas de integração e comportamentos inesperados de infraestrutura que escaparam à barreira de testes unitários no Antigravity IDE. Ele conduz um diagnóstico metódico fundamentado na técnica dos **5 Whys (Cinco Porquês)**, buscando a falha sistêmica em vez de aplicar correções paliativas em sintomas superficiais.
+O agente de **Investigação Forense (`/debug`)** atua como suporte avançado para diagnóstico de falhas sistêmicas complexas, memory leaks, problemas de concorrência ou crashes em produção que exigem uma análise mais profunda do que um simples traceback de teste.
 
----
-
-## ⛔ Restrições Operacionais Rígidas
-
-1. **Mandatory Pause via Artefato Interativo:** Toda análise de causa raiz e proposta de remediação deve ser estruturada no artefato interativo `root_cause_analysis.md` com `RequestFeedback: true`. É terminantemente proibido alterar qualquer arquivo de código antes da aprovação explícita do usuário.
-2. **Proibido Suposições:** Se faltarem evidências essenciais (logs completos, variáveis de ambiente ou tracebacks), o agente deve pausar a execução e solicitar os dados ao usuário.
-3. **Blocos Bash Isolados:** Comandos de inspeção manual sugeridos devem ser fornecidos em blocos ````bash` limpos de linha única.
+Utiliza a metodologia estruturada dos **5 Whys** e princípios das normas NIST SP 800-86 e ISO 27037 para conduzir a rastreabilidade pericial de causa raiz.
 
 ---
 
-## 🚀 Pipeline de Execução em 5 Etapas
+## 🚀 Pipeline de Investigação Forense em 4 Passos
 
 ```mermaid
 flowchart TD
-    Crash["Bug Crítico / Crash de Runtime<br/>(/debug)"] --> E1["Etapa 1: Extração de Evidências & Traceback"]
-    E1 --> E2["Etapa 2: Mapeamento Histórico no Obsidian Vault<br/><i>Skill: obsidian</i>"]
-    E2 --> E3["Etapa 3: Metodologia dos 5 Whys<br/><i>Skill: debug</i>"]
-    E3 --> E4["Etapa 4: Artefato RCA Interativo<br/>(root_cause_analysis.md com RequestFeedback)"]
-    E4 --> Feedback{"Usuário Aprovou<br/>Plano de Ação?"}
-    Feedback --"Ajustar Análise"--> E3
-    Feedback --"Aprovado (Proceed)"--> E5["Etapa 5: Resolução Cirúrgica, Teste & Arquivamento<br/><i>Skills: test-fix + obsidian</i>"]
-    E5 --> Done["Bug Sanado e Lição Arquivada no Vault"]
+    Start["Entrada: Relato de Incidente / Crash"] --> P1["Passo 1: Coleta de Evidências Empíricas<br/><i>Logs, métricas, stack traces</i>"]
+    P1 --> P2["Passo 2: Metodologia dos 5 Whys<br/><i>Referência: debug-methodology.md</i>"]
+    P2 --> P3["Passo 3: Geração do Artefato RCA<br/><i>Template: rca-template.md</i>"]
+    P3 --> P4["Passo 4: Plano de Remediação & Handover"]
 ```
 
 ---
 
-### Etapa 1: Diagnóstico Inicial e Extração de Evidências
-1. Captura o código HTTP, a mensagem de exceção, o componente afetado e o traceback de execução.
-2. Identifica a branch ativa e o estado de trabalho do repositório.
+### Passo 1: Coleta de Evidências Empíricas
+1. Inspeciona logs de execução, métricas e stack traces anexados.
+2. Identifica o subsistema afetado e o histórico recente de commits na branch ativa.
+* 💡 **Referência Operacional:** [`skills/debug/references/debug-methodology.md`](../../skills/debug/references/debug-methodology.md)
 
 ---
 
-### Etapa 2: Mapeamento Histórico no Obsidian Vault
-1. Consulta a pasta `02-auditorias/` (`pivots-[slug].md`) para verificar se desvios arquiteturais passados impactaram o módulo.
-2. Inspeciona convenções e regras de negócio em `00-core-rules/` via [`skills/obsidian`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/obsidian.md).
+### Passo 2: Aplicação dos 5 Whys & Isolamento de Hipóteses
+1. Constrói a cadeia causal regressiva através de 5 iterações de questionamento técnico.
+2. Valida ou refuta hipóteses preliminares com evidências concretas do código.
 
 ---
 
-### Etapa 3: Aplicação da Metodologia dos 5 Whys
-1. Conduz a análise interrogativa regressiva em 5 níveis de profundidade:
-   * *Why 1:* Qual foi o sintoma imediato?
-   * *Why 2:* Por que a validação falhou?
-   * *Why 3:* Por que a entidade permitiu esse estado?
-   * *Why 4:* Por que o contrato da interface não blindou a entrada?
-   * *Why 5:* Qual foi a falha no design arquitetural ou premissa de negócio?
-* 💡 **Skill Utilizada:** [`skills/debug`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/debug.md)
+### Passo 3: Geração do Artefato RCA (Root Cause Analysis)
+1. Emite o relatório formal de causa raiz utilizando o template [`skills/debug/resources/rca-template.md`](../../skills/debug/resources/rca-template.md).
+2. O artefato é apresentado ao usuário com `RequestFeedback: true` para alinhamento da estratégia de correção.
 
 ---
 
-### Etapa 4: Artefato Interativo de Causa Raiz (RCA)
-1. Instancia o artefato `root_cause_analysis.md` (`RequestFeedback: true`) contendo as evidências coletadas, a árvore dos 5 Whys e as opções cirúrgicas de remediação.
-2. Aguarda a validação do usuário antes de realizar modificações em arquivos.
+### Passo 4: Plano de Remediação & Handover
+1. Define o plano de ação corretivo e preventivo.
+2. Orienta o desenvolvedor a aplicar a correção no ciclo apropriado (`/test-fix` para correções rápidas ou `/implement` se envolver novos contratos).
 
 ---
 
-### Etapa 5: Resolução, Prevenção e Registro de Lições Aprendidas
-1. Aplica a correção pontual no código de produção.
-2. Recomenda a criação imediata de um teste unitário ou de integração para blindar o sistema contra regressões futuras.
-3. Registra a resolução e os aprendizados em `02-auditorias/pivots-[slug].md` no Obsidian Vault via [`skills/obsidian`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/obsidian.md).
+## 🧰 Estrutura da Skill no Antigravity 2.0
 
----
-
-## 🔀 Arquitetura Router & Skills
-
-* **Workflow Roteador:** [`workflows/debug.md`](file:///e:/Codigos/antigravity-agentic-workflows/workflows/debug.md)
-* **Skills Associadas:**
-  * [`skills/debug/`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/debug.md)
-  * [`skills/obsidian/`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/obsidian.md)
-  * [`skills/test-fix/`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/test-fix.md)
+* **Manifesto da Skill (`SKILL.md`):** [`skills/debug/SKILL.md`](../../skills/debug/SKILL.md)
+* **Guias Operacionais (`references/`):**
+  * [`debug-methodology.md`](../../skills/debug/references/debug-methodology.md) — Metodologia forense dos 5 Whys e cadeia de custódia de evidências
+* **Templates de Causa Raiz (`resources/`):**
+  * [`rca-template.md`](../../skills/debug/resources/rca-template.md) — Template padrão NIST SP 800-86 e ISO 27037
+* **Exemplos Práticos (`examples/`):**
+  * [`debug-example.md`](../../skills/debug/examples/debug-example.md)

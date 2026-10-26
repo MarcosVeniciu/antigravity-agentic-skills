@@ -32,7 +32,7 @@ Após avaliar o relatório do script, o agente foca a leitura de código nos seg
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/review-architecture/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-architecture/SKILL.md)
-* **Checklist Detalhado:** [`skills/review-architecture/references/checklist_architecture.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-architecture/references/checklist_architecture.md)
-* **Script de Fronteiras:** [`skills/review-architecture/scripts/check_arch_boundaries.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-architecture/scripts/check_arch_boundaries.py)
-* **Template de Relatório:** [`skills/review-architecture/resources/template_architecture.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-architecture/resources/template_architecture.md)
+* **Instruções Principais:** [`skills/review-architecture/SKILL.md`](../../skills/review/SKILL.md)
+* **Checklist Detalhado:** [`skills/review-architecture/references/checklist_architecture.md`](../../skills/review/references/review-architecture.md)
+* **Script de Fronteiras:** [`skills/review-architecture/scripts/check_arch_boundaries.py`](../../skills/review/scripts/check_arch_boundaries.py)
+* **Template de Relatório:** [`skills/review-architecture/resources/template_architecture.md`](../../skills/review/resources/audit-report-template.md)

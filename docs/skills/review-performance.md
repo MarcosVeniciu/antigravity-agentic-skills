@@ -43,6 +43,6 @@ flowchart LR
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/review-performance/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-performance/SKILL.md)
-* **Checklist de Performance:** [`skills/review-performance/references/checklist_performance.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-performance/references/checklist_performance.md)
-* **Template de Relatório:** [`skills/review-performance/resources/template_performance.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-performance/resources/template_performance.md)
+* **Instruções Principais:** [`skills/review-performance/SKILL.md`](../../skills/review/SKILL.md)
+* **Checklist de Performance:** [`skills/review-performance/references/checklist_performance.md`](../../skills/review/references/review-performance.md)
+* **Template de Relatório:** [`skills/review-performance/resources/template_performance.md`](../../skills/review/resources/audit-report-template.md)

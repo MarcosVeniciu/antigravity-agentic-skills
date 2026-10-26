@@ -1,63 +1,41 @@
-# Agente de Infraestrutura & Dependências (`/infra`) - Gestão Segura de Manifests
+# Agente de Infraestrutura & Dependências (`/infra`) - Gestão Segura de Ambiente
 
-O agente de **Infraestrutura & Dependências** atua na gestão de pacotes, arquivos de build, imagens Docker e variáveis de ambiente no Antigravity IDE. Ele garante a consistência técnica das dependências e a integridade do ambiente sem alterar desnecessariamente a lógica de aplicação e sem expor segredos sensíveis.
+O agente de **Infraestrutura & Dependências (`/infra`)** atua no gerenciamento seguro de arquivos de configuração, manifestos de pacotes (`package.json`, `pyproject.toml`, `requirements.txt`), contêineres Docker e variáveis de ambiente no Antigravity IDE.
 
----
-
-## ⛔ Restrições Operacionais Rígidas
-
-1. **🚫 Sem Atualizações Cegas (*No Blind Upgrades*):** Modifica estritamente as dependências solicitadas ou necessárias para sanar incompatibilidades pontuais. É proibido rodar comandos amplos de atualização sem necessidade (`npm update`, `pip install --upgrade`).
-2. **🔒 Zero Exposição de Segredos:** É terminantemente proibido incluir tokens de acesso, chaves de API, senhas ou certificados privados em arquivos versionados.
-3. **📋 Sincronização Obrigatória com `.env.example`:** Toda nova variável de ambiente introduzida pelo projeto deve obrigatoriamente ter uma entrada com valores mock/falsos ilustrativos em `.env.example`.
-4. **Escopo Estrito de Infra:** Não altera código de produção ou regras de negócio, a menos que seja estritamente necessário para compatibilidade sintática de build.
+Sua responsabilidade principal é assegurar que o ambiente técnico seja atualizado sem vazamento de credenciais ou degradação de compatibilidade.
 
 ---
 
-## 🚀 Pipeline de Execução em 4 Etapas
+## ⛔ Regras Invioláveis de Segurança
 
-```mermaid
-flowchart TD
-    Req["Demanda de Dependência / Docker / Env<br/>(/infra)"] --> S1["Etapa 1: Ativação da Skill & Regras Técnicas<br/><i>Skill: infra</i>"]
-    S1 --> S2["Etapa 2: Diagnóstico & Mapeamento de Manifests<br/>(package.json, pyproject.toml, Dockerfile, etc.)"]
-    S2 --> S3["Etapa 3: Aplicação Cirúrgica de Mudanças<br/>• Atualizar manifests<br/>• Atualizar .env.example (mock)"]
-    S3 --> S4["Etapa 4: Validação de Sintaxe & Handover"]
-    S4 --> Next["<b>[NEXT STEP]</b><br/>Recomenda /implement ou /test-fix"]
-```
+1. **🚫 Blindagem Absoluta contra Vazamento de Segredos:** Jamais comita arquivos `.env` reais, chaves privadas (`.pem`), tokens de API ou credenciais de banco. Todas as novas variáveis devem ser documentadas exclusivamente em `.env.example` com valores mock/placeholder.
+2. **🚫 Atualizações Declarativas:** Toda adição ou remoção de pacote deve ser refletida no manifesto oficial da stack e travada no respectivo arquivo de lock (`poetry.lock`, `package-lock.json`, etc.).
 
 ---
 
-### Etapa 1: Ativação da Skill e Regras Técnicas
-1. Carrega as diretrizes de governança de infraestrutura.
-2. Inspeciona as convenções em `00-core-rules/conventions.md` no Obsidian Vault via [`skills/obsidian`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/obsidian.md).
-* 💡 **Skill Utilizada:** [`skills/infra`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/infra.md)
+## 🚀 Pipeline de Gestão de Infraestrutura
+
+1. **Diagnóstico do Ambiente:** Inspeciona o estado atual dos manifestos e containers.
+2. **Validação de Variáveis de Ambiente:**
+   ```bash
+   python skills/infra/scripts/validate_env.py
+   ```
+3. **Aplicação de Mudanças:** Executa a atualização de dependências ou configurações de Docker.
+4. **Espelhamento em `.env.example`:** Assegura que novas variáveis necessárias estejam catalogadas sem dados sensíveis.
+* 💡 **Referência Operacional:** [`skills/infra/references/infra-setup.md`](../../skills/infra/references/infra-setup.md)
+* 📋 **Template de Ambiente:** [`skills/infra/resources/env-template.md`](../../skills/infra/resources/env-template.md)
+* 🛠️ **Script de Validação:** [`skills/infra/scripts/validate_env.py`](../../skills/infra/scripts/validate_env.py)
 
 ---
 
-### Etapa 2: Diagnóstico e Mapeamento de Manifestos
-Identifica os arquivos de configuração presentes na raiz do projeto:
-* **Node / TypeScript:** `package.json`, `package-lock.json`, `tsconfig.json`.
-* **Python:** `pyproject.toml`, `requirements.txt`, `poetry.lock`.
-* **Flutter / Dart:** `pubspec.yaml`, `analysis_options.yaml`.
-* **Contêineres:** `Dockerfile`, `docker-compose.yml`.
+## 🧰 Estrutura da Skill no Antigravity 2.0
 
----
-
-### Etapa 3: Aplicação Cirúrgica de Mudanças
-1. Insere ou ajusta a versão da biblioteca de forma compatível com a stack existente.
-2. Se variáveis de configuração foram adicionadas, atualiza `.env.example` com placeholders seguros.
-
----
-
-### Etapa 4: Validação de Sintaxe e Handover
-1. Valida a sintaxe dos manifests (validação de JSON/YAML ou linter).
-2. Emite a recomendação de transição:
-   > **[NEXT STEP]** ➡️ *"⚙️ Configurações de infraestrutura e dependências atualizadas com sucesso! Prossiga com o ciclo de desenvolvimento via `/implement` ou valide alterações utilizando `/test-fix`."*
-
----
-
-## 🔀 Arquitetura Router & Skills
-
-* **Workflow Roteador:** [`workflows/infra.md`](file:///e:/Codigos/antigravity-agentic-workflows/workflows/infra.md)
-* **Skills Associadas:**
-  * [`skills/infra/`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/infra.md)
-  * [`skills/obsidian/`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/obsidian.md)
+* **Manifesto da Skill (`SKILL.md`):** [`skills/infra/SKILL.md`](../../skills/infra/SKILL.md)
+* **Guias Operacionais (`references/`):**
+  * [`infra-setup.md`](../../skills/infra/references/infra-setup.md) — Gestão segura de pacotes, contêineres e variáveis
+* **Templates de Ambiente (`resources/`):**
+  * [`env-template.md`](../../skills/infra/resources/env-template.md) — Modelo seguro para catalogação de variáveis em `.env.example`
+* **Scripts de Validação (`scripts/`):**
+  * [`validate_env.py`](../../skills/infra/scripts/validate_env.py) — Validador de integridade entre `.env` e `.env.example`
+* **Exemplos Práticos (`examples/`):**
+  * [`infra-example.md`](../../skills/infra/examples/infra-example.md)

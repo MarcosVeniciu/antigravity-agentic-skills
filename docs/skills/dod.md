@@ -58,5 +58,5 @@ flowchart LR
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/dod/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/dod/SKILL.md)
-* **Template do Living DoD:** [`skills/dod/resources/template_dod.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/dod/resources/template_dod.md)
+* **Instruções Principais:** [`skills/dod/SKILL.md`](../../skills/plan/references/plan-dod.md)
+* **Template do Living DoD:** [`skills/dod/resources/template_dod.md`](../../skills/plan/references/plan-dod.md)

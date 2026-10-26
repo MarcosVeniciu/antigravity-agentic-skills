@@ -91,5 +91,5 @@ test("should prevent double decrement on concurrent stock reservation", () async
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/tdd-tests/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/tdd-tests/SKILL.md)
-* **Guia de Padrões AAA & Mocks:** [`skills/tdd-tests/references/aaa_mock_patterns.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/tdd-tests/references/aaa_mock_patterns.md)
+* **Instruções Principais:** [`skills/tdd-tests/SKILL.md`](../../skills/implement/SKILL.md)
+* **Guia de Padrões AAA & Mocks:** [`skills/tdd-tests/references/aaa_mock_patterns.md`](../../skills/implement/references/tdd-test.md)

@@ -51,8 +51,8 @@ flowchart TD
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/obsidian/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/obsidian/SKILL.md)
-* **Procedimento dos Modos:** [`skills/obsidian/references/EXECUTION.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/obsidian/references/EXECUTION.md)
-* **Template de ADR:** [`skills/obsidian/resources/template_adr.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/obsidian/resources/template_adr.md)
-* **Template de Pivô Arquitetural:** [`skills/obsidian/resources/template_pivot.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/obsidian/resources/template_pivot.md)
-* **Template de Regra de Domínio:** [`skills/obsidian/resources/template_domain_rule.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/obsidian/resources/template_domain_rule.md)
+* **Instruções Principais:** [`skills/obsidian/SKILL.md`](../../skills/obsidian/SKILL.md)
+* **Procedimento dos Modos:** [`skills/obsidian/references/EXECUTION.md`](../../skills/obsidian/references/obsidian-protocol.md)
+* **Template de ADR:** [`skills/obsidian/resources/template_adr.md`](../../skills/obsidian/resources/note-template.md)
+* **Template de Pivô Arquitetural:** [`skills/obsidian/resources/template_pivot.md`](../../skills/obsidian/resources/note-template.md)
+* **Template de Regra de Domínio:** [`skills/obsidian/resources/template_domain_rule.md`](../../skills/obsidian/resources/note-template.md)

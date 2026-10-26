@@ -28,10 +28,10 @@ Ao investigar regras e arquitetura, a skill orienta a busca pelas pastas canôni
 
 ## ✅ Padrões de Citação e Rastreabilidade
 1. **Notas do Vault:** Sempre citadas utilizando a sintaxe nativa de wikilinks `[[nome-da-nota]]`.
-2. **Arquivos do Repositório:** Sempre citados com links Markdown com esquema `file:///` apontando para o arquivo ou linhas exatas (ex: `[auth_service.py](file:///e:/Codigos/.../auth_service.py#L25-L40)`).
+2. **Arquivos do Repositório:** Sempre citados com links Markdown com esquema `file:///` apontando para o arquivo ou linhas exatas (ex: `` `[auth_service.py](file:///path/to/auth_service.py#L25-L40)` ``).
 3. **Reconhecimento de Incerteza:** Caso determinado comportamento não esteja documentado formalmente nem possa ser inferido com 100% de certeza pelo código, a IA deve declarar explicitamente essa ausência ao usuário.
 
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/ask/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/ask/SKILL.md)
+* **Instruções Principais:** [`skills/ask/SKILL.md`](../../skills/ask/SKILL.md)

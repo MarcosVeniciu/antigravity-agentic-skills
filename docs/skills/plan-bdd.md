@@ -43,6 +43,6 @@ flowchart LR
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/plan-bdd/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-bdd/SKILL.md)
-* **Template de BDD:** [`skills/plan-bdd/resources/template_bdd.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-bdd/resources/template_bdd.md)
-* **Exemplo Prático de Referência:** [`skills/plan-bdd/examples/bdd_checkout_example.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-bdd/examples/bdd_checkout_example.md)
+* **Instruções Principais:** [`skills/plan-bdd/SKILL.md`](../../skills/plan/SKILL.md)
+* **Template de BDD:** [`skills/plan-bdd/resources/template_bdd.md`](../../skills/plan/resources/plan-template.md)
+* **Exemplo Prático de Referência:** [`skills/plan-bdd/examples/bdd_checkout_example.md`](../../skills/plan/references/plan-bdd.md)

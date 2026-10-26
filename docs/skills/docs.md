@@ -45,6 +45,6 @@ flowchart TD
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/docs/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/docs/SKILL.md)
-* **Template do README Raiz:** [`skills/docs/resources/template_readme_root.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/docs/resources/template_readme_root.md)
-* **Template do README Local:** [`skills/docs/resources/template_readme_local.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/docs/resources/template_readme_local.md)
+* **Instruções Principais:** [`skills/docs/SKILL.md`](../../skills/docs/SKILL.md)
+* **Template do README Raiz:** [`skills/docs/resources/template_readme_root.md`](../../skills/docs/resources/doc-template.md)
+* **Template do README Local:** [`skills/docs/resources/template_readme_local.md`](../../skills/docs/resources/doc-template.md)

@@ -43,5 +43,5 @@ flowchart LR
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/tdd-code/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/tdd-code/SKILL.md)
-* **Template de Pivô Arquitetural:** [`skills/tdd-code/resources/pivot_template.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/tdd-code/resources/pivot_template.md)
+* **Instruções Principais:** [`skills/tdd-code/SKILL.md`](../../skills/implement/SKILL.md)
+* **Template de Pivô Arquitetural:** [`skills/tdd-code/resources/pivot_template.md`](../../skills/implement/references/tdd-code.md)

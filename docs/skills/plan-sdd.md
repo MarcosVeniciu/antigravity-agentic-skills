@@ -40,8 +40,8 @@ flowchart TD
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/plan-sdd/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-sdd/SKILL.md)
-* **Manual de Modelagem SDD:** [`skills/plan-sdd/references/sdd_execution.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-sdd/references/sdd_execution.md)
-* **Template de SDD:** [`skills/plan-sdd/resources/template_sdd.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-sdd/resources/template_sdd.md)
-* **Exemplo Prático de Arquitetura:** [`skills/plan-sdd/examples/sdd_checkout_example.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-sdd/examples/sdd_checkout_example.md)
-* **Script de Validação de Contratos:** [`skills/plan-sdd/scripts/validate_sdd_contracts.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-sdd/scripts/validate_sdd_contracts.py)
+* **Instruções Principais:** [`skills/plan-sdd/SKILL.md`](../../skills/plan/SKILL.md)
+* **Manual de Modelagem SDD:** [`skills/plan-sdd/references/sdd_execution.md`](../../skills/plan/references/plan-sdd.md)
+* **Template de SDD:** [`skills/plan-sdd/resources/template_sdd.md`](../../skills/plan/resources/plan-template.md)
+* **Exemplo Prático de Arquitetura:** [`skills/plan-sdd/examples/sdd_checkout_example.md`](../../skills/plan/examples/plan-example.md)
+* **Script de Validação de Contratos:** [`skills/plan-sdd/scripts/validate_sdd_contracts.py`](../../skills/plan/scripts/validate_sdd_contracts.py)

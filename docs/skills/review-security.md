@@ -7,7 +7,7 @@ Operando sob a estratégia **Script-First**, a auditoria combina análise estát
 ---
 
 ## 📚 Referência Externa Fundamental
-* **Guia Base:** [`docs/references/OWASP_Code_Review_Guide_v2.pdf`](file:///e:/Codigos/antigravity-agentic-workflows/docs/references/OWASP_Code_Review_Guide_v2.pdf) (OWASP Code Review Guide 2.0).
+* **Guia Base:** [`docs/references/OWASP_Code_Review_Guide_v2.pdf`](../references/OWASP_Code_Review_Guide_v2.pdf) (OWASP Code Review Guide 2.0).
 
 ---
 
@@ -17,22 +17,22 @@ A tabela abaixo consolida a conformidade de ponta a ponta entre os 24 capítulos
 
 | Capítulo OWASP v2 | Tema Central do Guia | Status | Onde foi Implementado / Mecanismo de Garantia |
 | :--- | :--- | :---: | :--- |
-| **Cap. 5 & 6** | Metodologia, S-SDLC, Triage & Scope | 🟢 **CONCLUÍDO** | [`workflows/review.md`](file:///e:/Codigos/antigravity-agentic-workflows/workflows/review.md) com permissão de **Call Hierarchy (Taint Analysis)** e estratégia **Script-First**. |
-| **Cap. 6.11 & Apêndices** | **Code Crawling & Dangerous Sinks** | 🟢 **CONCLUÍDO** | Script nativo [`scan_sinks.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/scripts/scan_sinks.py) poliglota (Python, JS/TS, Dart) executando análise estática léxica e regex estruturada por chamadas inseguras e sinks perigosos. |
-| **Cap. 7** | A1 - Injeções (SQL, NoSQL, OS Command) | 🟢 **CONCLUÍDO** | Detecção automatizada em [`scan_sinks.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/scripts/scan_sinks.py) (`SEC-CMD-01` e `SEC-SQL-01`) + [`checklist_security.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/references/checklist_security.md). |
+| **Cap. 5 & 6** | Metodologia, S-SDLC, Triage & Scope | 🟢 **CONCLUÍDO** | [`workflows/review.md`](../../skills/review/SKILL.md) com permissão de **Call Hierarchy (Taint Analysis)** e estratégia **Script-First**. |
+| **Cap. 6.11 & Apêndices** | **Code Crawling & Dangerous Sinks** | 🟢 **CONCLUÍDO** | Script nativo [`scan_sinks.py`](../../skills/review/scripts/scan_sinks.py) poliglota (Python, JS/TS, Dart) executando análise estática léxica e regex estruturada por chamadas inseguras e sinks perigosos. |
+| **Cap. 7** | A1 - Injeções (SQL, NoSQL, OS Command) | 🟢 **CONCLUÍDO** | Detecção automatizada em [`scan_sinks.py`](../../skills/review/scripts/scan_sinks.py) (`SEC-CMD-01` e `SEC-SQL-01`) + [`checklist_security.md`](../../skills/review/references/review-security.md). |
 | **Cap. 8** | A2 - Autenticação & Gestão de Sessão | 🟢 **CONCLUÍDO** | Checklist (Item 2) cobrindo regeneração de sessão pós-login (anti-session fixation), invalidação no logout e flags seguras (`HttpOnly`, `Secure`, `SameSite`). |
-| **Cap. 9** | A3 - Cross-Site Scripting (XSS) & DOM XSS | 🟢 **CONCLUÍDO** | Detecção estática em [`scan_sinks.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/scripts/scan_sinks.py) (`SEC-XSS-01` para `innerHTML` e `dangerouslySetInnerHTML`) + codificação contextual. |
-| **Cap. 10 & 13** | A4/A7 - IDOR & Quebra de Controle de Acesso | 🟢 **CONCLUÍDO** | Checklist (`user_id = current_user.id`) + **Padrão de teste unitário AAA de IDOR (403)** em [`aaa_mock_patterns.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/tdd-tests/references/aaa_mock_patterns.md). |
-| **Cap. 11** | A5 - Security Misconfiguration (CORS, Debug) | 🟢 **CONCLUÍDO** | Detecção estática em [`scan_sinks.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/scripts/scan_sinks.py) (`SEC-CORS-01` flagrando `*` com credenciais) + regras de hardening. |
-| **Cap. 12** | A6 - Criptografia & Entropia (CSPRNG) | 🟢 **CONCLUÍDO** | Detecção estática em [`scan_sinks.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/scripts/scan_sinks.py) (`SEC-PRNG-01` proibindo `random`/`Math.random` em auth e exigindo `secrets`/`crypto`). |
-| **Cap. 14** | **A8 - Cross-Site Request Forgery (CSRF)** | 🟢 **CONCLUÍDO** | Proteção em mutações no [`checklist_security.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/references/checklist_security.md) + **[STAGE 7]** no runner de [`test-integration`](file:///e:/Codigos/antigravity-agentic-workflows/skills/test-integration/references/e2e_runner_pattern.md). |
+| **Cap. 9** | A3 - Cross-Site Scripting (XSS) & DOM XSS | 🟢 **CONCLUÍDO** | Detecção estática em [`scan_sinks.py`](../../skills/review/scripts/scan_sinks.py) (`SEC-XSS-01` para `innerHTML` e `dangerouslySetInnerHTML`) + codificação contextual. |
+| **Cap. 10 & 13** | A4/A7 - IDOR & Quebra de Controle de Acesso | 🟢 **CONCLUÍDO** | Checklist (`user_id = current_user.id`) + **Padrão de teste unitário AAA de IDOR (403)** em [`aaa_mock_patterns.md`](../../skills/implement/references/tdd-test.md). |
+| **Cap. 11** | A5 - Security Misconfiguration (CORS, Debug) | 🟢 **CONCLUÍDO** | Detecção estática em [`scan_sinks.py`](../../skills/review/scripts/scan_sinks.py) (`SEC-CORS-01` flagrando `*` com credenciais) + regras de hardening. |
+| **Cap. 12** | A6 - Criptografia & Entropia (CSPRNG) | 🟢 **CONCLUÍDO** | Detecção estática em [`scan_sinks.py`](../../skills/review/scripts/scan_sinks.py) (`SEC-PRNG-01` proibindo `random`/`Math.random` em auth e exigindo `secrets`/`crypto`). |
+| **Cap. 14** | **A8 - Cross-Site Request Forgery (CSRF)** | 🟢 **CONCLUÍDO** | Proteção em mutações no [`checklist_security.md`](../../skills/review/references/review-security.md) + **[STAGE 7]** no runner de [`test-integration`](../../skills/release/references/release-checklist.md). |
 | **Cap. 15** | A9 - Componentes Vulneráveis (SCA) | 🟢 **CONCLUÍDO** | Checklist de auditoria de lockfiles e dependências com CVEs conhecidas. |
-| **Cap. 16** | **A10 - Open Redirects & SSRF** | 🟢 **CONCLUÍDO** | Detecção estática em [`scan_sinks.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/scripts/scan_sinks.py) (`SEC-REDIR-01`) + **[STAGE 8]** no runner de [`test-integration`](file:///e:/Codigos/antigravity-agentic-workflows/skills/test-integration/references/e2e_runner_pattern.md). |
-| **Cap. 17 & 18** | HTML5 (Storage/PostMessage) & CORS/SOP | 🟢 **CONCLUÍDO** | Coberto via `SEC-CORS-01` e `SEC-XSS-01` no [`scan_sinks.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/scripts/scan_sinks.py) + Item 6 do [`checklist_security.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/references/checklist_security.md). |
-| **Cap. 19** | Logging & Log Injection (CRLF) | 🟢 **CONCLUÍDO** | Sanitização de `\r\n` no [`checklist_security.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/references/checklist_security.md) (Item 8) + teste unitário com `caplog` em [`aaa_mock_patterns.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/tdd-tests/references/aaa_mock_patterns.md). |
-| **Cap. 20** | Error Handling & Fail-Safe Defaults | 🟢 **CONCLUÍDO** | Princípio de *Fail Secure* no checklist + teste unitário de payload de erro sem vazamento de traceback em [`aaa_mock_patterns.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/tdd-tests/references/aaa_mock_patterns.md). |
+| **Cap. 16** | **A10 - Open Redirects & SSRF** | 🟢 **CONCLUÍDO** | Detecção estática em [`scan_sinks.py`](../../skills/review/scripts/scan_sinks.py) (`SEC-REDIR-01`) + **[STAGE 8]** no runner de [`test-integration`](../../skills/release/references/release-checklist.md). |
+| **Cap. 17 & 18** | HTML5 (Storage/PostMessage) & CORS/SOP | 🟢 **CONCLUÍDO** | Coberto via `SEC-CORS-01` e `SEC-XSS-01` no [`scan_sinks.py`](../../skills/review/scripts/scan_sinks.py) + Item 6 do [`checklist_security.md`](../../skills/review/references/review-security.md). |
+| **Cap. 19** | Logging & Log Injection (CRLF) | 🟢 **CONCLUÍDO** | Sanitização de `\r\n` no [`checklist_security.md`](../../skills/review/references/review-security.md) (Item 8) + teste unitário com `caplog` em [`aaa_mock_patterns.md`](../../skills/implement/references/tdd-test.md). |
+| **Cap. 20** | Error Handling & Fail-Safe Defaults | 🟢 **CONCLUÍDO** | Princípio de *Fail Secure* no checklist + teste unitário de payload de erro sem vazamento de traceback em [`aaa_mock_patterns.md`](../../skills/implement/references/tdd-test.md). |
 | **Cap. 21 & 22** | Alertas de Segurança & Defesa Ativa (AppSensor) | ⚪ **N/A (Runtime)** | Requisito de telemetria de produção (WAF / SIEM), fora do ciclo estático de código-fonte de desenvolvimento. |
-| **Cap. 23** | **Race Conditions & Concorrência (TOCTOU)** | 🟢 **CONCLUÍDO** | Item 5 no [`checklist_security.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/references/checklist_security.md) (row locks / `SELECT FOR UPDATE`) + testes paralelos em [`aaa_mock_patterns.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/tdd-tests/references/aaa_mock_patterns.md) + **[STAGE 9]** em [`test-integration`](file:///e:/Codigos/antigravity-agentic-workflows/skills/test-integration/references/e2e_runner_pattern.md). |
+| **Cap. 23** | **Race Conditions & Concorrência (TOCTOU)** | 🟢 **CONCLUÍDO** | Item 5 no [`checklist_security.md`](../../skills/review/references/review-security.md) (row locks / `SELECT FOR UPDATE`) + testes paralelos em [`aaa_mock_patterns.md`](../../skills/implement/references/tdd-test.md) + **[STAGE 9]** em [`test-integration`](../../skills/release/references/release-checklist.md). |
 | **Cap. 24** | Gerenciamento de Memória & Buffer Overflows | ⚪ **N/A (Garbage Collection)** | Não aplicável a linguagens com gerenciamento automático de memória (Python, Node/TS, Dart). Aplicável estritamente a C/C++ puro. |
 
 ---
@@ -50,7 +50,7 @@ A tabela abaixo consolida a conformidade de ponta a ponta entre os 24 capítulos
 
 ## 🛠️ Ferramenta de Code Crawling: `scan_sinks.py`
 
-O script [`scan_sinks.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/scripts/scan_sinks.py) executa uma varredura sintática estática contra os arquivos da branch:
+O script [`scan_sinks.py`](../../skills/review/scripts/scan_sinks.py) executa uma varredura sintática estática contra os arquivos da branch:
 
 ### Como Executar:
 ```bash
@@ -72,7 +72,7 @@ python skills/review-security/scripts/scan_sinks.py <arquivos_alterados>
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/review-security/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/SKILL.md)
-* **Checklist Detalhado:** [`skills/review-security/references/checklist_security.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/references/checklist_security.md)
-* **Script de Varredura:** [`skills/review-security/scripts/scan_sinks.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/scripts/scan_sinks.py)
-* **Template de Relatório:** [`skills/review-security/resources/template_security.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-security/resources/template_security.md)
+* **Instruções Principais:** [`skills/review-security/SKILL.md`](../../skills/review/SKILL.md)
+* **Checklist Detalhado:** [`skills/review-security/references/checklist_security.md`](../../skills/review/references/review-security.md)
+* **Script de Varredura:** [`skills/review-security/scripts/scan_sinks.py`](../../skills/review/scripts/scan_sinks.py)
+* **Template de Relatório:** [`skills/review-security/resources/template_security.md`](../../skills/review/resources/audit-report-template.md)

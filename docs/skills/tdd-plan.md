@@ -33,6 +33,6 @@ A skill instancia dois artefatos interativos no Antigravity IDE:
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/tdd-plan/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/tdd-plan/SKILL.md)
-* **Template do Plano de Implementação:** [`skills/tdd-plan/resources/plan_template.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/tdd-plan/resources/plan_template.md)
-* **Template da Lista de Tarefas:** [`skills/tdd-plan/resources/task_template.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/tdd-plan/resources/task_template.md)
+* **Instruções Principais:** [`skills/tdd-plan/SKILL.md`](../../skills/implement/SKILL.md)
+* **Template do Plano de Implementação:** [`skills/tdd-plan/resources/plan_template.md`](../../skills/implement/references/tdd-test.md)
+* **Template da Lista de Tarefas:** [`skills/tdd-plan/resources/task_template.md`](../../skills/implement/references/tdd-test.md)

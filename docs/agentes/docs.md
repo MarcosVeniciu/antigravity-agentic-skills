@@ -17,10 +17,11 @@ O agente de **Documentação Técnica** atua na **Fase 5 (Chat 5)** do ciclo de 
 ```mermaid
 flowchart TD
     Start["Início do Chat 5 (/docs)"] --> E1["Etapa 1: Resolução de Contexto & Escopo<br/><i>git branch + BDD/SDD/DoD + Manifests</i>"]
-    E1 --> E2["Etapa 2: Atualização de READMEs & Docstrings<br/><i>Skill: docs</i>"]
-    E2 --> CheckDoc{"Documentação Completa &<br/>Rastreabilidade Obsidian?"}
-    CheckDoc --"Sim"--> E3["Etapa 3: Finalização do Living DoD<br/><i>Skill: dod</i>"]
-    E3 --> E4["Etapa 4: Commit Semântico & Congelamento<br/><i>Skill: git (Modo 3)</i>"]
+    E1 --> E2["Etapa 2: Atualização de READMEs & Docstrings<br/><i>Referência: docs-guidelines.md</i>"]
+    CheckDoc{"Documentação Completa &<br/>Rastreabilidade Obsidian?"}
+    E2 --> CheckDoc
+    CheckDoc --"Sim"--> E3["Etapa 3: Finalização do Living DoD<br/><i>Referência: dod</i>"]
+    E3 --> E4["Etapa 4: Commit Semântico & Congelamento<br/><i>Referência: git</i>"]
     E4 --> Finish["<b>[FEATURE 100% CONCLUÍDA]</b><br/>Branch feature/[slug] congelada para /release"]
 ```
 
@@ -44,7 +45,8 @@ flowchart TD
    Ref: Obsidian note [[sdd-auth-mfa]]
    """
    ```
-* 💡 **Skill Utilizada:** [`skills/docs`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/docs.md)
+* 💡 **Referência Operacional:** [`skills/docs/references/docs-guidelines.md`](../../skills/docs/references/docs-guidelines.md)
+* 📋 **Template de Documentação:** [`skills/docs/resources/doc-template.md`](../../skills/docs/resources/doc-template.md)
 
 ---
 
@@ -54,25 +56,25 @@ flowchart TD
    - [x] Documentação técnica atualizada via /docs (READMEs e docstrings com rastreabilidade).
    ```
 2. Valida matematicamente que todos os critérios funcionais, de auditoria e de documentação da feature estão 100% checados.
-* 💡 **Skill Utilizada:** [`skills/dod`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/dod.md)
 
 ---
 
 ### Etapa 4: Commit Semântico & Congelamento da Feature
-1. Grava o commit semântico final da feature via `skills/git` (Modo 3 - Phase Squash):
+1. Grava o commit semântico final da feature:
    ```bash
    git commit -am "docs(feature): technical documentation and docstrings for [slug]"
    ```
 2. **Fechamento e Handover:**
    > **[NEXT STEP]** ➡️ *"📚 Fase 5 (Documentação) concluída com sucesso! O ciclo de vida individual desta feature está 100% encerrado. A branch `feature/[slug]` encontra-se congelada e pronta para ser agrupada na próxima publicação de versão através do workflow `/release`."*
-* 💡 **Skill Utilizada:** [`skills/git`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/git.md)
 
 ---
 
-## 🔀 Arquitetura Router & Skills
+## 🧰 Estrutura da Skill no Antigravity 2.0
 
-* **Workflow Roteador:** [`workflows/docs.md`](file:///e:/Codigos/antigravity-agentic-workflows/workflows/docs.md)
-* **Skills Associadas:**
-  * [`skills/docs/`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/docs.md)
-  * [`skills/dod/`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/dod.md)
-  * [`skills/git/`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/git.md)
+* **Manifesto da Skill (`SKILL.md`):** [`skills/docs/SKILL.md`](../../skills/docs/SKILL.md)
+* **Guias Operacionais (`references/`):**
+  * [`docs-guidelines.md`](../../skills/docs/references/docs-guidelines.md) — Diretrizes de escrita técnica e docstrings com links ao Obsidian
+* **Templates de Documentação (`resources/`):**
+  * [`doc-template.md`](../../skills/docs/resources/doc-template.md)
+* **Exemplos Práticos (`examples/`):**
+  * [`docs-example.md`](../../skills/docs/examples/docs-example.md)

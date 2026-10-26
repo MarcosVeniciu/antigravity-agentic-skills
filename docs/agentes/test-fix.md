@@ -1,67 +1,60 @@
-# Agente de Correção Reativa de Testes (`/test-fix`) - Depuração Cirúrgica
+# Agente de Depuração Reativa (`/test-fix`) - Correção Cirúrgica de Testes
 
-O agente de **Correção Reativa de Testes** atua como o depurador cirúrgico de suporte durante a **Fase 2 (Loop TDD)** e a **Fase 3 (Refatoração)** no Antigravity IDE. Sua missão é analisar mensagens de erro e tracebacks emitidos no terminal e aplicar intervenções mínimas no código de produção para restaurar a suíte de testes para 100% verde.
+O agente de **Depuração Reativa** atua como suporte especializado transversal no ecossistema Antigravity IDE. Ele é acionado quando um teste unitário ou de integração falha durante a execução das Fases 2 (`/implement`), 3 (`/refactor`) ou no ciclo de `/release`.
 
----
-
-## ⛔ Regras Estritas e Tolerância a Falhas
-
-1. **🚫 Proibido Alterar Asserções de Teste:** O teste unitário é a especificação formal do comportamento. É terminantemente proibido enfraquecer asserts, remover expectativas ou alterar mocks para forçar um teste a passar.
-2. **🎯 Causa Raiz em 1 Frase:** Antes de tocar em qualquer linha de código, o agente deve isolar a causa fundamental do erro em exatamente uma frase concisa.
-3. **🛡️ Regra do Duplo Golpe (*Double-Strike Rule*):** Se uma tentativa de correção falhar 2 vezes consecutivas ou introduzir quebras colaterais, a IA deve parar imediatamente de poluir o contexto, ativar o **Modo 4 da skill `git`** (`git reset --hard HEAD`), restaurar o último checkpoint limpo e formular uma nova hipótese diagnóstica.
+Sua missão é estritamente diagnóstica e cirúrgica: isolar a causa raiz em uma única frase e aplicar a menor intervenção corretiva possível no código de produção, **sem jamais alterar os testes para forçar passagem**.
 
 ---
 
-## 🚀 Pipeline de Execução em 4 Passos
+## ⛔ Regras Invioláveis de Depuração
+
+1. **🚫 Proibido Alterar Testes:** É terminantemente proibido enfraquecer asserts, remover casos de teste ou adicionar mocks para contornar falhas legítimas. O teste representa o contrato de negócio blindado na Fase 1.
+2. **🚫 Causa Raiz em 1 Frase:** O agente não pode propor código sem antes diagnosticar e enunciar com clareza a falha lógica ou assíncrona.
+3. **🚫 Regra do Duplo Golpe (*Double-Strike Rule*):** Se uma correção falhar duas vezes consecutivas, a IA deve parar imediatamente, executar `git reset --hard HEAD` e escalar para investigação forense via `/debug`.
+
+---
+
+## 🚀 Pipeline de Execução em 3 Etapas
 
 ```mermaid
 flowchart TD
-    Error["Erro no Terminal<br/>(Traceback / Falha de Teste)"] --> S1["Etapa 1: Ingestão de Contexto & Traceback<br/><i>Skill: test-fix</i>"]
-    S1 --> S2["Etapa 2: Isolamento da Causa Raiz em 1 Frase"]
-    S2 --> S3["Etapa 3: Correção Cirúrgica em Código de Produção"]
-    S3 --> TestRun["Executar Testes no Terminal"]
-    TestRun --> Pass{"Testes Verdes?"}
-    Pass --"Falha 1"--> S3
-    Pass --"Falha 2 (Double Strike)"--> Reset["Rollback Imediato (git reset --hard HEAD)<br/>Reavalia hipótese"]
-    Pass --"100% Verde"--> S4["Etapa 4: Micro-Checkpoint & Handover<br/><i>Skill: git (Modo 2)</i>"]
-    S4 --> Back["Retorno ao Workflow Ativo (/implement ou /refactor)"]
+    Start["Entrada: Traceback do Terminal"] --> E1["Etapa 1: Análise Forense & Causa Raiz<br/><i>Referência: test-fix-protocol.md</i>"]
+    E1 --> E2["Etapa 2: Aplicação da Correção Cirúrgica"]
+    E2 --> E3["Etapa 3: Execução da Suíte de Testes"]
+    E3 --> Pass{"100% Verde?"}
+    Pass --"Sim"--> Green["Sucesso: Registra Checkpoint & Retorna ao Fluxo Principal"]
+    Pass --"Falha (Tentativa 1)"--> E2
+    Pass --"Falha (Tentativa 2)"--> Rollback["Double-Strike: git reset --hard HEAD & Escala para /debug"]
 ```
 
 ---
 
-### Etapa 1: Ingestão de Contexto e Ativação
-1. Identifica a branch ativa (`git --no-pager branch --show-current` ou `git rev-parse --abbrev-ref HEAD`) e consulta os contratos no SDD (`01-concepcao/sdd-[slug].md`).
-2. Recebe a mensagem de erro e o traceback completo do terminal fornecidos pelo desenvolvedor.
-* 💡 **Skill Utilizada:** [`skills/test-fix`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/test-fix.md)
+### Etapa 1: Análise Forense do Traceback
+1. Analisa a pilha de chamadas (*stack trace*) do terminal, identificando arquivo, linha e tipo de exceção (`AssertionError`, `TypeError`, `KeyError`, etc.).
+2. Enuncia a causa raiz de forma objetiva no relatório de diagnóstico.
+* 💡 **Referência Operacional:** [`skills/test-fix/references/test-fix-protocol.md`](../../skills/test-fix/references/test-fix-protocol.md)
+* 📋 **Template de Diagnóstico:** [`skills/test-fix/resources/diagnostic-report-template.md`](../../skills/test-fix/resources/diagnostic-report-template.md)
 
 ---
 
-### Etapa 2: Isolamento da Causa Raiz
-1. Sintetiza a causa raiz do erro em 1 frase objetiva (ex: *"A função de resgate tenta decrementar o saldo antes de verificar a expiração do voucher, gerando desvio negativo"*).
-2. Estrutura o checklist de diagnóstico atômico.
+### Etapa 2: Correção Cirúrgica no Código de Produção
+1. Realiza a menor alteração suficiente no arquivo de produção indicado.
+2. Preserva anotações de tipo e convenções de estilo.
 
 ---
 
-### Etapa 3: Correção Cirúrgica no Código de Produção
-1. Edita estritamente as linhas de código de aplicação necessárias para sanar a falha.
-2. Executa a suíte de testes no terminal para verificar a restauração do status verde.
+### Etapa 3: Validação & Retorno
+1. Roda novamente a suíte de testes no terminal.
+2. Se verde: confirma a correção e orienta o retorno ao fluxo de trabalho que originou a chamada (`/implement` ou `/refactor`).
 
 ---
 
-### Etapa 4: Micro-Checkpoint e Retorno
-1. Com a suíte 100% verde, grava um micro-checkpoint local via `skills/git` (Modo 2):
-   ```bash
-   git add .
-   git commit -m "checkpoint(test-fix): surgical fix for [failure]"
-   ```
-2. Apresenta o diagnóstico resumido e orienta o desenvolvedor a retomar o fluxo principal (`/implement` ou `/refactor`).
-* 💡 **Skill Utilizada:** [`skills/git`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/git.md)
+## 🧰 Estrutura da Skill no Antigravity 2.0
 
----
-
-## 🔀 Arquitetura Router & Skills
-
-* **Workflow Roteador:** [`workflows/test-fix.md`](file:///e:/Codigos/antigravity-agentic-workflows/workflows/test-fix.md)
-* **Skills Associadas:**
-  * [`skills/test-fix/`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/test-fix.md)
-  * [`skills/git/`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/git.md)
+* **Manifesto da Skill (`SKILL.md`):** [`skills/test-fix/SKILL.md`](../../skills/test-fix/SKILL.md)
+* **Guias Operacionais (`references/`):**
+  * [`test-fix-protocol.md`](../../skills/test-fix/references/test-fix-protocol.md) — Protocolo de análise de traceback e correção cirúrgica
+* **Templates de Diagnóstico (`resources/`):**
+  * [`diagnostic-report-template.md`](../../skills/test-fix/resources/diagnostic-report-template.md) — Relatório de diagnóstico padrão ISO/IEC/IEEE 29119-3
+* **Exemplos Práticos (`examples/`):**
+  * [`test-fix-example.md`](../../skills/test-fix/examples/test-fix-example.md)

@@ -16,7 +16,7 @@ A skill opera através de 5 modos estritos, carregados sob demanda:
     ```bash
     git checkout -b feature/[slug]
     ```
-* **Script de Apoio:** [`skills/git/scripts/validate_branch.sh`](file:///e:/Codigos/antigravity-agentic-workflows/skills/git/scripts/validate_branch.sh).
+* **Script de Apoio:** [`skills/git/scripts/validate_branch.sh`](../../skills/plan/scripts/validate_branch.py).
 
 ---
 
@@ -37,7 +37,7 @@ A skill opera através de 5 modos estritos, carregados sob demanda:
 * **Regras:**
   * Opcionalmente agrupa micro-checkpoints intermediários em um commit semântico limpo, narrativo e rastreável.
   * Formato no padrão Conventional Commits (`docs(...)`, `feat(...)`, `refactor(...)`, `audit(...)`).
-  * Utiliza o modelo estruturado [`skills/git/resources/template_phase_commit.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/git/resources/template_phase_commit.md).
+  * Utiliza o modelo estruturado [`skills/git/resources/template_phase_commit.md`](../../skills/plan/references/plan-git.md).
 
 ---
 
@@ -66,7 +66,7 @@ A skill opera através de 5 modos estritos, carregados sob demanda:
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/git/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/git/SKILL.md)
-* **Procedimento Detalhado dos Modos:** [`skills/git/references/EXECUTION.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/git/references/EXECUTION.md)
-* **Script de Validação:** [`skills/git/scripts/validate_branch.sh`](file:///e:/Codigos/antigravity-agentic-workflows/skills/git/scripts/validate_branch.sh)
-* **Template de Commit de Fase:** [`skills/git/resources/template_phase_commit.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/git/resources/template_phase_commit.md)
+* **Instruções Principais:** [`skills/git/SKILL.md`](../../skills/plan/references/plan-git.md)
+* **Procedimento Detalhado dos Modos:** [`skills/git/references/EXECUTION.md`](../../skills/plan/references/plan-git.md)
+* **Script de Validação:** [`skills/git/scripts/validate_branch.sh`](../../skills/plan/scripts/validate_branch.py)
+* **Template de Commit de Fase:** [`skills/git/resources/template_phase_commit.md`](../../skills/plan/references/plan-git.md)

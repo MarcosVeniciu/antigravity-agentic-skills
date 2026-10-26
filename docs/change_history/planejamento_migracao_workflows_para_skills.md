@@ -38,7 +38,7 @@ A plataforma Antigravity 2.0 e a CLI `agy` adotaram o padrão aberto de **Agent 
 
 ### 1.2. O Problema do Acoplamento Transversal Atual ("Context Hopping")
 Na arquitetura anterior descrita em [`docs/README.md`](../README.md), os workflows atuavam como "routers" leves, delegando a execução técnica para 24 skills atômicas separadas em `skills/`:
-* No workflow [`workflows/implement.md`](../../workflows/implement.md) (Fase 2 - TDD), o agente precisava coordenar chamadas a 6 skills externas: `tdd-plan`, `tdd-tests`, `tdd-code`, `test-fix`, `dod` e `git`.
+* No workflow ``workflows/implement.md`` (Fase 2 - TDD), o agente precisava coordenar chamadas a 6 skills externas: `tdd-plan`, `tdd-tests`, `tdd-code`, `test-fix`, `dod` e `git`.
 * A skill `skills/git`, por exemplo, cobria 5 modos operacionais distintos (validação de branches, micro-checkpoints, squashes de fechamento de fase, rollbacks e release final com tags semânticas).
 * **Impacto Negativo:** Ao invocar `skills/git` durante o TDD, o agente consumia tokens desnecessários com modos irrelevantes para a fase corrente (como release e tags), aumentando a latência de raciocínio e o risco de desvios operacionais. Além disso, o ciclo TDD não possuía uma etapa explícita de **Micro-Refatoração (Blue Phase)** por lote, empurrando toda a limpeza básica (nomes de variáveis, extração de métodos simples, ajustes de superclasses locais) para a Fase 3.
 

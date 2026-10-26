@@ -40,6 +40,6 @@ flowchart LR
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/review-resilience/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-resilience/SKILL.md)
-* **Checklist de Resiliência:** [`skills/review-resilience/references/checklist_resilience.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-resilience/references/checklist_resilience.md)
-* **Template de Relatório:** [`skills/review-resilience/resources/template_resilience.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/review-resilience/resources/template_resilience.md)
+* **Instruções Principais:** [`skills/review-resilience/SKILL.md`](../../skills/review/SKILL.md)
+* **Checklist de Resiliência:** [`skills/review-resilience/references/checklist_resilience.md`](../../skills/review/references/review-resilience.md)
+* **Template de Relatório:** [`skills/review-resilience/resources/template_resilience.md`](../../skills/review/resources/audit-report-template.md)

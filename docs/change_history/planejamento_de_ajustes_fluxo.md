@@ -45,17 +45,17 @@ Este documento registra as decisões de design, diretrizes arquiteturais e o pla
 ## 3. Inventário Atual
 
 ### Workflows Mapeados
-1. [artefatos.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/artefatos.md)
-2. [ask.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/ask.md)
-3. [debug.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/debug.md)
-4. [docs.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/docs.md)
-5. [implementar.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/implementar.md)
-6. [infra.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/infra.md)
-7. [planejamento.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/planejamento.md)
-8. [refatorar.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/refatorar.md)
-9. [release.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/release.md)
-10. [review.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/review.md)
-11. [testar.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/testar.md)
+1. `artefatos.md`
+2. `ask.md`
+3. `debug.md`
+4. `docs.md`
+5. `implementar.md`
+6. `infra.md`
+7. `planejamento.md`
+8. `refatorar.md`
+9. `release.md`
+10. `review.md`
+11. `testar.md`
 
 ### Skills Mapeadas
 1. `skills/artefatos`
@@ -138,7 +138,7 @@ flowchart TD
 ### 5.4 Detalhamento Físico de Arquivos (Fase 1)
 
 #### 1. Workflows
-* **`[MODIFICAR]` [workflows/planejamento.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/planejamento.md):**
+* **`[MODIFICAR]` `workflows/planejamento.md`:**
   - Reescrita como o orquestrador unificado de 5 etapas da Fase 1 (Chat 1).
   - Remoção da etapa duplicada de Pre-flight Check (que passa a residir exclusivamente em `prompts/gemini.md`).
   - Indicação clara das skills a utilizar em cada etapa (`debate`, `git`, `bdd`, `sdd`, `dod`).
@@ -175,7 +175,7 @@ flowchart TD
   - `skills/artefatos/` (substituída por `skills/sdd` e `skills/dod`).
 
 #### 3. Documentação Geral
-* **`[MODIFICAR]` [docs/README.md](file:///e:/Codigos/antigravity-agentic-workflows/docs/README.md):**
+* **`[MODIFICAR]` [docs/README.md](../../docs/README.md):**
   - Atualizar o diagrama Mermaid principal (Fase 1 com apenas `/planejamento`).
   - Atualizar a descrição da Fase 1 para refletir o fluxo unificado.
 
@@ -226,7 +226,7 @@ flowchart TD
 ### 6.4 Detalhamento Físico de Arquivos (Fase 2)
 
 #### 1. Workflows
-* **`[MODIFICAR]` [workflows/implementar.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/implementar.md):**
+* **`[MODIFICAR]` `workflows/implementar.md`:**
   - Reduzir para um orquestrador limpo de 3 etapas.
   - Remover regras de terminal/código duplicadas.
   - Declarar as recomendações explícitas de skills em cada passo do loop TDD.
@@ -287,7 +287,7 @@ flowchart TD
 ### 7.4 Detalhamento Físico de Arquivos (Fase 3)
 
 #### 1. Workflows
-* **`[MODIFICAR]` [workflows/refatorar.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/refatorar.md):**
+* **`[MODIFICAR]` `workflows/refatorar.md`:**
   - Reescrita enxuta em 4 etapas sequenciais claras.
   - Eliminação da duplicação de texto existente entre a introdução e a subseção de Fault Tolerance.
   - Delegação explícita das ações de Git para `skills/git`, de DoD para `skills/dod` e de Clean Code para `skills/refatorar`.
@@ -350,7 +350,7 @@ flowchart TD
 ### 8.4 Detalhamento Físico de Arquivos (Fase 4)
 
 #### 1. Workflows
-* **`[MODIFICAR]` [workflows/review.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/review.md):**
+* **`[MODIFICAR]` `workflows/review.md`:**
   - Reescrita como o orquestrador enxuto do loop de auditoria em 3 etapas.
   - Eliminação de regras de execução manual e acoplamento direto com sintaxes de Git e DoD.
   - Indicação clara das skills especializadas (`review-arquitetura`, `review-seguranca`, etc.) para cada iteração do loop.
@@ -414,7 +414,7 @@ flowchart TD
 ### 9.4 Detalhamento Físico de Arquivos (Fase 5)
 
 #### 1. Workflows
-* **`[MODIFICAR]` [workflows/docs.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/docs.md):**
+* **`[MODIFICAR]` `workflows/docs.md`:**
   - Mantido como orquestrador oficial da Fase 5 (Chat 5 da feature).
   - Remoção da transição para `/release` e remoção estrita de qualquer instrução de merge.
   - Alinhamento de idioma para Português.
@@ -458,7 +458,7 @@ flowchart TD
 ### 10.4 Detalhamento Físico de Arquivos (Integração & Release)
 
 #### 1. Workflows
-* **`[MODIFICAR]` [workflows/release.md](file:///e:/Codigos/antigravity-agentic-workflows/workflows/release.md):**
+* **`[MODIFICAR]` `workflows/release.md`:**
   - Reescrita como o orquestrador do ciclo de publicação e integração em 4 etapas.
   - Eliminação da exigência de responder em inglês.
   - Delegação para `skills/integracao`, `skills/release`, `skills/dod` e `skills/git`.
@@ -480,7 +480,7 @@ flowchart TD
 ## 11. Especificação de Skills Transversais de Conhecimento e MCP (`obsidian` e `notebooklm`)
 
 ### 11.1 Diagnóstico e Motivação
-* **Problemas Identificados em [prompts/gemini.md](file:///e:/Codigos/antigravity-agentic-workflows/prompts/gemini.md):**
+* **Problemas Identificados em [prompts/gemini.md](../../prompts/gemini.md):**
   1. **Poluição do Prompt Global:** Instruções operacionais detalhadas sobre ferramentas de baixo nível (como estrutura de pastas do Obsidian `00-core-rules/` a `04-templates/`, comandos de `search_query`, uso de `vault_patch` e guardrails de NotebookLM) estão acopladas no prompt de sistema injetado em todo turno de todas as conversas.
   2. **Subutilização e Falta de Procedimento para o MCP NotebookLM:** O MCP expõe 20 ferramentas (`notebook_query`, `collection_create`, `source_describe`, etc.), mas não possui nenhuma documentação, manual de uso ou tratativa de autenticação em formato de skill.
   3. **Fragmentação do Obsidian:** A skill `skills/grafo` tratava apenas de ADRs e Pivôs, enquanto a busca de notas BDD/SDD e navegação ficavam dispersas entre `gemini.md` e `skills/ask`.
@@ -492,7 +492,7 @@ flowchart TD
 | **`skills/obsidian`** | Renomeação & Expansão de `skills/grafo` | Guardiã única da SSOT (Single Source of Truth) do Obsidian Vault:<br>• Busca e leitura orientada a metadados (`search_query`, `vault_read`, `vault_get_document_map`)<br>• Patching cirúrgico com `vault_patch` (por `heading` ou `frontmatter`)<br>• Gestão de conhecimento atômico (ADRs em `00-core-rules/adrs/`, Pivôs em `02-auditorias/`, glossário e convenções)<br>• Validação de integridade de wikilinks `[[nota]]` sem links órfãos | `references/EXECUTION.md`<br>`resources/template_adr.md`<br>`resources/template_pivot.md`<br>`resources/template_domain_rule.md` |
 | **`skills/notebooklm`** | **`[NOVA]`** | Operação de consultas semânticas e exploração de bases externas/fontes complexas no Google NotebookLM:<br>• **Guardrail Mandatório:** Estritamente *User-Governed* (só acionar sob ordem expressa do usuário)<br>• Exploração de cadernos e fontes (`notebook_list`, `source_describe`, `source_get_content`)<br>• Consultas direcionadas ou transversais (`notebook_query`, `cross_notebook_query`)<br>• Tratamento de ciclo de vida de tokens (`refresh_auth`, `save_auth_tokens`)<br>• Respostas ancoradas em citações formais das fontes retornadas | `references/EXECUTION.md`<br>`resources/query_patterns.md` |
 
-### 11.3 Refatoração do Prompt Global ([prompts/gemini.md](file:///e:/Codigos/antigravity-agentic-workflows/prompts/gemini.md))
+### 11.3 Refatoração do Prompt Global ([prompts/gemini.md](../../prompts/gemini.md))
 * **Remoção:** Retirar a listagem manual de pastas de vault, instruções de ferramentas MCP de baixo nível (`vault_patch`, `search_query`) e regras procedurais de querying.
 * **Delegação Limpa:** A seção `## 3. MEMORY & TOOLS` passa a declarar os princípios de governança e delegar explicitamente:
   - Obsidian Vault como SSOT via `@obsidian`.
@@ -503,7 +503,7 @@ flowchart TD
 ### 11.4 Detalhamento Físico de Arquivos
 
 #### 1. Modificação do Prompt do Sistema
-* **`[MODIFICAR]` [prompts/gemini.md](file:///e:/Codigos/antigravity-agentic-workflows/prompts/gemini.md):**
+* **`[MODIFICAR]` [prompts/gemini.md](../../prompts/gemini.md):**
   - Enxugamento do protocolo de inicialização e memória, delegando para as skills correspondentes.
 
 #### 2. Skills: Renomeação, Expansão e Criação

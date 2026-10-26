@@ -1,6 +1,6 @@
 # Agente Core: Protocolo Antigravity Engine (`prompts/gemini.md`)
 
-O documento [`prompts/gemini.md`](file:///e:/Codigos/antigravity-agentic-workflows/prompts/gemini.md) atua como o **protocolo foundational** do ecossistema Antigravity IDE. Ele governa o comportamento global da IA, as diretrizes de engenharia de software e a relação de simbiose em par de programação (*Active Human-AI Pair Programming*).
+O documento [`prompts/gemini.md`](../../prompts/gemini.md) atua como o **protocolo foundational** do ecossistema Antigravity IDE. Ele governa o comportamento global da IA, as diretrizes de engenharia de software e a relação de simbiose em par de programação (*Active Human-AI Pair Programming*).
 
 ---
 
@@ -30,10 +30,11 @@ No primeiro turno de qualquer interação em um novo chat, a IA executa o seguin
 
 ## 3. Governança de Memória e Ferramentas
 
-* **Segunda Mente & SSOT ([`@obsidian`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/obsidian.md)):** Única Fonte de Verdade para especificações BDD/SDD, Living DoD, relatórios de auditoria, pivôs de rota e ADRs. Opera via buscas orientadas a metadados e patches cirúrgicos (`vault_patch`).
-* **Pesquisa Externa ([`@notebooklm`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/notebooklm.md)):** Acesso a papers, documentações de terceiros e cadernos de pesquisa. **Estritamente governada pelo usuário** (a IA jamais consulta o NotebookLM de forma autônoma sem ordem explícita).
+* **Segunda Mente & SSOT ([`@obsidian`](../skills/obsidian.md)):** Única Fonte de Verdade para especificações BDD/SDD, Living DoD, relatórios de auditoria, pivôs de rota e ADRs. Opera via buscas orientadas a metadados e patches cirúrgicos (`vault_patch`).
+* **Pesquisa Externa (`@notebooklm`):** Acesso a papers, documentações de terceiros e cadernos de pesquisa. **Estritamente governada pelo usuário** (a IA jamais consulta o NotebookLM de forma autônoma sem ordem explícita).
 * **Versionamento & Living DoD Embutidos:** Gerenciamento de Git Flow, micro-checkpoints por lote, squashes de transição de fase e critérios de aceite da Definition of Done (DoD) são governados nativamente dentro das referências de cada skill autossuficiente (`references/`).
 * **Terminal & Handover:** Comandos manuais são fornecidos em blocos ````bash` isolados de linha única. Ao concluir a fase, realiza o commit/squash semântico padronizado da skill ativa e orienta o fechamento do chat para preservar a janela de contexto.
+* **Ciclo de Vida de Worktrees & Branches:** Ao concluir qualquer tarefa ou fase, ao mesclar com a branch base original (`develop`/`main`), é obrigatório remover a worktree temporária (`git worktree remove <caminho>`) e deletar a branch da tarefa (`git branch -d <branch>`), evitando acúmulo de artefatos efêmeros.
 
 ---
 

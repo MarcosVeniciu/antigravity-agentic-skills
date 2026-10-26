@@ -38,7 +38,7 @@ flowchart TD
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/plan-decompose/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-decompose/SKILL.md)
-* **Diretrizes Técnicas de Fatiamento:** [`skills/plan-decompose/references/slicing_rules.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-decompose/references/slicing_rules.md)
-* **Template do Épico:** [`skills/plan-decompose/resources/template_epic.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-decompose/resources/template_epic.md)
-* **Exemplo Prático de Decomposição:** [`skills/plan-decompose/examples/epic_decomposition_example.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-decompose/examples/epic_decomposition_example.md)
+* **Instruções Principais:** [`skills/plan-decompose/SKILL.md`](../../skills/decompose/SKILL.md)
+* **Diretrizes Técnicas de Fatiamento:** [`skills/plan-decompose/references/slicing_rules.md`](../../skills/decompose/references/decompose-protocol.md)
+* **Template do Épico:** [`skills/plan-decompose/resources/template_epic.md`](../../skills/decompose/resources/task-template.md)
+* **Exemplo Prático de Decomposição:** [`skills/plan-decompose/examples/epic_decomposition_example.md`](../../skills/decompose/examples/decompose-example.md)

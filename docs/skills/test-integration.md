@@ -46,6 +46,6 @@ Dispara rajadas paralelas de requisições HTTP reais contra a API (ex: 20 a 50 
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/test-integration/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/test-integration/SKILL.md)
-* **Padrões de Runner E2E:** [`skills/test-integration/references/e2e_runner_pattern.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/test-integration/references/e2e_runner_pattern.md)
-* **Template de Relatório de Integração:** [`skills/test-integration/resources/template_integration_log.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/test-integration/resources/template_integration_log.md)
+* **Instruções Principais:** [`skills/test-integration/SKILL.md`](../../skills/release/SKILL.md)
+* **Padrões de Runner E2E:** [`skills/test-integration/references/e2e_runner_pattern.md`](../../skills/release/references/release-checklist.md)
+* **Template de Relatório de Integração:** [`skills/test-integration/resources/template_integration_log.md`](../../skills/release/resources/release-template.md)

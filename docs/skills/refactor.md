@@ -55,6 +55,6 @@ Ao concluir os ajustes de um componente, a skill emite a tabela de comprovação
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/refactor/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/refactor/SKILL.md)
-* **Manual Detalhado de Refatoração:** [`skills/refactor/references/EXECUTION.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/refactor/references/EXECUTION.md)
-* **Template do Checklist de Refatoração:** [`skills/refactor/resources/refactor_checklist_template.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/refactor/resources/refactor_checklist_template.md)
+* **Instruções Principais:** [`skills/refactor/SKILL.md`](../../skills/refactor/SKILL.md)
+* **Manual Detalhado de Refatoração:** [`skills/refactor/references/EXECUTION.md`](../../skills/refactor/references/solid-catalog.md)
+* **Template do Checklist de Refatoração:** [`skills/refactor/resources/refactor_checklist_template.md`](../../skills/refactor/resources/refactor-report-template.md)

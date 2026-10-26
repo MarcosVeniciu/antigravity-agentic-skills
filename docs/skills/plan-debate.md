@@ -52,7 +52,7 @@ Consolida o entendimento no artefato `scope_proposals.md` (`RequestFeedback: tru
 ---
 
 ## 📋 Arquivos da Skill
-* **Instruções Principais:** [`skills/plan-debate/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-debate/SKILL.md)
-* **Regras de Debate & Problema XY:** [`skills/plan-debate/references/debate_rules.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-debate/references/debate_rules.md)
-* **Protocolo de Inquirição:** [`skills/plan-debate/resources/question_protocol.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-debate/resources/question_protocol.md)
-* **Template de Propostas:** [`skills/plan-debate/resources/template_proposals.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/plan-debate/resources/template_proposals.md)
+* **Instruções Principais:** [`skills/plan-debate/SKILL.md`](../../skills/plan/SKILL.md)
+* **Regras de Debate & Problema XY:** [`skills/plan-debate/references/debate_rules.md`](../../skills/plan/references/plan-debate.md)
+* **Protocolo de Inquirição:** [`skills/plan-debate/resources/question_protocol.md`](../../skills/plan/references/plan-debate.md)
+* **Template de Propostas:** [`skills/plan-debate/resources/template_proposals.md`](../../skills/plan/resources/plan-template.md)

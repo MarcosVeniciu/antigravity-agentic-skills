@@ -1,57 +1,57 @@
-# Agente de Decomposição de Épicos (`/decompose`) - Macro-Arquitetura (Fase 0)
+# Agente de Decomposição de Épicos (`/decompose`) - Fatiamento Vertical (Fase 0)
 
-O agente de **Decomposição de Épicos** atua na **Fase 0 (Macro-Arquitetura)** do ecossistema Antigravity. Sua missão é orquestrar a quebra de demandas complexas de arquitetura e produto (que excedem a capacidade segura de uma única branch de feature) em uma sequência ordenada de sub-features verticais e independentes.
-
-Esse agente previne a ocorrência de "Mega-PRs", conflitos massivos de mesclagem e estouro da janela de contexto da IA.
+O agente de **Decomposição de Épicos** atua na **Fase 0 (Macro-Arquitetura)** do ciclo de desenvolvimento de software no Antigravity IDE. Sua responsabilidade é receber demandas complexas, iniciativas de grande porte ou refatorações de subsistemas inteiros e fatiá-las em um roadmap ordenado de sub-features verticais monotônicas, evitando a criação de "Mega-PRs" e eliminando o retrabalho destrutivo entre branches.
 
 ---
 
-## 🚀 Pipeline de Execução em 2 Etapas
+## 🎯 As 3 Regras de Ouro da Fase 0
+
+1. **Fatiamento Monotônico e Cumulativo:** Cada sub-feature planejada deve agregar valor incremental sem jamais quebrar contratos ou exigir a demolição do trabalho entregue pelas fatias anteriores.
+2. **Contratos e Mocks Primeiro (Top-Down):** O fatiamento inicia pelas interfaces de fronteira (APIs públicas, DTOs e mocks em memória). A implementação real dos componentes internos é postergada para as fatias subsequentes.
+3. **Independência Operacional:** Cada fatia vertical (`[F1]`, `[F2]`) deve ser autossuficiente para cumprir o ciclo completo das Fases 1 a 5 (BDD $\rightarrow$ TDD $\rightarrow$ Refatoração $\rightarrow$ Review $\rightarrow$ Docs) em sua própria branch/worktree.
+
+---
+
+## 🚀 Pipeline de Execução em 3 Passos
 
 ```mermaid
 flowchart TD
-    User["Demanda Complexa / Macro-Problema<br/>(Épico de Negócio ou Arquitetura)"] --> E1["<b>Etapa 1: Alinhamento do Macro-Problema</b><br/><i>Skill: plan-debate (Outcome-Based)</i><br/>• Fixa o Estado Final Desejado<br/>• Trata sugestões do usuário como hipóteses flexíveis<br/>• Entrevista cirúrgica (3 a 5 perguntas)"]
-    
-    E1 --> E2["<b>Etapa 2: Fatiamento Evolutivo & Blueprint</b><br/><i>Skill: plan-decompose</i><br/>• Monotonicidade Arquitetural<br/>• Contratos e Mocks Primeiro<br/>• Calibração de Ciclo por Sub-feature<br/>• Gera artefato epic_breakdown.md"]
-    
-    E2 --> Feedback{"Aprovado?<br/>(Proceed no artefato)"}
-    Feedback --"Ajuste de Escopo"--> E2
-    Feedback --"Aprovado (Proceed)"--> Persist["Salvar em <code>01-concepcao/epic-[slug].md</code><br/>no Obsidian Vault<br/><i>Skill: obsidian</i>"]
-    Persist --> Handover["<b>[HANDOVER PARA FASE 1]</b><br/>Recomenda checkout de feature/[slug-1] e /plan"]
+    Start["Entrada: Macro-Demanda / Épico"] --> S1["Passo 1: Entrevista de Escopo & Outcome-Based Debate<br/><i>Referência: plan-debate.md</i>"]
+    S1 --> S2["Passo 2: Fatiamento Vertical Monotônico<br/><i>Referência: decompose-protocol.md</i>"]
+    S2 --> S3["Passo 3: Persistência do Blueprint do Épico no Vault<br/><i>Template: task-template.md</i>"]
+    S3 --> Next["<b>[ROADMAP CONCLUÍDO]</b><br/>Inicie a Sub-Feature [F1] via /plan"]
 ```
 
 ---
 
-### Etapa 1: Alinhamento do Macro-Problema (*Outcome-Based*)
-1. **Varredura de Contexto:** Analisa a base de código atual, manifestos de dependências e documentações de arquitetura no repositório.
-2. **Fixação do Estado Final Desejado:** Isola rigorosamente o desfecho funcional de negócio a ser alcançado pelo épico como um todo.
-3. **Pistas como Hipóteses:** Qualquer sugestão ou caminho técnico proposto pelo usuário é tratado como hipótese preliminar, desafiando premissas frágeis.
-4. **Entrevista Cirúrgica:** Conduz uma inquirição focada de **3 a 5 perguntas objetivas** para eliminar ambiguidades sobre limites de escopo e integrações críticas.
-* 💡 **Skill Utilizada:** [`skills/plan-debate`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/plan-debate.md)
+### Passo 1: Entrevista de Escopo & Alinhamento
+1. Isola o problema real de negócio do usuário utilizando *Outcome-Based Prompting*.
+2. Conduz uma entrevista socrática com até 3 perguntas cirúrgicas para esclarecer requisitos não-funcionais (NFRs), dependências de sistemas legados e restrições de volume.
 
 ---
 
-### Etapa 2: Fatiamento Evolutivo Monotônico e Roadmap
-1. **Regra de Ouro da Monotonicidade:** A decomposição garante que a Sub-feature $N+1$ consome e estende os alicerces estabelecidos pela Sub-feature $N$, com **zero retrabalho destrutivo** ou reescrita de testes anteriores.
-2. **Contratos e Mocks Primeiro:** Caso o épico envolva novas persistências, filas ou APIs externas, a Sub-feature 1 modela interfaces (`IRepository`) e implementações mock em memória populadas com dados de teste.
-3. **Calibração de Ciclo:** Cada sub-feature fatiada é dimensionada para caber com folga no ciclo de vida de uma única conversa (Fases 1 a 5).
-4. **Artefato Interativo:** Gera o artefato `epic_breakdown.md` com `RequestFeedback: true`, contendo o grafo de dependências Mermaid e o roadmap de branches (`feature/[slug-1]`, `feature/[slug-2]`, etc.).
-* 💡 **Skill Utilizada:** [`skills/plan-decompose`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/plan-decompose.md)
+### Passo 2: Fatiamento Vertical Monotônico
+1. Decompõe o épico em sub-features ordenadas (`[F1]`, `[F2]`, `[F3]`...).
+2. Mapeia explicitamente o Grafo de Dependências entre as fatias para garantir que nenhuma dependência circular seja introduzida.
+3. Define os entregáveis e o escopo de cada fatia.
+* 💡 **Referência Operacional:** [`skills/decompose/references/decompose-protocol.md`](../../skills/decompose/references/decompose-protocol.md)
 
 ---
 
-## 🚪 Conclusão & Handover para a Fase 1
-
-1. **Aprovação Executiva:** Ao receber a confirmação explícita do usuário (ou clique em **Proceed** no artefato), o blueprint final é persistido na Segunda Mente em `01-concepcao/epic-[slug].md` via [`skills/obsidian`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/obsidian.md).
-2. **Handover para Chat 1:** O agente emite a diretriz de transição de fase:
-   > **[NEXT STEP]** ➡️ *"🗺️ Épico decomposto com sucesso! Crie a branch da primeira sub-feature (`git checkout -b feature/[slug-1]`), abra um **NOVO CHAT (Chat 1)** e execute `/plan` para iniciar o ciclo de desenvolvimento."*
+### Passo 3: Persistência do Blueprint do Épico & Handover
+1. Salva o blueprint na Segunda Mente em `01-concepcao/epic-[slug].md` via Obsidian.
+2. Orienta o usuário a iniciar a primeira fatia vertical:
+   > **[NEXT STEP]** ➡️ *"🗺️ Decomposição do épico concluída com sucesso! Para iniciar a implementação da primeira fatia (`[F1]`), abra um novo chat e execute `/plan` informando o escopo da fatia [F1]."*
+* 📋 **Template de Tarefa:** [`skills/decompose/resources/task-template.md`](../../skills/decompose/resources/task-template.md)
 
 ---
 
-## 🔀 Arquitetura Router & Skills
+## 🧰 Estrutura da Skill no Antigravity 2.0
 
-* **Workflow Roteador:** [`workflows/decompose.md`](file:///e:/Codigos/antigravity-agentic-workflows/workflows/decompose.md)
-* **Skills Associadas:**
-  * [`skills/plan-debate/`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/plan-debate.md)
-  * [`skills/plan-decompose/`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/plan-decompose.md)
-  * [`skills/obsidian/`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/obsidian.md)
+* **Manifesto da Skill (`SKILL.md`):** [`skills/decompose/SKILL.md`](../../skills/decompose/SKILL.md)
+* **Guias Operacionais (`references/`):**
+  * [`decompose-protocol.md`](../../skills/decompose/references/decompose-protocol.md) — Protocolo de fatiamento vertical e divisão de épicos
+* **Templates de Tarefa (`resources/`):**
+  * [`task-template.md`](../../skills/decompose/resources/task-template.md)
+* **Exemplos Práticos (`examples/`):**
+  * [`decompose-example.md`](../../skills/decompose/examples/decompose-example.md)
