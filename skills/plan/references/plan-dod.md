@@ -6,7 +6,7 @@ This guide governs the initialization and maintenance of the Living Definition o
 
 ## 1. The Role of the Living DoD
 
-The Living Definition of Done is the **Single Source of Truth (SSOT)** for delivery completeness, tracking feature maturity across all 5 ephemeral chat phases:
+The Living Definition of Done is the **Single Source of Truth (SSOT)** for delivery completeness, tracking feature maturity across all 5 lifecycle phases:
 - **Phase 1 (`/plan`):** Conception, BDD specifications, SDD contracts, and Living DoD initialization.
 - **Phase 2 (`/implement`):** Dynamic batch execution timeline entries (`## 2. Development Timeline`).
 - **Phase 3 (`/refactor`):** Feature-wide macro-refactoring and AST complexity audit (`## 3. Refactoring`).

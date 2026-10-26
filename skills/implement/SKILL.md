@@ -5,7 +5,7 @@ description: Executes the iterative TDD development cycle batch by batch with ex
 
 # Skill: Iterative TDD Implementation (`/implement`)
 
-Orchestrates **Phase 2 (Chat 2)** of the feature development lifecycle, implementing approved BDD specifications and SDD architecture blueprints through an iterative, batch-based Test-Driven Development (TDD) cycle.
+Orchestrates **Phase 2** of the feature development lifecycle, implementing approved BDD specifications and SDD architecture blueprints through an iterative, batch-based Test-Driven Development (TDD) cycle.
 
 ---
 
@@ -86,7 +86,7 @@ flowchart LR
 2. Verify all criteria in [`./references/tdd-dod.md`](./references/tdd-dod.md) are satisfied.
 3. Consolidate batch checkpoints into a structured Phase 2 commit via [`./references/tdd-git.md`](./references/tdd-git.md) (Mode 3 Phase Squash).
 4. Issue the mandatory phase transition handover recommendation:
-   > **[NEXT STEP]** *"Phase 2 (TDD Implementation) completed with 100% unit tests passing green! Open a **NEW CHAT (Chat 3)** and run `/refactor` to consolidate code design, verify AST cyclomatic complexity (V(G) <= 10), and apply systemic SOLID principles across the feature diff."*
+   > **[NEXT STEP]** *"Phase 2 (TDD Implementation) completed with 100% unit tests passing green! Open a **NEW CHAT** and run `/refactor` to consolidate code design, verify AST cyclomatic complexity (V(G) <= 10), and apply systemic SOLID principles across the feature diff."*
 
 ---
 

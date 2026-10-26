@@ -5,7 +5,7 @@ description: Synchronizes technical documentation, module READMEs, architectural
 
 # Skill: Technical Feature Documentation & Feature Freeze (`/docs`)
 
-Orchestrates **Phase 5 (Chat 5)** of the feature development lifecycle, synchronizing living technical documentation (module and root READMEs, Mermaid architectural data flows, and Obsidian-traceable docstrings), updating the Living DoD, and executing the semantic feature freeze.
+Orchestrates **Phase 5** of the feature development lifecycle, synchronizing living technical documentation (module and root READMEs, Mermaid architectural data flows, and Obsidian-traceable docstrings), updating the Living DoD, and executing the semantic feature freeze.
 
 ---
 

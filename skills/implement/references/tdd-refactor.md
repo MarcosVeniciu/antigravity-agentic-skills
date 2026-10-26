@@ -10,7 +10,7 @@ Understanding the separation of concerns between `/implement` and `/refactor` is
 
 | Dimension | Micro-Refactor (Blue Phase in `/implement`) | Macro-Refactor (Phase 3 in `/refactor`) |
 |---|---|---|
-| **Execution Timing** | Immediately after the batch tests turn GREEN | At feature conclusion (Phase 3 / Chat 3) |
+| **Execution Timing** | Immediately after the batch tests turn GREEN | At feature conclusion (Phase 3) |
 | **Scope** | Strictly the local class, method, or helper created in the current batch | Entire feature changeset (`git diff develop...HEAD`) |
 | **Objective** | Clean names, extract private helpers, remove magic constants | Cross-module SOLID, architectural boundary verification, AST cyclomatic complexity $V(G) \le 10$ |
 | **Tooling** | Immediate test execution (`pytest tests/unit/`) | AST complexity scanner (`ast_complexity.py`), Clean Architecture linter |

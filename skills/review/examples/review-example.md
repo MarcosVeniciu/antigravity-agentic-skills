@@ -139,4 +139,4 @@ tests/unit/test_checkout.py ............................                [100%]
    git commit -m "audit(review): specialized domain audits completed for checkout-flow"
    ```
 4. Handover:
-   > **[NEXT STEP]** *"Phase 4 (Audits) completed! Review findings documented in audit reports under `02-auditorias/`. Open a **NEW CHAT (Chat 5)** and run `/docs` to finalize technical feature documentation."*
+   > **[NEXT STEP]** *"Phase 4 (Audits) completed! Review findings documented in audit reports under `02-auditorias/`. Open a **NEW CHAT** and run `/docs` to finalize technical feature documentation."*
