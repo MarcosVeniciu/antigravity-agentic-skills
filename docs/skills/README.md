@@ -12,7 +12,6 @@ graph TD
         S_Git["git <br> <i>Versionamento & Git Flow</i>"]
         S_Dod["dod <br> <i>Living DoD & Linha do Tempo</i>"]
         S_Obs["obsidian <br> <i>SSOT no Vault & ADRs</i>"]
-        S_Nlm["notebooklm <br> <i>MCP Pesquisa Governada</i>"]
     end
 
     subgraph Cat2 ["2. Macro & Concepção"]
@@ -64,7 +63,6 @@ graph TD
 | **`git`** | [`git.md`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/git.md) | Governança unificada de versionamento local em 5 modos (Branch Strategy, Micro-Checkpoints, Phase Squash, Rollback e Release). | `validate_branch.sh`, `template_phase_commit.md` |
 | **`dod`** | [`dod.md`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/dod.md) | Governança da Definition of Done e do Living Log (`01-concepcao/dod-[slug].md`), atuando como portão matemático de aceite. | `template_dod.md` |
 | **`obsidian`** | [`obsidian.md`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/obsidian.md) | Governança da SSOT no Obsidian Vault: leitura por metadados, patches cirúrgicos com `vault_patch`, ADRs e integridade de wikilinks. | `template_adr.md`, `template_pivot.md`, `template_domain_rule.md` |
-| **`notebooklm`** | [`notebooklm.md`](file:///e:/Codigos/antigravity-agentic-workflows/docs/skills/notebooklm.md) | Integração com o MCP Google NotebookLM para consultas semânticas em papers e cadernos de pesquisa (estritamente governada pelo usuário). | `query_patterns.md` |
 
 ---
 

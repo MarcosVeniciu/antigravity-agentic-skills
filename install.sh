@@ -130,8 +130,8 @@ done
 
 # Validate sources (only mandatory when performing installation)
 if [ "$RESTORE" = false ] && [ "$UNINSTALL" = false ]; then
-    if [ ! -d "$SOURCE_WORKFLOWS" ] || [ ! -d "$SOURCE_SKILLS" ]; then
-        echo -e "${RED}[ERROR] 'workflows' or 'skills' directories not found in: $REPO_ROOT${NC}"
+    if [ ! -d "$SOURCE_SKILLS" ]; then
+        echo -e "${RED}[ERROR] 'skills' directory not found in: $REPO_ROOT${NC}"
         echo -e "${YELLOW}Make sure you are running the script from the root of the cloned/extracted repository.${NC}"
         exit 1
     fi
@@ -696,14 +696,16 @@ else
     print_warn "Source file $SOURCE_GEMINI_RULE not found."
 fi
 
-# 2. Install Workflows
-print_header "2. Installing Workflows (Slash Commands)"
-for wf in "$SOURCE_WORKFLOWS"/*.md; do
-    if [ -f "$wf" ]; then
-        wf_name="$(basename "$wf")"
-        install_single_file "$wf" "$TARGET_WORKFLOWS_DIR/$wf_name" "workflows/$wf_name"
-    fi
-done
+# 2. Install Workflows (Legacy backward-compatibility, if present)
+if [ -d "$SOURCE_WORKFLOWS" ]; then
+    print_header "2. Installing Legacy Workflows (if present)"
+    for wf in "$SOURCE_WORKFLOWS"/*.md; do
+        if [ -f "$wf" ]; then
+            wf_name="$(basename "$wf")"
+            install_single_file "$wf" "$TARGET_WORKFLOWS_DIR/$wf_name" "workflows/$wf_name"
+        fi
+    done
+fi
 
 # 3. Install Skills
 print_header "3. Installing Modular Skills"

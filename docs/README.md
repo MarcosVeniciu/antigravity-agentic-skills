@@ -5,7 +5,6 @@ The operational intelligence of the **Antigravity IDE** is grounded in strict se
 1. **Phase 0 (Macro-Architecture):** Evolutionary decomposition of epics into monotonic sub-features via `/decompose`.
 2. **Feature Lifecycle (5 Phases in Ephemeral Chats):** Conception $\rightarrow$ TDD $\rightarrow$ Refactoring $\rightarrow$ Audits $\rightarrow$ Documentation.
 3. **Publication Cycle (Release Pipeline):** E2E integration tests, SemVer calculation, Changelog generation, and Git Flow via `/release`.
-4. **Cross-Cutting Skills:** Git Flow & checkpoint governance (`@git`), Living DoD tracking (`@dod`), SSOT Vault governance (`@obsidian`), and user-governed external research (`@notebooklm`).
 
 ---
 
@@ -136,7 +135,6 @@ Detailed guides, scripts, and procedures for all 24 skills:
 
 | Category | Skills |
 | :--- | :--- |
-| **Foundation & Cross-Cutting** | [`skills/git`](skills/git.md), [`skills/dod`](skills/dod.md), [`skills/obsidian`](skills/obsidian.md), [`skills/notebooklm`](skills/notebooklm.md) |
 | **Macro & Conception** | [`skills/plan-decompose`](skills/plan-decompose.md), [`skills/plan-debate`](skills/plan-debate.md), [`skills/plan-bdd`](skills/plan-bdd.md), [`skills/plan-sdd`](skills/plan-sdd.md) |
 | **TDD Construction** | [`skills/tdd-plan`](skills/tdd-plan.md), [`skills/tdd-tests`](skills/tdd-tests.md), [`skills/tdd-code`](skills/tdd-code.md), [`skills/test-fix`](skills/test-fix.md) |
 | **Refactoring & Design** | [`skills/refactor`](skills/refactor.md) |

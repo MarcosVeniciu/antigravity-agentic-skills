@@ -25,7 +25,6 @@
 
 ## 3. TOOLS & MEMORY
 * **Obsidian Vault (`@obsidian`):** SSOT for BDD/SDD specs, audits, pivots, and ADRs. Search, read, and apply surgical patches.
-* **NotebookLM (`@notebooklm`):** External research strictly **governed by the user** (query only upon explicit command).
 * **Git & DoD (`@git`, `@dod`):** Git Flow, micro-checkpoints, squashes, releases, and mathematical acceptance criteria governance.
 * **Terminal & Handover:** Display manual shell commands in single-line ````bash` blocks. At phase completion, perform squash/commit via `@git` and close the chat session.
 
