@@ -53,10 +53,6 @@ $RECYCLE.BIN/
 # Ephemeral Git Worktrees
 worktrees/
 
-# Logs and databases
-*.log
-*.sqlite3
-
 # Node
 node_modules/
 
