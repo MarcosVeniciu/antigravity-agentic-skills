@@ -1,6 +1,6 @@
 ---
 name: debug
-description: Conducts forensic root cause analysis (5 Whys framework) for critical crashes, exceptions, and complex runtime failures. Use via /debug.
+description: Conducts forensic root cause analysis (5 Whys framework) for critical crashes, exceptions, and complex runtime failures.
 ---
 
 # Skill: Forensic Bug Investigation & Root Cause Analysis (`/debug`)
@@ -39,7 +39,7 @@ flowchart TD
 2. Search the Obsidian Vault via `@obsidian` for previous occurrences, architectural pivots, or known constraints:
    - `02-auditorias/pivots-[slug].md` (historical technical pivots).
    - `00-core-rules/adrs/` (architectural decision records).
-3. Confirm repository branch and working directory cleanliness via `git status --short`.
+3. Confirm repository branch and working directory cleanliness via `git -C <path> status --short`.
 4. **Detailed Reference:** Review [`./references/debug-methodology.md`](./references/debug-methodology.md).
 
 ### Step 2: Scientific Hypothesis Formulation & 5 Whys Analysis

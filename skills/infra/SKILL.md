@@ -1,6 +1,6 @@
 ---
 name: infra
-description: Orchestrates environment diagnostics, package manifest maintenance, container configuration validation, and strict secret containment via /infra.
+description: Orchestrates environment diagnostics, package manifest maintenance, container configuration validation, and strict secret containment.
 ---
 
 # Skill: Infrastructure, Dependencies & Environment Governance (`/infra`)

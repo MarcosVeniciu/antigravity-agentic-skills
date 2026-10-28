@@ -1,11 +1,11 @@
 ---
 name: docs
-description: Synchronizes technical documentation, module READMEs, architectural diagrams, and in-code docstrings with Obsidian vault traceability and Living DoD updates. Use via /docs.
+description: Synchronizes technical documentation, module READMEs, architectural diagrams, and in-code docstrings with Obsidian vault traceability and Living DoD updates.
 ---
 
 # Skill: Technical Feature Documentation & Feature Freeze (`/docs`)
 
-Orchestrates **Phase 5** of the feature development lifecycle, synchronizing living technical documentation (module and root READMEs, Mermaid architectural data flows, and Obsidian-traceable docstrings), updating the Living DoD, and executing the semantic feature freeze.
+Orchestrates the technical documentation phase of the feature development lifecycle, synchronizing living technical documentation (module and root READMEs, Mermaid architectural data flows, and Obsidian-traceable docstrings), updating the Living DoD, and executing the semantic feature freeze.
 
 ---
 

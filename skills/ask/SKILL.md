@@ -1,6 +1,6 @@
 ---
 name: ask
-description: Answers conceptual, architectural, and codebase inquiries in strictly read-only mode, anchoring responses in source code and Obsidian vault citations. Use via /ask.
+description: Answers conceptual, architectural, and codebase inquiries in strictly read-only mode, anchoring responses in source code and Obsidian vault citations.
 ---
 
 # Skill: Project Oracle (`/ask`)

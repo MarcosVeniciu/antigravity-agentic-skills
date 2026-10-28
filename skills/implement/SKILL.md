@@ -1,11 +1,11 @@
 ---
 name: implement
-description: Executes the iterative TDD development cycle batch by batch with explicit Red, Green, and Blue (micro-refactoring) phases. Use when implementing features approved in planning via /implement.
+description: Executes the iterative TDD development cycle batch by batch with explicit Red, Green, and Blue (micro-refactoring) phases.
 ---
 
 # Skill: Iterative TDD Implementation (`/implement`)
 
-Orchestrates **Phase 2** of the feature development lifecycle, implementing approved BDD specifications and SDD architecture blueprints through an iterative, batch-based Test-Driven Development (TDD) cycle.
+Orchestrates the feature development lifecycle, implementing approved BDD specifications and SDD architecture blueprints through an iterative, batch-based Test-Driven Development (TDD) cycle.
 
 ---
 
