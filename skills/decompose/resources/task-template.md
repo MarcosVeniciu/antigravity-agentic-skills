@@ -87,5 +87,5 @@ flowchart TD
 - **Next Phase:** Phase 1 (`/plan`) or Phase 2 (`/implement`)
 - **Checkout Command:**
   ```bash
-  git switch develop && git pull --ff-only && git switch -c feature/{{FIRST_FEATURE_SLUG}}
+  git switch develop; git pull --ff-only; git switch -c feature/{{FIRST_FEATURE_SLUG}}
   ```

@@ -47,7 +47,7 @@ git worktree add -b feat/[slug] ../worktrees/[slug] develop
 ```
 - After completing work and merging back into the base branch, cleanly prune the worktree and branch:
   ```bash
-  git -C <path> worktree remove ../worktrees/[slug] && git -C <path> branch -d feat/[slug]
+  git -C <path> worktree remove ../worktrees/[slug]; git -C <path> branch -d feat/[slug]
   ```
 
 ---

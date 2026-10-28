@@ -83,7 +83,7 @@ flowchart TD
 ## Step 4: Handover Block
 
 ```bash
-git switch develop && git pull --ff-only && git switch -c feature/transfer-audit-events
+git switch develop; git pull --ff-only; git switch -c feature/transfer-audit-events
 ```
 
-> **[NEXT STEP]** *"Macro-architecture decomposition complete! Branch `feature/transfer-audit-events` created. Open a **NEW CHAT** and run `/plan` to design the BDD scenarios, SDD contracts, and Living DoD for Sub-Feature 1."*
+> **[NEXT STEP]** *"Macro-architecture decomposition complete! Branch `feature/transfer-audit-events` created. Run `/plan` to design the BDD scenarios, SDD contracts, and Living DoD for Sub-Feature 1."*
