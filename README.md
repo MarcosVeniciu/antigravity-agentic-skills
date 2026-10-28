@@ -123,7 +123,7 @@ antigravity-agentic-workflows/
 ├── install.ps1                   # Native PowerShell installer (Windows 10/11 & Core)
 ├── install.sh                    # Native POSIX Bash installer (Linux / macOS / WSL)
 ├── prompts/                      # System prompts & global governance
-│   └── gemini.md                 # Antigravity engine core protocol & human-AI pair programming rules
+│   └── gemini.md                 # Antigravity core protocol & active co-programming directives
 ├── skills/                       # 12 Self-Sufficient Agent Skills (Antigravity 2.0 / agentskills.io)
 │   ├── ask/                      # /ask       - Support: Read-Only Project Oracle & Vault Search
 │   ├── debug/                    # /debug     - Support: Forensic Crash Investigator (5 Whys & RCA)
@@ -137,17 +137,8 @@ antigravity-agentic-workflows/
 │   ├── release/                  # /release   - Publication: E2E Integration Suite, SemVer & Git Flow
 │   ├── review/                   # /review    - Phase 4: Specialized Audits (Arch, Sec, Quality, Perf, Resilience)
 │   └── test-fix/                 # /test-fix  - Support: Reactive Debugger & Surgical Production Fixes
-├── docs/                         # Comprehensive technical documentation & guides
-│   ├── README.md                 # Architectural overview & 5-Phase lifecycle
-│   ├── agentes/                  # Deep-dive manuals for each workflow & orchestrator
-│   │   ├── README.md             # Agents catalog & quality gates map
-│   │   ├── core-gemini.md        # Core engine protocol & pair programming rules
-│   │   └── [phase].md            # Step-by-step orchestrator guides (/plan, /implement, etc.)
-│   ├── skills/                   # Technical manuals & operational reference guides
-│   │   ├── README.md             # Modular skills catalog & domain map
-│   │   └── [skill-name].md       # Specific technical procedures and checklists
-│   ├── references/               # Authoritative security & architecture standards (OWASP, open specs)
-│   └── change_history/           # Architecture evolution & migration logs
+├── docs/                         # Authoritative external engineering standards & references
+│   └── references/               # Authoritative security & architecture standards (OWASP Code Review v2)
 └── tests/                        # Automated integrity and scanner test suite
     ├── test_flow_skills_integrity.py  # Validation of frontmatter, structure & references
     └── skills/test_scanners.py        # Unit tests for automated AST, boundary & sink scanners

@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ---
 
+## Release Notes - v1.1.0 (2026-10-27)
+
+### New Features
+- `[feat: decompose]`: Added dedicated [`skills/decompose/references/decompose-debate.md`](skills/decompose/references/decompose-debate.md) establishing Outcome-Based Socratic inquiry, native `ask_question` tool usage, macro XY Problem elimination, and the Macro-Slicing Strategy Matrix (MVP-First, Contract-First, Strangler Fig).
+- `[feat: core-protocol]`: Refactored [`prompts/gemini.md`](prompts/gemini.md) to establish **Active Co-Programming & Symbiotic Partnership** as the central directive (*"AI proposes, human orchestrates and approves"*). Enforced interactive `ask_question` tool usage and added `-C <path>` for resilient cross-platform Git execution.
+
+### Refactoring & Improvements
+- `[refactor: skills]`: Standardized YAML frontmatter descriptions across all 12 skills, removing redundant `Use via /...` suffixes and cleaning up rigid phase designations.
+- `[refactor: docs]`: Updated root [`README.md`](README.md) to remove obsolete documentation paths and align directly with the self-sufficient Agent Skills architecture.
+
+### Repository Hygiene
+- `[chore: cleanup]`: Pruned legacy / duplicate documentation files in `docs/`, deleted orphan empty `workflows-skill/` directory, and updated [`.gitignore`](.gitignore) with comprehensive ignores for test caches (`.pytest_cache/`, `.coverage`, `.mypy_cache/`, `.ruff_cache/`), virtual environments (`.venv/`), ephemeral worktrees (`worktrees/`), and OS artifacts.
+
+---
+
 ## Release Notes - `v1.0.0` (2026-10-26)
 
 ### New Features
