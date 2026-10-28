@@ -1,18 +1,18 @@
 ---
 name: plan
-description: Orchestrates Phase 1 architectural conception, outcome-based scope debate, BDD Gherkin specifications, typed SDD contracts, and living DoD setup via /plan.
+description: Orchestrates architectural conception, outcome-based scope debate, BDD Gherkin specifications, typed SDD contracts, and living DoD setup.
 ---
 
 # Skill: Architectural Conception & Planning (`/plan`)
 
-Orchestrates **Phase 1** of the feature development lifecycle, transforming business requirements into formal behavioral specifications (BDD Gherkin), robust technical blueprints with typed contracts (SDD), and an initialized Living Definition of Done (DoD), all under strict Git Flow branch isolation.
+Orchestrates the feature development lifecycle, transforming business requirements into formal behavioral specifications (BDD Gherkin), robust technical blueprints with typed contracts (SDD), and an initialized Living Definition of Done (DoD), all under strict Git Flow branch isolation.
 
 ---
 
 ## Universal Restriction: Zero Production Code
 
 > [!WARNING]
-> **Strict Phase Gate Lock:** Writing application production code or functional test suites is **strictly prohibited** during Phase 1. The sole objective is architectural conception, behavioral modeling, typed interface contracts, and governance setup. Production implementation begins exclusively in Phase 2 via `/implement`.
+> **Strict Phase Gate Lock:** Writing application production code or functional test suites is **strictly prohibited**. The sole objective is architectural conception, behavioral modeling, typed interface contracts, and governance setup. Production implementation begins exclusively in `/implement`.
 
 ---
 
@@ -26,7 +26,7 @@ Orchestrates **Phase 1** of the feature development lifecycle, transforming busi
   - Behavioral specification in pure Gherkin (`01-concepcao/bdd-[slug].md`).
   - Technical architecture with Mermaid models and typed contracts (`01-concepcao/sdd-[slug].md`).
   - Initialized Living Definition of Done tracking document (`01-concepcao/dod-[slug].md`).
-  - Consolidated Phase 1 semantic commit (`docs(conception): BDD, SDD, and DoD specifications for [slug]`).
+  - Consolidated semantic commit (`docs(conception): BDD, SDD, and DoD specifications for [slug]`).
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: release
-description: Orchestrates production release publication, enforcing 100% Living DoD verification, end-to-end integration validation, SemVer 2.0.0 calculations, changelog synchronization, and Git Flow release finalization via /release.
+description: Orchestrates production release publication, enforcing 100% Living DoD verification, end-to-end integration validation, SemVer 2.0.0 calculations, changelog synchronization, and Git Flow release finalization.
 ---
 
 # Skill: Production Release & Git Flow Finalization (`/release`)

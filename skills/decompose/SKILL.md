@@ -1,6 +1,6 @@
 ---
 name: decompose
-description: Decomposes complex architectural initiatives and multi-stage epics into atomic, evolutionary vertical slices and task checklists. Use prior to planning via /decompose.
+description: Decomposes complex architectural initiatives and multi-stage epics into atomic, evolutionary vertical slices and task checklists.
 ---
 
 # Skill: Task Decomposition & Epic Slicing (`/decompose`)
@@ -31,13 +31,14 @@ flowchart TD
     S2 --> S3["<b>Step 3: Audit, Persistence & Handover</b><br/>• Acyclic DAG pre-flight audit<br/>• Persist to 01-concepcao/epic-[slug].md<br/>• Handover branch command to /plan"]
 ```
 
-### Step 1: Macro-Problem Alignment (Outcome-Based)
+### Step 1: Macro-Problem Alignment & Debate (Outcome-Based)
 1. Ingest user requirements and examine current codebase context, domain boundaries, and existing conventions.
 2. Formulate the **Desired Observable End-State**, extracting verifiable success criteria ($S_1 \dots S_n$).
-3. Treat user-suggested implementations strictly as working hypotheses; challenge fragile technical assumptions.
-4. Conduct a concise Socratic interview (**up to 5 objective questions**) to clarify domain boundaries and constraints (skip questions already resolved by context).
-5. **Spike Detection:** If critical technical uncertainty or an unproven library prevents confident breakdown, isolate a timeboxed **Spike** task before continuing.
-6. **Detailed Protocol:** Consult [`./references/decompose-protocol.md`](./references/decompose-protocol.md).
+3. Treat user-suggested implementations strictly as working hypotheses; eliminate the macro XY Problem and challenge fragile assumptions.
+4. Conduct an adaptive Socratic interview asking **3 to 5 targeted questions** per turn using the interactive `ask_question` tool as the primary channel.
+5. Formulate 2 (default) or at most 3 distinct macro-slicing strategies (MVP-First vs. Contract-First vs. Strangler Fig) in the Slicing Strategy Matrix.
+6. **Spike Detection:** If critical technical uncertainty or an unproven library prevents confident breakdown, isolate a timeboxed **Spike** task before continuing.
+- **Operational Guides:** [`./references/decompose-debate.md`](./references/decompose-debate.md) | [`./references/decompose-protocol.md`](./references/decompose-protocol.md)
 
 ### Step 2: Evolutionary Slicing & Complexity Sizing
 1. Decompose the initiative into vertical slices applying the **5 Principles of Evolutionary Slicing**:
@@ -73,7 +74,8 @@ flowchart TD
 
 ## Bundled References & Templates
 
-- **Operational Methodology:**
+- **Operational Methodology & Debate:**
+  - [`references/decompose-debate.md`](./references/decompose-debate.md) — Socratic interview protocol, `ask_question` tool usage, XY Problem elimination, and macro-slicing proposals.
   - [`references/decompose-protocol.md`](./references/decompose-protocol.md) — Slicing methodology, atomic batching, complexity sizing, DAG audit.
 - **Pure Templates:**
   - [`resources/task-template.md`](./resources/task-template.md) — Pure task checklist, dependency mapping, and complexity tracking template.

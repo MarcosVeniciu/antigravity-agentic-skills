@@ -1,11 +1,11 @@
 ---
 name: review
-description: Conducts rigorous, script-first multi-domain code reviews across the git diff in 5 domains (Architecture, OWASP Security, AST Quality, Performance, Resilience) via /review.
+description: Conducts rigorous, script-first multi-domain code reviews across the git diff in 5 domains (Architecture, OWASP Security, AST Quality, Performance, Resilience).
 ---
 
 # Skill: Specialized Multi-Domain Code Review (`/review`)
 
-Orchestrates **Phase 4** of the feature development lifecycle, conducting exhaustive, script-first architectural, security, and quality code audits across all changes introduced in the feature branch.
+Orchestrates the specialized audit phase of the feature development lifecycle, conducting exhaustive, script-first architectural, security, and quality code audits across all changes introduced in the feature branch.
 
 ---
 

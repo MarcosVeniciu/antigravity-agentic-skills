@@ -259,23 +259,23 @@ graph TD
 
 ## 🤖 Agents & Slash Commands Catalog
 
-| Command | Skill Package | Detailed Manual | Phase / Role | Description / Main Responsibility |
-| :--- | :--- | :--- | :--- | :--- |
-| `/decompose` | [`skills/decompose/`](skills/decompose/SKILL.md) | [`docs/agentes/decompose.md`](docs/agentes/decompose.md) | **Phase 0** | Decomposes complex epics and large demands into evolutionary, monotonic vertical slices. |
-| `/plan` | [`skills/plan/`](skills/plan/SKILL.md) | [`docs/agentes/plan.md`](docs/agentes/plan.md) | **Phase 1** | Outcome-Based debate, Git Flow branch setup, BDD scenarios, SDD blueprints, and Living DoD. |
-| `/implement` | [`skills/implement/`](skills/implement/SKILL.md) | [`docs/agentes/implement.md`](docs/agentes/implement.md) | **Phase 2** | TDD Developer: Batch planning, AAA unit tests (Red), minimal SOLID code (Green), micro-refactor (Blue), and checkpoints. |
-| `/refactor` | [`skills/refactor/`](skills/refactor/SKILL.md) | [`docs/agentes/refactor.md`](docs/agentes/refactor.md) | **Phase 3** | Clean Code & SOLID: Refactors green code strictly scoped to files modified in the diff. |
-| `/review` | [`skills/review/`](skills/review/SKILL.md) | [`docs/agentes/review.md`](docs/agentes/review.md) | **Phase 4** | Iterative audit loop: Architecture, Security (OWASP), AST Quality, Performance, and Resilience. |
-| `/docs` | [`skills/docs/`](skills/docs/SKILL.md) | [`docs/agentes/docs.md`](docs/agentes/docs.md) | **Phase 5** | Updates living technical documentation (module/root READMEs) and docstrings traceable to Obsidian. |
-| `/release` | [`skills/release/`](skills/release/SKILL.md) | [`docs/agentes/release.md`](docs/agentes/release.md) | **Publication** | Verifies 100% DoD, runs staged E2E integration test suite, computes SemVer, generates Changelog, and finishes Git Flow. |
-| `/test-fix` | [`skills/test-fix/`](skills/test-fix/SKILL.md) | [`docs/agentes/test-fix.md`](docs/agentes/test-fix.md) | **Support** | Reactive Debugger: Analyzes terminal tracebacks and applies minimal surgical fixes to production code. |
-| `/ask` | [`skills/ask/`](skills/ask/SKILL.md) | [`docs/agentes/ask.md`](docs/agentes/ask.md) | **Support** | Read-Only Oracle: Answers conceptual and technical questions without modifying any files. |
-| `/debug` | [`skills/debug/`](skills/debug/SKILL.md) | [`docs/agentes/debug.md`](docs/agentes/debug.md) | **Support** | Forensic Investigator: Diagnoses runtime crashes and complex systemic failures using 5 Whys. |
-| `/infra` | [`skills/infra/`](skills/infra/SKILL.md) | [`docs/agentes/infra.md`](docs/agentes/infra.md) | **Support** | DevOps/SysAdmin: Safely manages dependency manifests, container configurations, and environment variables. |
-| `@obsidian` | [`skills/obsidian/`](skills/obsidian/SKILL.md) | [`docs/skills/obsidian.md`](docs/skills/obsidian.md) | **Foundation** | Second Brain SSOT: Vault knowledge graph, metadata queries, and surgical patch governance. |
+| Command | Skill Package | Phase / Role | Description / Main Responsibility |
+| :--- | :--- | :--- | :--- |
+| `/decompose` | [`skills/decompose/`](skills/decompose/SKILL.md) | **Phase 0** | Decomposes complex epics and large demands into evolutionary, monotonic vertical slices. |
+| `/plan` | [`skills/plan/`](skills/plan/SKILL.md) | **Phase 1** | Outcome-Based debate, Git Flow branch setup, BDD scenarios, SDD blueprints, and Living DoD. |
+| `/implement` | [`skills/implement/`](skills/implement/SKILL.md) | **Phase 2** | TDD Developer: Batch planning, AAA unit tests (Red), minimal SOLID code (Green), micro-refactor (Blue), and checkpoints. |
+| `/refactor` | [`skills/refactor/`](skills/refactor/SKILL.md) | **Phase 3** | Clean Code & SOLID: Refactors green code strictly scoped to files modified in the diff. |
+| `/review` | [`skills/review/`](skills/review/SKILL.md) | **Phase 4** | Iterative audit loop: Architecture, Security (OWASP), AST Quality, Performance, and Resilience. |
+| `/docs` | [`skills/docs/`](skills/docs/SKILL.md) | **Phase 5** | Updates living technical documentation (module/root READMEs) and docstrings traceable to Obsidian. |
+| `/release` | [`skills/release/`](skills/release/SKILL.md) | **Publication** | Verifies 100% DoD, runs staged E2E integration test suite, computes SemVer, generates Changelog, and finishes Git Flow. |
+| `/test-fix` | [`skills/test-fix/`](skills/test-fix/SKILL.md) | **Support** | Reactive Debugger: Analyzes terminal tracebacks and applies minimal surgical fixes to production code. |
+| `/ask` | [`skills/ask/`](skills/ask/SKILL.md) | **Support** | Read-Only Oracle: Answers conceptual and technical questions without modifying any files. |
+| `/debug` | [`skills/debug/`](skills/debug/SKILL.md) | **Support** | Forensic Investigator: Diagnoses runtime crashes and complex systemic failures using 5 Whys. |
+| `/infra` | [`skills/infra/`](skills/infra/SKILL.md) | **Support** | DevOps/SysAdmin: Safely manages dependency manifests, container configurations, and environment variables. |
+| `@obsidian` | [`skills/obsidian/`](skills/obsidian/SKILL.md) | **Foundation** | Second Brain SSOT: Vault knowledge graph, metadata queries, and surgical patch governance. |
 
 > [!NOTE]
-> **Foundational Core Protocol**: The global engine directives (*Think First, Code Later*, Double-Strike Rule, initial status banner, SSOT memory governance, and worktree cleanup) are specified in [`prompts/gemini.md`](prompts/gemini.md) and documented in [`docs/agentes/core-gemini.md`](docs/agentes/core-gemini.md).
+> **Foundational Core Protocol**: The global engine directives (*Active Co-Programming*, Outcome-Based Socratic inquiry with `ask_question`, initial status banner, SSOT memory governance, and worktree cleanup) are specified in [`prompts/gemini.md`](prompts/gemini.md).
 
 ---
 
@@ -285,7 +285,7 @@ All 12 skills adhere to the Single Responsibility Principle (SRP) and Google Ant
 
 | Category | Skill Package | Bundled References & Tooling | Primary Responsibility |
 | :--- | :--- | :--- | :--- |
-| **Conception & Slicing** | [`decompose`](skills/decompose/SKILL.md) | `references/decompose-protocol.md`, `resources/task-template.md` | Monotonic vertical slicing and roadmap breakdown for complex epics. |
+| **Conception & Slicing** | [`decompose`](skills/decompose/SKILL.md) | `references/decompose-*`, `resources/task-template.md` | Monotonic vertical slicing and roadmap breakdown for complex epics. |
 | **Conception & Slicing** | [`plan`](skills/plan/SKILL.md) | `references/plan-*`, `resources/plan-template.md`, `scripts/validate_*.py` | Outcome-Based debate, Gherkin BDD, typed SDD contracts, Git Flow, and Living DoD setup. |
 | **TDD Construction** | [`implement`](skills/implement/SKILL.md) | `references/tdd-*`, `resources/*-template.py` | Context batching, Red-Green-Blue TDD cycle, micro-checkpoints, and DoD logging. |
 | **TDD Construction** | [`test-fix`](skills/test-fix/SKILL.md) | `references/test-fix-protocol.md`, `resources/diagnostic-report-template.md` | Rapid traceback diagnosis, 1-sentence root cause isolation, and minimal fixes. |
@@ -300,18 +300,13 @@ All 12 skills adhere to the Single Responsibility Principle (SRP) and Google Ant
 
 ---
 
-## 📚 Deep Delegation (Technical Manuals)
+## 📚 Deep Delegation & Technical References
 
-To explore architecture details, execution runbooks, and project standards, consult the detailed documentation in [`docs/`](docs/):
+To explore architecture details, execution runbooks, and project standards:
 
-* 📖 **[Ecosystem Architecture](docs/README.md)**: Comprehensive architectural view of the Agent Skills execution model and lifecycle.
-* 🤖 **[Agents & Workflows Catalog](docs/agentes/README.md)**: Complete guide to orchestrator workflows, quality gates, and multi-chat phase transitions.
-* 🛡️ **[Core Engine Protocol](docs/agentes/core-gemini.md)**: Foundational pair-programming rules (*Think First, Code Later*, Double-Strike Rule, worktree cleanup, status banners).
-* 🧰 **[Modular Skills Catalog](docs/skills/README.md)**: Detailed specification for skills and operational reference guides.
-* 🧠 **[Second Brain & Obsidian SSOT](docs/skills/obsidian.md)**: Obsidian Vault governance, metadata search, surgical patching, and ADR management.
-* 📋 **[Living DoD & Execution Log](docs/skills/dod.md)**: Definition of Done governance, timeline tracking (`dod-[slug].md`), and mathematical release gates.
-* 🔒 **[OWASP Security Code Review Reference](docs/references/OWASP_Code_Review_Guide_v2.pdf)**: Authoritative OWASP Code Review Guide v2 used by the Phase 4 review agent.
-* 📜 **[Architecture Evolution History](docs/change_history/planejamento_migracao_workflows_para_skills.md)**: Migration from legacy workflows to modern 12 Agent Skills.
+* 🛡️ **[Core Engine Protocol](prompts/gemini.md)**: Foundational pair-programming rules (*Active Co-Programming*, Socratic inquiry with `ask_question`, worktree cleanup, status banners).
+* 🧰 **[Modular Skills Catalog](skills/)**: All 12 self-contained Agent Skills with operational references, schemas, scripts, and templates.
+* 🔒 **[OWASP Security Code Review Reference](docs/references/OWASP_Code_Review_Guide_v2.pdf)**: Authoritative OWASP Code Review Guide v2 used by the review agent.
 
 ---
 

@@ -45,9 +45,9 @@ When working on a feature that requires an isolated environment without affectin
 ```bash
 git worktree add -b feat/[slug] ../worktrees/[slug] develop
 ```
-- After completing work and merging, clean up the worktree:
+- After completing work and merging back into the base branch, cleanly prune the worktree and branch:
   ```bash
-  git worktree remove ../worktrees/[slug]
+  git -C <path> worktree remove ../worktrees/[slug] && git -C <path> branch -d feat/[slug]
   ```
 
 ---
