@@ -1,7 +1,7 @@
-# 🪐 Antigravity Agentic Workflows
+# 🪐 Antigravity Agentic Skills
 
 <p align="center">
-  <em>An AI Agent-driven Software Engineering ecosystem based on State Machines, "Second Brain" (Obsidian Vault), and Separation of Concerns.</em>
+  <em>An AI Agent-driven Software Engineering ecosystem based on "Second Brain" (Obsidian Vault), and Separation of Concerns.</em>
 </p>
 
 <p align="center">
