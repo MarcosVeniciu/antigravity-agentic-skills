@@ -5,17 +5,18 @@ description: Surgically debugs test failures from terminal stack traces, isolate
 
 # Skill: Reactive Test Failure Diagnosis & Surgical Remediation (`/test-fix`)
 
-Operates as the **Reactive Debugger** supporting the `/implement` TDD loop and `/refactor` feature refactoring. Ingests terminal error traces, isolates the defect mechanism in exactly one sentence, applies minimal surgical fixes strictly to production code, and maintains repository integrity via the Double-Strike Rule.
+Operates as the **Reactive Debugger** supporting the `/implement` TDD loop, `/refactor` feature refactoring, and `/review` remediation. Ingests terminal error traces, isolates the defect mechanism in exactly one sentence, applies minimal surgical fixes strictly to production code, and maintains repository integrity via the Double-Strike Rule.
 
 ---
 
 ## Universal Operational Guardrails
 
-- **Inviolability of Test Assertions:** Altering, deleting, or loosening test expectations or assertions to force a test pass is strictly prohibited. Edits belong exclusively in production code. (The only exception is fixing a proven syntactic typo in a newly authored unit test during Phase 2 Red phase).
+- **Inviolability of Test Assertions:** Altering, deleting, or loosening test expectations or assertions to force a test pass is strictly prohibited. Edits belong exclusively in production code. (The *only* exception is fixing a proven syntactic typo or broken mock configuration in an uncommitted, newly authored unit test during Phase 2 Red phase; if the test validly reflects BDD/SDD specifications, modifying test assertions is strictly forbidden).
 - **Strict Surgical Scope:** Edit strictly the production lines directly responsible for the test failure. Refactoring surrounding code, modifying unrelated functions, or prematurely optimizing is forbidden.
 - **Root Cause Isolation in 1 Sentence:** Formulate and state the exact root cause in one unambiguous sentence before making any code modifications.
+- **Traceback Ingestion Integrity:** Never guess without complete traceback context. If the provided failure trace is truncated or lacks the bottom-most application frame, execute the isolated test with detailed traceback flags (`-vv --tb=short`) before diagnosing.
 - **Isolated Test Execution:** Always verify fixes by running the targeted failing test in isolation before running the wider suite.
-- **Double-Strike Rule (Immediate Rollback):** At most two consecutive fix attempts are permitted. If the second attempt fails or causes regressions, stop immediately, execute `git reset --hard HEAD`, restore the clean baseline, and re-hypothesize from first principles.
+- **Double-Strike Rule & Escalation to `/debug`:** At most two consecutive fix attempts are permitted. If the second attempt fails or causes regressions, stop immediately, execute `git reset --hard HEAD` and `git clean -fd`, restore the clean baseline, and escalate to `/debug` with the two falsified hypotheses.
 - **Immediate Micro-Checkpoint:** As soon as tests return 100% green, record a local micro-checkpoint (`checkpoint(test-fix): surgical fix for [failure]`) to protect working progress.
 
 ---
@@ -24,23 +25,28 @@ Operates as the **Reactive Debugger** supporting the `/implement` TDD loop and `
 
 ```mermaid
 flowchart TD
-    Trace["Terminal Traceback / Test Failure"] --> S1["<b>Step 1: Context Resolution & Ingestion</b><br/>• Resolve active branch & git status<br/>• Ingest failing test name & traceback<br/>• Inspect active SDD contract if available"]
+    Trace["Terminal Traceback / Test Failure"] --> S1["<b>Step 1: Context Resolution & Ingestion</b><br/>• Resolve active branch & git status<br/>• Ingest failing test name & traceback<br/>• Run -vv --tb=short if trace is truncated"]
     S1 --> S2["<b>Step 2: Traceback Triage & 1-Sentence RCA</b><br/>• Classify error: Type, Import, Logic, Mock<br/>• Identify failing frame & trigger expression<br/>• Formulate 1-sentence Root Cause"]
-    S2 --> S3["<b>Step 3: Surgical Fix & Isolated Verification</b><br/>• Apply minimal edit to production code<br/>• Re-run targeted test in isolation<br/>• Enforce Double-Strike Rule if failed"]
+    S2 --> S3["<b>Step 3: Surgical Fix & Isolated Verification</b><br/>• Apply minimal edit to production code<br/>• Re-run targeted test in isolation<br/>• Enforce Double-Strike -> Escalate to /debug"]
     S3 --> S4["<b>Step 4: Checkpoint & Handover</b><br/>• Verify full module test suite is green<br/>• Commit micro-checkpoint via git<br/>• Issue handover back to active workflow"]
 ```
 
 ### Step 1: Context Resolution & Traceback Ingestion
 1. Verify workspace status using non-destructive diagnostics:
    ```bash
-   git -C <path> status --short && git -C <path> --no-pager branch --show-current
+   git -C <path> status --short
+   git -C <path> --no-pager branch --show-current
    ```
 2. Ingest the user-provided terminal output, capturing:
    - Failing test identifier (`path/to/test_file.py::test_name`).
    - Exception class (e.g., `AssertionError`, `TypeError`, `KeyError`, `AttributeError`).
    - Exact failure message and bottom-most traceback frame pointing to source code.
-3. If working within a feature lifecycle, retrieve relevant architectural contracts from the Obsidian Vault (`type: sdd` and `feature: [slug]`) via `@obsidian` to ensure the fix respects established domain boundaries.
-4. **Detailed Reference:** Review [`./references/test-fix-protocol.md`](./references/test-fix-protocol.md).
+3. **Traceback Fallback:** If the output provided by the user is truncated or lacks the bottom frame, run the targeted test to obtain complete trace evidence:
+   ```bash
+   python -m pytest path/to/test_file.py -k test_name -vv --tb=short
+   ```
+4. If working within a feature lifecycle, retrieve relevant architectural contracts from the Obsidian Vault (`type: sdd` and `feature: [slug]`) via `@obsidian` to ensure the fix respects established domain boundaries.
+5. **Detailed Reference:** Review [`./references/test-fix-protocol.md`](./references/test-fix-protocol.md).
 
 ### Step 2: Traceback Triage & Root Cause Isolation
 1. Classify the defect using the Error Triage Matrix:
@@ -65,8 +71,17 @@ flowchart TD
    - **FAIL (Strike 2 — Double-Strike Rule Triggered):** Immediately abort the attempt to avoid context poisoning. Execute local rollback:
      ```bash
      git reset --hard HEAD
+     git clean -fd
      ```
-     Report the rollback to the user, state why the hypothesis was invalid, and formulate a new approach.
+     Report the rollback to the user, state why hypotheses 1 and 2 failed, and escalate to `/debug`:
+     ```text
+     Double-Strike triggered. Workspace restored to clean baseline.
+     Escalating to /debug:
+     - Failing Test: path/to/test_file.py::test_name
+     - Hypothesis 1 (Failed): [Mechanism 1]
+     - Hypothesis 2 (Failed): [Mechanism 2]
+     Initiating deep forensic investigation and probing tests via /debug.
+     ```
 
 ### Step 4: Checkpoint & Handover
 1. Execute the entire test module to guarantee zero side-effects or regressions:
@@ -79,7 +94,7 @@ flowchart TD
    git commit -m "checkpoint(test-fix): surgical fix for [concise failure description]"
    ```
 3. Issue the standard phase handover back to the active workflow:
-   > **[NEXT STEP]** *"Surgical fix applied and verified with 100% green tests! Resume active development by running `/implement` (if continuing TDD batches) or `/refactor` (if continuing feature refactoring)."*
+   > **[NEXT STEP]** *"Surgical fix applied and verified with 100% green tests! Resume active development by running `/implement` (if in TDD batches), `/refactor` (if in feature refactoring), or `/review` (if addressing audit findings)."*
 
 ---
 

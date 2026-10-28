@@ -1,6 +1,6 @@
 # Operational Protocol: Reactive Debugger & Surgical Test Fixing (`/test-fix`)
 
-This operational protocol guides the systematic diagnosis, triage, surgical remediation, and fault-tolerant rollback of failing automated tests during the TDD implementation loop (`/implement`) and feature refactoring (`/refactor`).
+This operational protocol guides the systematic diagnosis, triage, surgical remediation, and fault-tolerant rollback of failing automated tests during the TDD implementation loop (`/implement`), feature refactoring (`/refactor`), and audit remediation (`/review`).
 
 ---
 
@@ -25,7 +25,16 @@ TypeError: unsupported operand type(s) for *: 'NoneType' and 'float'   <-- 0. Ex
 3. **Level 2 (Triggering Call Chain):** Trace the inputs passed from the caller frame into the failing frame to discover where invalid state originated.
 4. **Level 3 (Test Assertion Context):** Review what the test was validating (Arrange inputs, Act invocation, Assert expectations).
 
-### 1.2. Failure Classification Matrix
+### 1.2. Truncated Traceback Fallback
+If the user provides an incomplete error log or truncated traceback that omits the bottom application frame:
+- **Do not guess or speculate.**
+- Execute the isolated test in the terminal with detailed short traceback flags:
+  ```bash
+  python -m pytest path/to/test_file.py -k test_name -vv --tb=short
+  ```
+- Use the refreshed terminal output to extract the exact frame and variables.
+
+### 1.3. Failure Classification Matrix
 
 | Category | Typical Exception | Primary Defect Source | Surgical Remedy |
 | :--- | :--- | :--- | :--- |
@@ -58,10 +67,11 @@ $$\text{[Category]}: \text{[Target Function/Component]} \text{ fails because } \
 ## 3. Surgical Fix Principles (Zero Collateral Damage)
 
 When applying the fix, follow these strict engineering constraints:
-1. **Production Code Exclusivity:** Modify only the production file where the defect resides. Never modify test assertions or mock setups to disguise production bugs.
-2. **Minimal Diff Size:** Make the smallest possible change that makes the test pass cleanly. Do not introduce new abstractions, refactor surrounding functions, or add unrequested features.
-3. **Preserve Public API Contracts:** Do not change method signatures, rename arguments, or alter return types if existing tests or callers depend on them.
-4. **Clean Code & Type Annotations:** Ensure newly added lines include strict type hints and adhere to project linting rules.
+1. **Production Code Exclusivity:** Modify only the production file where the defect resides. Never modify test assertions or mock expectations to disguise production defects.
+2. **Strict Test Inviolability Exception:** The *only* permitted modification to test files is correcting a proven syntactic typo or broken mock configuration authored in the active, uncommitted Red phase of `/implement`. The test must still enforce the exact BDD/SDD specification. Weakening assertions or lowering thresholds to make code pass is strictly forbidden.
+3. **Minimal Diff Size:** Make the smallest possible change that makes the test pass cleanly. Do not introduce new abstractions, refactor surrounding functions, or add unrequested features.
+4. **Preserve Public API Contracts:** Do not change method signatures, rename arguments, or alter return types if existing tests or callers depend on them.
+5. **Clean Code & Type Annotations:** Ensure newly added lines include strict type hints and adhere to project linting rules.
 
 ---
 
@@ -100,9 +110,9 @@ flowchart TD
     Strike1 --> Att2["Attempt 2: Apply 2nd Surgical Fix"]
     Att2 --> Test2{"Run Isolated Test"}
     Test2 -- Pass --> Success
-    Test2 -- Fail --> Strike2["<b>Strike 2 Triggered (DOUBLE-STRIKE)</b><br/>Immediate Rollback Required"]
-    Strike2 --> Rollback["Execute: git reset --hard HEAD"]
-    Rollback --> Escalate["Halt session, report failed hypotheses,<br/>request clarification or switch to /debug"]
+    Test2 -- Fail --> Strike2["<b>Strike 2 Triggered (DOUBLE-STRIKE)</b><br/>Immediate Rollback & Escalate"]
+    Strike2 --> Rollback["Execute: git reset --hard HEAD; git clean -fd"]
+    Rollback --> Escalate["Export Handover Payload -> Escalate to /debug"]
 ```
 
 ### Protocol on Strike 2:
@@ -112,13 +122,16 @@ flowchart TD
    git reset --hard HEAD
    git clean -fd
    ```
-3. **Diagnostic Report:** Explain to the user:
-   - What hypothesis 1 was and why it failed.
-   - What hypothesis 2 was and why it failed.
-   - That the workspace has been restored to a 100% clean baseline.
-   - Recommend either:
-     - Providing additional log context.
-     - Escalating to `/debug` for deep 5 Whys forensic analysis if the issue is systemic.
+3. **Structured Escalation to `/debug`:** Explain why hypotheses 1 and 2 failed, report that the baseline is clean, and hand over to `/debug` with the following payload:
+   ```text
+   Double-Strike triggered in /test-fix. Workspace rolled back to clean HEAD.
+   Handover to /debug:
+   - Target Test Node: [path/to/test.py::test_name]
+   - Observed Traceback: [Exception and bottom application frame]
+   - Strike 1 (Falsified): [Mechanism 1] -> [Why it failed]
+   - Strike 2 (Falsified): [Mechanism 2] -> [Why it failed]
+   - Next Step: Initiate forensic investigation with probing tests via /debug.
+   ```
 
 ---
 

@@ -66,9 +66,9 @@ flowchart TD
 3. Upon approval, persist the blueprint to the Obsidian Vault at `01-concepcao/epic-[slug].md`.
 4. Issue the phase transition handover recommendation:
    ```bash
-   git switch develop && git pull --ff-only && git switch -c feature/[first-feature-slug]
+   git switch develop; git pull --ff-only; git switch -c feature/[first-feature-slug]
    ```
-   > **[NEXT STEP]** *"Macro-architecture decomposition complete! Run the git command above, open a **NEW CHAT**, and execute `/plan` to initiate Phase 1 feature conception."*
+   > **[NEXT STEP]** *"Macro-architecture decomposition complete! Run the git command above and execute `/plan` to initiate Phase 1 feature conception."*
 
 ---
 

@@ -5,7 +5,7 @@
 **Diagnosis Date:** [YYYY-MM-DD]  
 **Component:** `[path/to/production/component.py]`  
 **Target Test Node:** `[path/to/test_file.py::test_name]`  
-**Double-Strike Status:** Strike 0 (Initial) | Strike 1 (Refining) | Green (Passed)  
+**Double-Strike Status:** Strike 0 (Initial) | Strike 1 (Refining) | Green (Passed) | Strike 2 (Escalated to /debug)  
 
 ---
 
@@ -49,5 +49,5 @@
   ```bash
   python -m pytest [path/to/test_file.py] -v
   ```
-- [ ] 4. If Strike 2 triggered, execute immediate emergency rollback: `git reset --hard HEAD`.
+- [ ] 4. If Strike 2 triggered, execute rollback (`git reset --hard HEAD; git clean -fd`) and export handover payload to `/debug`.
 - [ ] 5. Record micro-checkpoint: `checkpoint(test-fix): surgical fix for [failure]`.

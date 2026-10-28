@@ -114,6 +114,6 @@ Once the decomposition artifact is generated:
 2. Compare the output against the representative scenario in [`../examples/decompose-example.md`](../examples/decompose-example.md).
 3. Provide the exact transition command pointing to the first sub-feature:
    ```bash
-   git switch develop && git pull --ff-only && git switch -c feature/[first-feature-slug]
+   git switch develop; git pull --ff-only; git switch -c feature/[first-feature-slug]
    ```
 4. Handover to Phase 1 via `/plan`.
