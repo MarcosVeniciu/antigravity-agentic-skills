@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ---
 
+## Release Notes - v1.2.0 (2026-10-28)
+
+### New Features
+- `[feat: debug]`: Added Empirical Probing Tests (Characterization Testing) protocol to [`skills/debug/SKILL.md`](skills/debug/SKILL.md) and [`skills/debug/references/debug-methodology.md`](skills/debug/references/debug-methodology.md), prohibiting speculative code editing and requiring automated probing tests to deterministically prove or invalidate hypotheses before fixing.
+- `[feat: test-fix]`: Integrated escalation protocol to `/debug` when the Double-Strike threshold (2 consecutive failed attempts) is reached, transferring the failing test signature and falsified hypotheses to prevent dead-end loops. Enforced verification that regression tests fail on unpatched code.
+
+### Improvements & Cross-Platform Compatibility
+- `[refactor: compatibility]`: Standardized commands and cross-platform execution syntax for Windows PowerShell (`python -m pytest` and `git -C <path>`) across `skills/test-fix`, `skills/debug`, `skills/decompose`, and `skills/plan`.
+- `[refactor: templates]`: Enhanced RCA and Diagnostic Report templates in [`skills/debug/resources/rca-template.md`](skills/debug/resources/rca-template.md) and [`skills/test-fix/resources/diagnostic-report-template.md`](skills/test-fix/resources/diagnostic-report-template.md) with explicit probing test outcomes and escalation links.
+
+---
+
 ## Release Notes - v1.1.0 (2026-10-27)
 
 ### New Features
