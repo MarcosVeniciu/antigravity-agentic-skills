@@ -4,25 +4,23 @@ This operational guide establishes the engineering protocols for decomposing com
 
 ---
 
-## 1. Outcome-Based Problem Alignment
+## 1. Outcome-Based Problem Alignment & Debate
 
-Before decomposing any initiative, isolate the true business or technical outcome:
+Before decomposing any initiative into tasks, conduct the technical alignment debate according to [`./decompose-debate.md`](./decompose-debate.md):
 
 1. **Desired End-State First:**
-   Define the observable system state when the work is complete.
+   Define the observable system state when the work is complete ($S_1 \dots S_n$).
    - *Anti-Pattern:* "We need to install Redis and create celery tasks." (Activity-based)
    - *Best Practice:* "The system processes image conversions asynchronously, returning task status in under 200ms and notifying clients upon completion." (Outcome-based)
 2. **Treat User Proposals as Hypotheses:**
-   Evaluate whether proposed tools or patterns are strictly necessary or introduce accidental complexity.
-3. **Socratic Interview Protocol:**
-   Limit initial inquiries to **3 to 5 high-impact questions**. Focus exclusively on:
-   - Boundary constraints (storage limits, response SLAs, concurrency expectations).
-   - Security and compliance boundaries (PII, authentication, audit requirements).
-   - Integration interfaces with existing legacy systems.
-4. **Spike Identification:**
-   If a core architectural decision depends on unknown library behavior or external API capabilities, extract a **Spike**:
-   - Sized as a timeboxed investigation (e.g., 2 hours).
-   - Deliverable is an ADR or proof-of-concept documenting findings, never unverified production code.
+   Evaluate whether proposed tools or patterns are strictly necessary or introduce accidental complexity. Eliminate the macro XY Problem.
+3. **Socratic Interview Protocol (`ask_question`):**
+   Limit inquiries to **3 to 5 surgical questions** using the interactive `ask_question` tool. Focus on boundary constraints, SLAs, PII/security, and legacy integration points.
+4. **Macro-Slicing Strategy Matrix:**
+   Formulate 2 to 3 distinct proposals (e.g., MVP-First vs. Contract-First vs. Strangler Fig) before proceeding to task generation.
+5. **Spike Identification:**
+   If a core architectural decision depends on unknown library behavior or external API capabilities, extract a timeboxed **Spike** task ($S \le 2\text{h}$) to establish an ADR or proof-of-concept.
+- **Full Alignment Guide:** Consult [`./decompose-debate.md`](./decompose-debate.md).
 
 ---
 

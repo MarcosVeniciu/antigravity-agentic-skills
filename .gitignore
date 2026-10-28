@@ -5,6 +5,9 @@ __pycache__/
 *.so
 .Python
 env/
+.venv/
+venv/
+ENV/
 build/
 develop-eggs/
 dist/
@@ -23,6 +26,15 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Testing and Quality
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
 # Environment Variables
 .env
 .env.*
@@ -33,6 +45,13 @@ MANIFEST
 *.swp
 *.swo
 .DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Ephemeral Git Worktrees
+worktrees/
 
 # Logs and databases
 *.log
@@ -46,3 +65,4 @@ node_modules/
 .obsidian/workspace
 .obsidian/workspace-mobile
 .obsidian/cache/
+

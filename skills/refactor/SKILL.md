@@ -1,17 +1,17 @@
 ---
 name: refactor
-description: Executes macro-refactoring across the entire feature git diff (develop...HEAD), applying Clean Code and SOLID principles while enforcing cyclomatic complexity V(G) <= 10. Use via /refactor.
+description: Executes macro-refactoring across the entire feature git diff (develop...HEAD), applying Clean Code and SOLID principles while enforcing cyclomatic complexity.
 ---
 
 # Skill: Consolidation Macro-Refactoring (`/refactor`)
 
-Orchestrates **Phase 3** of the feature development lifecycle, consolidating architectural design across the complete feature changeset (`git diff develop...HEAD`) while keeping the test suite 100% green and verifying AST cyclomatic complexity ($V(G) \le 10$).
+Orchestrates the feature development lifecycle, consolidating architectural design across the complete feature changeset (`git diff develop...HEAD`) while keeping the test suite 100% green and verifying AST cyclomatic complexity ($V(G) \le 10$).
 
 ---
 
 ## Operational Scope & Invariant Rules
 
-- **Execution Context:** Phase 3 operates after all functional TDD batches in `/implement` are complete.
+- **Execution Context:** Operates after all functional TDD batches in `/implement` are complete.
 - **Scope Boundary:** Restricted strictly to files modified on the active feature branch (`git --no-pager diff develop...HEAD --name-only`). Untouched legacy code is out of scope.
 - **Macro vs. Micro Boundary:** Micro-refactoring of individual classes was completed during the Blue Phase of `/implement`. `/refactor` addresses systemic, cross-module SOLID compliance, interface segregation, dependency inversion, and algorithmic efficiency.
 - **Invariant Safety Rules:**

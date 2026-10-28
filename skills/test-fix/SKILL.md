@@ -1,11 +1,11 @@
 ---
 name: test-fix
-description: Surgically debugs test failures from terminal stack traces, isolates root causes in 1 sentence, and applies minimal fixes to production code. Use via /test-fix.
+description: Surgically debugs test failures from terminal stack traces, isolates root causes in 1 sentence, and applies minimal fixes to production code.
 ---
 
 # Skill: Reactive Test Failure Diagnosis & Surgical Remediation (`/test-fix`)
 
-Operates as the **Reactive Debugger** supporting Phase 2 (`/implement` TDD loop) and Phase 3 (`/refactor` feature refactoring). Ingests terminal error traces, isolates the defect mechanism in exactly one sentence, applies minimal surgical fixes strictly to production code, and maintains repository integrity via the Double-Strike Rule.
+Operates as the **Reactive Debugger** supporting the `/implement` TDD loop and `/refactor` feature refactoring. Ingests terminal error traces, isolates the defect mechanism in exactly one sentence, applies minimal surgical fixes strictly to production code, and maintains repository integrity via the Double-Strike Rule.
 
 ---
 
@@ -33,8 +33,7 @@ flowchart TD
 ### Step 1: Context Resolution & Traceback Ingestion
 1. Verify workspace status using non-destructive diagnostics:
    ```bash
-   git status --short
-   git --no-pager branch --show-current
+   git -C <path> status --short && git -C <path> --no-pager branch --show-current
    ```
 2. Ingest the user-provided terminal output, capturing:
    - Failing test identifier (`path/to/test_file.py::test_name`).

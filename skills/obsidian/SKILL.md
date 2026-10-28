@@ -1,6 +1,6 @@
 ---
 name: obsidian
-description: Governs the Obsidian knowledge vault by indexing notes, creating atomic documents, executing surgical patches, and maintaining bidirectional wikilinks. Use via /obsidian.
+description: Governs the Obsidian knowledge vault by indexing notes, creating atomic documents, executing surgical patches, and maintaining bidirectional wikilinks.
 ---
 
 # Skill: Obsidian Vault Governance (`/obsidian`)
