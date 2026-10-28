@@ -43,10 +43,10 @@
 
 ## 3. Forensic Traceability & Hypothesis Matrix
 
-| ID | Component & Frame | Investigated Hypothesis / Defect Mechanism | Primary Evidence / Falsification Probe | Diagnostic Status & Traceability |
+| ID | Component & Frame | Investigated Hypothesis / Defect Mechanism | Primary Evidence / Probing Test / Falsification Probe | Diagnostic Status & Traceability |
 | :--- | :--- | :--- | :--- | :---: |
-| **H1** | `[path/to/caller.py:42]` | [Hypothesis 1: External gateway timeout or network degradation] | [Probe with network latency simulation in MRE] | 🟢 **Falsified** |
-| **H2** | `[path/to/component.py:88]` | [Hypothesis 2: Unhandled exception leads to connection pool leak] | [Monitor pool.checkedout() count during simulated failure] | 🔴 **Confirmed Root Cause** ([see Finding 1](#-finding-1-root-cause-isolation)) |
+| **H1** | `[path/to/caller.py:42]` | [Hypothesis 1: External gateway timeout or network degradation] | [Probing test with network latency simulation in MRE] | 🟢 **Falsified** |
+| **H2** | `[path/to/component.py:88]` | [Hypothesis 2: Unhandled exception leads to connection pool leak] | [Probing test: monitor pool.checkedout() count during simulated failure] | 🔴 **Confirmed Root Cause** ([see Finding 1](#-finding-1-root-cause-isolation)) |
 
 ---
 
@@ -81,7 +81,7 @@
 
 ## 6. Verification & Regression Prevention Plan
 
-### 6.1. Minimal Reproducible Example (MRE) / Test Plan
+### 6.1. Empirical Probing Test / MRE Execution
 ```bash
 # Command to execute isolated reproduction test
 python -m pytest [path/to/test_regression.py] -v
