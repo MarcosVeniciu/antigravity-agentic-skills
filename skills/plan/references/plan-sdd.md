@@ -1,10 +1,18 @@
 # Software Design Description Guide: Architecture & Contracts (`plan-sdd`)
 
-This guide establishes the architectural standards for creating the Software Design Description (SDD) during Phase 1 (`/plan`), ensuring robust technical modeling before entering the TDD implementation cycle.
+This guide establishes the architectural standards for creating the Software Design Description (SDD 2.0) during Phase 1 (`/plan`), ensuring robust technical modeling before entering the Goldfish Council review and TDD implementation cycle.
 
 ---
 
-## 1. Clean Architecture & Dependency Inversion Principle (DIP)
+## 1. Context-Zero Translation via `sdd-architect`
+
+To verify that `01-concepcao/bdd-[slug].md` is self-contained and unambiguous:
+- Step 4 is executed by the isolated `sdd-architect` subagent (`Model: "inherit"`, `EnableWriteTools: true`) as defined in [`references/plan-goldfish.md`](./plan-goldfish.md).
+- `sdd-architect` has **zero access** to the Step 1 chat transcript; it derives the architecture strictly from `01-concepcao/bdd-[slug].md`, the approved proposal tier, and the codebase structure.
+
+---
+
+## 2. Clean Architecture & Dependency Inversion Principle (DIP)
 
 Every technical design must adhere strictly to Clean Architecture boundaries:
 
@@ -27,16 +35,17 @@ Every technical design must adhere strictly to Clean Architecture boundaries:
 
 ---
 
-## 2. Mandatory Dual Visual Modeling (Mermaid.js)
+## 3. Mandatory Dual Visual Modeling & Semantic Parity (Mermaid.js)
 
-Every SDD blueprint **MUST** contain both diagram models:
+Every SDD blueprint **MUST** contain both diagram models with **100% semantic method parity**:
 
-### 2.1. Technical Execution Flow (`sequenceDiagram`)
+### 3.1. Technical Execution Flow (`sequenceDiagram`)
 - Traces execution across layers: `Caller -> Controller -> Domain Service -> Port -> Adapter/Fake`.
-- **Mandatory Syntax Rules:**
+- **Mandatory Syntax & Semantic Rules:**
   - Must include `autonumber`.
   - All participant labels and message texts containing spaces, parentheses, or symbols **MUST be enclosed in double quotes** (`"..."`).
-  - Must visualize both success flows and error branches (`alt / else`).
+  - Must visualize both success flows and error branches (`alt / else`) corresponding to `@unhappy-path`, `@security`, and `@concurrency` scenarios in `01-concepcao/bdd-[slug].md`.
+  - Every internal method call on a solid arrow (`->>` or `->`, e.g., `"register_user(req)"`, `"save(user)"`) **MUST match a declared method name in the `classDiagram`**.
 
 ```mermaid
 sequenceDiagram
@@ -46,17 +55,23 @@ sequenceDiagram
     participant Service as "Domain Service"
     participant Port as "Repository Port"
     
-    Client->>API: "POST /resource (RequestDTO)"
-    API->>Service: "execute(dto)"
-    Service->>Port: "find_by_unique_key(key)"
-    Port-->>Service: "None (Available)"
-    Service->>Port: "save(entity)"
-    Port-->>Service: "persisted_entity"
-    Service-->>API: "ResponseDTO"
-    API-->>Client: "HTTP 201 Created (ResponseDTO)"
+    Client->>API: "POST /resource (UserCreateRequest)"
+    API->>Service: "register_user(req)"
+    Service->>Port: "find_by_email(email)"
+    alt Email Already Exists (@unhappy-path)
+        Port-->>Service: "existing_user"
+        Service-->>API: "DuplicateEntityError"
+        API-->>Client: "HTTP 409 Conflict"
+    else Email Available (@happy-path)
+        Port-->>Service: "None"
+        Service->>Port: "save(user)"
+        Port-->>Service: "persisted_user"
+        Service-->>API: "UserResponseDTO"
+        API-->>Client: "HTTP 201 Created (UserResponseDTO)"
+    end
 ```
 
-### 2.2. Component & Contract Structure (`classDiagram`)
+### 3.2. Component & Contract Structure (`classDiagram`)
 - Specifies class names, method signatures with typed arguments and returns, and relationships.
 - Annotate Port interfaces with `<<Interface>>`.
 - Annotate in-memory test doubles with `<<Fake>>` or `<<Mock>>`.
@@ -94,16 +109,16 @@ classDiagram
 
 ---
 
-## 3. Typed Contracts & Boundary Schemas
+## 4. Typed Contracts & Boundary Schemas
 
 Define typed request, response, and entity models using language-native schemas (e.g., Pydantic in Python or Zod in TypeScript):
 - Map required fields, optional fields with defaults, and strict validation constraints.
-- Define typed business exceptions (e.g., `DuplicateEntityError`, `EntityNotFoundError`).
+- Define typed business exceptions (e.g., `DuplicateEntityError`, `EntityNotFoundError`) covering all negative BDD scenarios.
 - Represent contracts in pure YAML using [`resources/sdd-contract-template.yaml`](../resources/sdd-contract-template.yaml).
 
 ---
 
-## 4. File Impact Analysis Matrix
+## 5. File Impact Analysis Matrix
 
 Before code changes are made in Phase 2, classify every anticipated file alteration:
 
@@ -116,11 +131,11 @@ Before code changes are made in Phase 2, classify every anticipated file alterat
 
 ---
 
-## 5. Automated Validation Gate
+## 6. Automated Syntax & Semantic Validation Gate
 
-Validate the completed SDD artifact using the validator script:
+Validate the completed SDD artifact and its cross-artifact parity with the BDD specification using the validator script:
 ```bash
-python skills/plan/scripts/validate_sdd_contracts.py 01-concepcao/sdd-[slug].md
+python skills/plan/scripts/validate_sdd_contracts.py 01-concepcao/sdd-[slug].md --bdd 01-concepcao/bdd-[slug].md
 ```
 - **Validation Script:** [`scripts/validate_sdd_contracts.py`](../scripts/validate_sdd_contracts.py)
 - **Contract Schema Template:** [`resources/sdd-contract-template.yaml`](../resources/sdd-contract-template.yaml)
