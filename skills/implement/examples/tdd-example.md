@@ -1,25 +1,35 @@
 # Real-World Walkthrough: TDD Cycle Example (`examples/tdd-example.md`)
 
-This example demonstrates the execution of a complete TDD cycle for **Batch 1: Payment Processing** within the feature `payment-gateway`.
+This example demonstrates the execution of a complete SDD 2.0 TDD cycle for **Batch 1: Payment Processing** within the feature `payment-gateway`.
 
 ---
 
-## 1. Batch Definition (`task_list.md`)
+## 1. Batch Definition & Explicit Acceptance Criteria (`task_list.md`)
 
 ```markdown
 ## Batch 1: Core Payment Processing Use Case
-- [ ] Write unit tests `tests/unit/test_payment_service.py` (Red)
-- [ ] Implement `src/payment/service.py` (Green)
-- [ ] Micro-refactor local service methods (Blue)
-- [ ] Update Living DoD timeline
-- [ ] Commit batch checkpoint
+- **Target Files:**
+  - Test: `tests/unit/test_payment_service.py`
+  - Code: `src/payment/service.py`
+- **Acceptance Criteria (SDD & BDD Contract Mapping):**
+  - [ ] **SDD Contracts Implemented:** `IPaymentGateway` (`charge`), `PaymentRequest`, `PaymentResult`, `PaymentDeniedError`, and `ProcessPaymentUseCase` (`execute`).
+  - [ ] **BDD Scenarios Covered in Unit Tests:**
+    - `@happy-path`: Scenario "Process valid payment when funds are available" -> `test_should_process_payment_successfully_when_funds_are_available()`
+    - `@unhappy-path`: Scenario "Reject payment when gateway denies charge" -> `test_should_raise_payment_denied_error_when_gateway_declines()`
+  - [ ] **Quality & Isolation Invariants:** 100% AAA unit tests passing with `create_autospec`, methods <= 25 lines, and `check_sdd_drift.py --batch` exit code 0.
+- **Execution Steps:**
+  - [ ] Write unit tests `tests/unit/test_payment_service.py` (Red)
+  - [ ] Implement `src/payment/service.py` (Green)
+  - [ ] Micro-refactor local service methods (Blue)
+  - [ ] Run batch SDD Drift Gate (`check_sdd_drift.py --batch`)
+  - [ ] Update Living DoD timeline & commit batch checkpoint
 ```
 
 ---
 
-## 2. Red Phase: AAA Unit Tests
+## 2. Red Phase: AAA Unit Tests (`batch-implementer`)
 
-The developer creates `tests/unit/test_payment_service.py` covering Happy Path, Validation, and IDOR:
+The isolated `batch-implementer` subagent creates `tests/unit/test_payment_service.py` covering the mapped BDD scenarios:
 
 ```python
 from decimal import Decimal
@@ -54,14 +64,17 @@ FAILED tests/unit/test_payment_service.py::test_should_process_payment_successfu
 
 ---
 
-## 3. Green Phase: Minimal Production Code
+## 3. Green Phase: Minimal Production Code (`batch-implementer`)
 
-The developer creates `src/payment/service.py` with minimal typed code to satisfy the test:
+`batch-implementer` creates `src/payment/service.py` with minimal typed code to satisfy the test and SDD contracts:
 
 ```python
 from dataclasses import dataclass
 from decimal import Decimal
 from typing import Protocol, Dict, Any
+
+class PaymentDeniedError(Exception):
+    pass
 
 class IPaymentGateway(Protocol):
     def charge(self, user_id: str, amount: Decimal, currency: str) -> Dict[str, Any]:
@@ -97,11 +110,9 @@ tests/unit/test_payment_service.py::test_should_process_payment_successfully PAS
 
 ---
 
-## 4. Blue Phase: Micro-Refactoring
+## 4. Blue Phase & Batch Drift Check (`batch-implementer`)
 
-With tests 100% green, the developer reviews `ProcessPaymentUseCase` to apply micro-refactoring:
-- Extracts private helper `_verify_transaction_status()` to decouple gateway response parsing.
-- Promotes `"APPROVED"` to a named constant.
+With tests 100% green, `batch-implementer` applies micro-refactoring and runs the Batch Drift Check:
 
 ```python
 APPROVED_STATUS: str = "APPROVED"
@@ -121,21 +132,27 @@ class ProcessPaymentUseCase:
         )
 ```
 
-### Terminal Output (Green Invariant Verification)
+### Terminal Output (Green Invariant & Drift Gate Verification)
 ```text
 $ python -m pytest tests/unit/test_payment_service.py -v
 ============================= test session starts =============================
 tests/unit/test_payment_service.py::test_should_process_payment_successfully PASSED [100%]
 ============================== 1 passed in 0.05s ===============================
+
+$ python skills/implement/scripts/check_sdd_drift.py 01-concepcao/sdd-payment-gateway.md src/payment/service.py --batch
+✅ [PASS] Zero unauthorized specification drift detected between SDD and code.
 ```
 
 ---
 
-## 5. DoD Timeline & Git Checkpoint
+## 5. Orchestrator Governance & Step 3 `flash_lite` Acceptance Verification
 
-1. **Update Living DoD:** Append entry to `01-concepcao/dod-payment-gateway.md`.
-2. **Git Commit:**
+1. **Update Living DoD & `task_list.md`:** Mark Batch 1 criteria `[x]` and append entry to `01-concepcao/dod-payment-gateway.md`.
+2. **Git Checkpoint:**
    ```bash
    git add tests/unit/test_payment_service.py src/payment/service.py
    git commit -m "checkpoint(implement): batch 1 - payment processing use case"
    ```
+3. **Step 3 Post-TDD Verification (`goldfish-drift-auditor` on `Model: "flash_lite"`):**
+   - Full `check_sdd_drift.py` passes with exit code 0.
+   - `goldfish-drift-auditor` (`Model: "flash_lite"`, read-only) confirms `[PASS]: 100%_ACCEPTANCE_VERIFIED`.

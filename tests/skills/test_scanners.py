@@ -18,11 +18,13 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO_ROOT / "skills" / "review" / "scripts"))
 sys.path.insert(0, str(REPO_ROOT / "skills" / "refactor" / "scripts"))
 sys.path.insert(0, str(REPO_ROOT / "skills" / "plan" / "scripts"))
+sys.path.insert(0, str(REPO_ROOT / "skills" / "implement" / "scripts"))
 
 import check_arch_boundaries
 import scan_sinks
 import ast_complexity
 import validate_sdd_contracts
+import check_sdd_drift
 
 
 class TestCheckArchBoundaries(unittest.TestCase):
@@ -306,6 +308,114 @@ Raises `{extra_contracts}` on invalid state.
 """
         sdd_md = self._build_sdd_markdown(seq, cls)
         self.assertFalse(validate_sdd_contracts.validate_sdd_content(sdd_md, "sdd-no-alt.md", bdd_content=bdd))
+
+
+class TestCheckSddDrift(unittest.TestCase):
+    def setUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.base_path = Path(self.temp_dir.name)
+        self.sdd_file = self.base_path / "sdd-payment.md"
+        self.sdd_file.write_text(
+            """# SDD Payment
+## 3. Architecture & Contracts
+```mermaid
+classDiagram
+    class IPaymentGateway {
+        <<Interface>>
+        +charge(user_id: str, amount: Decimal) dict
+    }
+    class ProcessPaymentUseCase {
+        +execute(request: PaymentRequest) PaymentResult
+        -_format_result(raw: dict) PaymentResult
+    }
+    class InMemoryPaymentGateway {
+        <<Fake>>
+        +charge(user_id: str, amount: Decimal) dict
+    }
+```
+
+```yaml
+contracts:
+  - name: "ProcessPayment"
+    exceptions:
+      - name: "PaymentDeniedError"
+        status_code: 402
+```
+
+## 4. File Impact Analysis
+| File Path | Change Type |
+|---|---|
+| `src/payment/service.py` | Additive |
+""",
+            encoding="utf-8",
+        )
+
+    def tearDown(self):
+        self.temp_dir.cleanup()
+
+    def test_zero_drift_passes_full_gate(self):
+        src_dir = self.base_path / "src" / "payment"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        svc_file = src_dir / "service.py"
+        svc_file.write_text(
+            "class PaymentDeniedError(Exception): pass\n"
+            "class IPaymentGateway:\n"
+            "    def charge(self, user_id, amount): pass\n"
+            "class ProcessPaymentUseCase:\n"
+            "    def execute(self, request): pass\n",
+            encoding="utf-8",
+        )
+        findings, errors = check_sdd_drift.check_drift(
+            self.sdd_file, [svc_file], batch_mode=False, check_files=True
+        )
+        self.assertEqual(len(errors), 0)
+        self.assertEqual(len(findings), 0)
+
+    def test_batch_mode_ignores_future_classes_but_catches_missing_method(self):
+        src_dir = self.base_path / "src" / "payment"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        svc_file = src_dir / "service.py"
+        # Batch 1 only implements IPaymentGateway, but forgot 'charge' method
+        svc_file.write_text(
+            "class IPaymentGateway:\n"
+            "    def wrong_method_name(self): pass\n",
+            encoding="utf-8",
+        )
+        findings, errors = check_sdd_drift.check_drift(
+            self.sdd_file, [svc_file], batch_mode=True
+        )
+        self.assertEqual(len(errors), 0)
+        # Should NOT complain about missing ProcessPaymentUseCase or PaymentDeniedError in batch_mode,
+        # but MUST flag missing IPaymentGateway.charge
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].category, "MISSING_METHOD")
+        self.assertEqual(findings[0].symbol, "IPaymentGateway.charge")
+
+    def test_pivots_file_authorizes_drift(self):
+        src_dir = self.base_path / "src" / "payment"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        svc_file = src_dir / "service.py"
+        svc_file.write_text(
+            "class IPaymentGateway:\n"
+            "    def charge(self, user_id, amount): pass\n"
+            "class ProcessPaymentUseCase:\n"
+            "    def execute(self, request): pass\n",
+            encoding="utf-8",
+        )
+        pivots_file = self.base_path / "pivots-payment.md"
+        pivots_file.write_text(
+            "Replaced PaymentDeniedError with standard HTTPException in controller.",
+            encoding="utf-8",
+        )
+        findings, errors = check_sdd_drift.check_drift(
+            self.sdd_file, [svc_file], pivots_path=pivots_file, batch_mode=False
+        )
+        self.assertEqual(len(errors), 0)
+        unauthorized = [f for f in findings if not f.authorized_by_pivot]
+        authorized = [f for f in findings if f.authorized_by_pivot]
+        self.assertEqual(len(unauthorized), 0)
+        self.assertEqual(len(authorized), 1)
+        self.assertEqual(authorized[0].symbol, "PaymentDeniedError")
 
 
 if __name__ == "__main__":

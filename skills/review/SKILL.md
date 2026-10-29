@@ -1,28 +1,28 @@
 ---
 name: review
-description: Conducts rigorous, script-first multi-domain code reviews across the git diff in 5 domains (Architecture, OWASP Security, AST Quality, Performance, Resilience).
+description: Conducts rigorous, script-first multi-domain code reviews across the git diff in 5 parallel Flash subagents (Architecture + SDD Drift Gate, OWASP Security, AST Quality, Performance, Resilience).
 ---
 
-# Skill: Specialized Multi-Domain Code Review (`/review`)
+# Skill: Specialized Multi-Domain Code Review (`/review` — SDD 2.0 Map-Reduce)
 
-Orchestrates the specialized audit phase of the feature development lifecycle, conducting exhaustive, script-first architectural, security, and quality code audits across all changes introduced in the feature branch.
+Orchestrates the specialized audit phase of the feature development lifecycle under the **SDD 2.0 Map-Reduce** architecture, running deterministic pre-flight scanners (including the **SDD Drift Gate**) followed by **5 parallel context-isolated domain subagents** (`Model: "flash"`) across all changes introduced in the feature branch.
 
 ---
 
 ## Operating Modes
 
 1. **Mode A — Audit-Only (Default):**
-   - Inspects modified files and lines across the branch diff.
-   - Runs automated domain scanners to prioritize inspection.
-   - Conducts taint analysis and call hierarchy inspection (1-2 levels outside diff).
-   - Maps confirmed findings, assesses severity/confidence, and generates standardized domain audit reports in `02-auditorias/audit-[domain]-[slug].md` conforming to [`./resources/audit-report-template.md`](./resources/audit-report-template.md).
+   - Runs pre-flight CLI scanners (`check_sdd_drift.py`, `check_arch_boundaries.py`, `scan_sinks.py`, `ast_complexity.py`).
+   - Dispatches 5 parallel `Model: "flash"` domain subagents to inspect the diff and Call Hierarchy (1–2 levels outside diff).
+   - Generates 5 standardized domain audit reports in `02-auditorias/audit-[domain]-[slug].md` conforming to [`./resources/audit-report-template.md`](./resources/audit-report-template.md).
    - Updates the Living Definition of Done in `01-concepcao/dod-[slug].md`.
    - **STRICT RULE:** Do NOT modify source code files. Do NOT execute `git commit` or `git add`.
 
 2. **Mode B — Authorized Surgical Remediation (`/review --fix`):**
    - Triggered ONLY when explicitly invoked with `--fix` or authorized by the user.
-   - Applies minimal, surgical fixes strictly to the flagged lines/vulnerabilities.
-   - Re-runs unit and integration tests to ensure 100% green integrity.
+   - Executes the same parallel Map phase (5 subagents generate the 5 audit reports without touching source code to avoid file write race conditions).
+   - In the Reduce phase (Step 3), the **Main Orchestrator** consolidates all findings across the 5 reports and applies minimal, surgical fixes strictly to the flagged lines/vulnerabilities.
+   - Re-runs unit/integration tests and scanners to ensure 100% green integrity.
    - Stages **strictly the modified files** (`git add <file1> <file2>`). **NEVER run `git add .`** to avoid capturing unintended working tree changes.
    - Records micro-checkpoints: `checkpoint(review): fixes for [domain]`.
 
@@ -43,16 +43,26 @@ Orchestrates the specialized audit phase of the feature development lifecycle, c
 
 ---
 
-## Execution Pipeline in 4 Steps
+## Execution Pipeline in 4 Steps (Map-Reduce Multi-Agent)
 
 ```mermaid
 flowchart TD
-    Step1["Step 1: Entry Gate & Diff Scope<br/>Verify 100% Green Tests & Discover git diff"] --> Step2["Step 2: Script-First 5-Domain Audit Loop<br/>Arch -> Sec -> Quality -> Perf -> Resilience"]
-    Step2 --> Step3["Step 3: Full Integrity Validation<br/>Run Test Suite & Verify Audit Reports"]
-    Step3 --> Step4["Step 4: Phase Handover<br/>Living DoD Update & Next Step to /docs"]
+    Step1["Step 1 (Orchestrator): Entry Gate & Pre-Flight Scanners<br/>pytest + git diff + check_sdd_drift + arch/sinks/ast scripts"] --> Step2
+
+    subgraph Step2 ["Step 2 (MAP — 5x Parallel Subagents in Model: flash)"]
+        direction LR
+        D1["🏛️ auditor-architecture<br/>Arch + SDD Drift"]
+        D2["🛡️ auditor-security<br/>OWASP + Taint"]
+        D3["🧹 auditor-quality<br/>AST V(G) <= 10"]
+        D4["⚡ auditor-performance<br/>N+1 & Big-O"]
+        D5["🛟 auditor-resilience<br/>Timeouts & Retry"]
+    end
+
+    Step2 --> Step3["Step 3 (REDUCE — Orchestrator): Consolidation & Mode B Gate<br/>Verify 5 Audit Reports + Apply Surgical Fixes if Mode B + pytest"]
+    Step3 --> Step4["Step 4 (Orchestrator): Phase Handover<br/>Living DoD Update & Next Step to /docs"]
 ```
 
-### Step 1: Entry Gate & Scope Discovery
+### Step 1: Entry Gate, Diff Scope & Pre-Flight Scanners *(Main Orchestrator)*
 1. Run existing test suite in terminal:
    ```bash
    python -m pytest -v
@@ -62,108 +72,90 @@ flowchart TD
    ```bash
    git --no-pager diff develop...HEAD --name-only
    ```
-3. Document eligible files, excluded files, and git metadata for the audit header.
-
----
-
-### Step 2: Script-First Iterative Loop Across 5 Domains
-
-Execute an audit iteration for each of the 5 domains sequentially:
-
-```mermaid
-flowchart LR
-    A["1. Architecture"] --> B["2. Security"]
-    B --> C["3. Quality"]
-    C --> D["4. Performance"]
-    D --> E["5. Resilience"]
-```
+3. Run the **4 deterministic CLI scanners** across the modified files to collect baseline evidence for the subagents:
+   ```bash
+   python skills/implement/scripts/check_sdd_drift.py 01-concepcao/sdd-[slug].md <modified_files> --check-files --pivots 02-auditorias/pivots-[slug].md
+   python skills/review/scripts/check_arch_boundaries.py <modified_files>
+   python skills/review/scripts/scan_sinks.py <modified_files>
+   python skills/review/scripts/ast_complexity.py <modified_files>
+   ```
+4. Document eligible files, excluded files, scanner outputs, and git metadata for the subagents.
 
 #### Script-First Principle (Priority, Not Scope Boundary):
 - Scanners run first to **prioritize initial reading and catch known anti-patterns fast**.
-- Automated scripts do **NOT** define the boundary of your review. You must inspect all relevant changes in the diff, business logic, authorization, and design boundaries even if not flagged by a script.
+- Automated scripts do **NOT** define the boundary of your review. Subagents must inspect all relevant changes in the diff, business logic, authorization, and design boundaries even if not flagged by a script.
 - If a script encounters language limitations or unsupported files, record the limitation explicitly. **Never interpret script errors or empty outputs as an automatic clean pass.**
 
 ---
 
-#### 2.1. Domain 1: Architecture & Boundary Isolation
-1. **Run Scanner:**
-   ```bash
-   python skills/review/scripts/check_arch_boundaries.py <modified_files>
-   ```
-2. **Inspect Code:** Evaluate layer boundaries, Dependency Inversion (DIP), DTO encapsulation, and God Class decomposition.
+### Step 2: Parallel 5-Domain Map Audit *(5x `Model: "flash"` Subagents)*
+
+Following [`./references/review-subagents.md`](./references/review-subagents.md), define and invoke all **5 domain subagents in parallel in a single turn** (`Model: "flash"`, `EnableWriteTools: true` strictly for writing `02-auditorias/audit-[domain]-[slug].md`; subagents NEVER touch `src/` or `tests/`):
+
+#### 2.1. Domain 1: Architecture, Boundary Isolation & SDD Drift (`auditor-architecture`)
+1. **Scanner Inputs:** Outputs of [`scripts/check_arch_boundaries.py`](./scripts/check_arch_boundaries.py) and [`../implement/scripts/check_sdd_drift.py`](../implement/scripts/check_sdd_drift.py).
+2. **Inspect Code:** Evaluate layer boundaries, Dependency Inversion (DIP), DTO encapsulation, God Class decomposition, and unauthorized SDD Contract Drift against `01-concepcao/sdd-[slug].md`.
 3. **Reference Guide:** [`references/review-architecture.md`](./references/review-architecture.md)
-4. **Remediate (Mode B Only):** Inject interfaces via constructor; extract mappers; stage modified files only.
-5. **Report & DoD:** Record findings in `02-auditorias/audit-architecture-[slug].md` and check off Architecture in `01-concepcao/dod-[slug].md`.
+4. **Report Output:** Write findings to `02-auditorias/audit-architecture-[slug].md`.
 
----
-
-#### 2.2. Domain 2: OWASP Security & Dangerous Sinks
-1. **Run Scanner:**
-   ```bash
-   python skills/review/scripts/scan_sinks.py <modified_files>
-   ```
-2. **Inspect Code:** Trace dangerous sinks (`eval`, `exec`, `subprocess`, SQL interpolation), perform taint analysis on user inputs, verify server-side ownership (IDOR/BPOA), TOCTOU concurrency, PII masking, and secret management.
+#### 2.2. Domain 2: OWASP Security & Dangerous Sinks (`auditor-security`)
+1. **Scanner Input:** Output of [`scripts/scan_sinks.py`](./scripts/scan_sinks.py).
+2. **Inspect Code:** Trace dangerous sinks (`eval`, `exec`, `subprocess`, SQL interpolation), perform taint analysis on user inputs (1–2 levels Call Hierarchy), verify server-side ownership (IDOR/BPOA), TOCTOU concurrency, PII masking (`***REDACTED***`), and secret management.
 3. **Reference Guide:** [`references/review-security.md`](./references/review-security.md)
-4. **Sanitization Requirement:** Always mask tokens, passwords, and PII using `***REDACTED***`.
-5. **Remediate (Mode B Only):** Replace shell calls with argument lists; parameterize queries; stage modified files only.
-6. **Report & DoD:** Record findings in `02-auditorias/audit-security-[slug].md` and check off Security in `01-concepcao/dod-[slug].md`.
+4. **Report Output:** Write findings to `02-auditorias/audit-security-[slug].md`.
 
----
-
-#### 2.3. Domain 3: Code Quality & AST Complexity
-1. **Run Scanner:**
-   ```bash
-   python skills/review/scripts/ast_complexity.py <modified_files>
-   ```
+#### 2.3. Domain 3: Code Quality & AST Complexity (`auditor-quality`)
+1. **Scanner Input:** Output of [`scripts/ast_complexity.py`](./scripts/ast_complexity.py).
 2. **Inspect Code:** Ensure cyclomatic complexity $V(G) \le 10$ per function/method. Check for nested loops ($O(N^2)$), linear searches in loops, deep pyramid nesting (> 3 levels), and absence of guard clauses.
 3. **Reference Guide:** [`references/review-quality.md`](./references/review-quality.md)
-4. **Remediate (Mode B Only):** Decompose complex methods; apply early returns/guard clauses; stage modified files only.
-5. **Report & DoD:** Record findings in `02-auditorias/audit-quality-[slug].md` and check off Quality in `01-concepcao/dod-[slug].md`.
+4. **Report Output:** Write findings to `02-auditorias/audit-quality-[slug].md`.
 
----
-
-#### 2.4. Domain 4: Performance & Resource Efficiency
+#### 2.4. Domain 4: Performance & Resource Efficiency (`auditor-performance`)
 1. **Inspect Code:** Analyze operational context (workload scale, QPS, latency SLAs). Check for N+1 queries in loops, quadratic algorithms, unbounded memory reads, unbuffered I/O, and connection leaks.
 2. **Reference Guide:** [`references/review-performance.md`](./references/review-performance.md)
-3. **Remediate (Mode B Only):** Batch database queries (`WHERE id IN (...)`); convert lookups to sets/dicts where ordering permits; adopt generators/streaming (`yield`); wrap connections in context managers (`with`).
-4. **Report & DoD:** Record findings in `02-auditorias/audit-performance-[slug].md` and check off Performance in `01-concepcao/dod-[slug].md`.
+3. **Report Output:** Write findings to `02-auditorias/audit-performance-[slug].md`.
 
----
-
-#### 2.5. Domain 5: Resilience & Fault Tolerance
+#### 2.5. Domain 5: Resilience & Fault Tolerance (`auditor-resilience`)
 1. **Inspect Code:** Verify explicit connect and read timeouts on all network calls (HTTP, gRPC, DB, queues). Enforce the **Golden Rule of Idempotency** (never retry non-idempotent operations without an idempotency key). Verify exponential backoff with jitter, circuit breakers, and fail-secure fallbacks.
 2. **Reference Guide:** [`references/review-resilience.md`](./references/review-resilience.md)
-3. **Remediate (Mode B Only):** Configure explicit timeouts (`httpx.Timeout`); attach safe retry decorators with jitter; ensure exceptions fail closed.
-4. **Report & DoD:** Record findings in `02-auditorias/audit-resilience-[slug].md` and check off Resilience in `01-concepcao/dod-[slug].md`.
+3. **Report Output:** Write findings to `02-auditorias/audit-resilience-[slug].md`.
 
 ---
 
-### Step 3: Full Integrity Validation
+### Step 3: Reduce Consolidation, Mode B Remediation & Integrity Gate *(Main Orchestrator)*
 
-1. Re-execute the complete unit and integration test suite:
-   ```bash
-   python -m pytest -v
-   ```
-2. Record exact metrics: Total Executed, Passed, Failed, Skipped.
-3. Ensure all 5 domain audit reports exist under `02-auditorias/` and all 5 audit checkboxes are marked in `01-concepcao/dod-[slug].md`.
+1. **Verify All 5 Reports & Living DoD:**
+   - Ensure all 5 domain audit reports exist under `02-auditorias/audit-[domain]-[slug].md`.
+   - Check off all 5 audit checkboxes in `01-concepcao/dod-[slug].md`.
+2. **Mode B Surgical Remediation (`--fix` Only):**
+   - Consolidate findings across the 5 reports and apply minimal, conflict-free surgical fixes to the source files (`src/`).
+   - Stage strictly modified files (`git add <file1> <file2>`) and record domain micro-checkpoints (`checkpoint(review): fixes for [domain]`).
+   - Re-run the CLI scanners (`check_sdd_drift.py`, `check_arch_boundaries.py`, `scan_sinks.py`, `ast_complexity.py`) to confirm clearance.
+3. **Full Test Suite Integrity Check:**
+   - Re-execute the complete unit and integration test suite:
+     ```bash
+     python -m pytest -v
+     ```
+   - Record exact metrics: Total Executed, Passed, Failed, Skipped.
 
 ---
 
-### Step 4: Phase 4 Conclusion & Handover
+### Step 4: Phase 4 Conclusion & Handover *(Main Orchestrator)*
 
 1. In **Mode B**, execute a semantic phase consolidation commit:
    ```bash
    git commit -m "audit(review): specialized domain audits completed for [slug]"
    ```
 2. Output the mandatory phase transition handover recommendation:
-   > **[NEXT STEP]** *"Phase 4 (Audits) completed! Review findings documented in audit reports under `02-auditorias/`. Open a **NEW CHAT** and run `/docs` to finalize technical feature documentation."*
+   > **[NEXT STEP]** *"Phase 4 (Audits — SDD 2.0) completed across all 5 parallel domains with zero SDD Drift! Review findings documented in audit reports under `02-auditorias/`. Open a **NEW CHAT** and run `/docs` to finalize technical feature documentation."*
 
 ---
 
 ## Package Index & References
 
 - **Operational Guides:**
-  - [`references/review-architecture.md`](./references/review-architecture.md) — Layer boundary rules, DIP, DTO isolation, God Class decomposition.
+  - [`references/review-subagents.md`](./references/review-subagents.md) — 5-domain parallel `Model: "flash"` Map-Reduce orchestration and Mode B conflict-free consolidation.
+  - [`references/review-architecture.md`](./references/review-architecture.md) — Layer boundary rules, DIP, DTO isolation, God Class decomposition, and SDD Drift Gate.
   - [`references/review-security.md`](./references/review-security.md) — OWASP Top 10, ASVS, dangerous sinks, taint analysis, secret containment.
   - [`references/review-quality.md`](./references/review-quality.md) — AST complexity $V(G) \le 10$, cognitive load, Clean Code standards.
   - [`references/review-performance.md`](./references/review-performance.md) — N+1 query patterns, algorithmic bottlenecks, memory streaming.
@@ -171,6 +163,7 @@ flowchart LR
 - **Pure Templates:**
   - [`resources/audit-report-template.md`](./resources/audit-report-template.md) — Standardized audit report template with Executive Summary, Traceability Matrix, Forensic Findings, and Action Plan.
 - **Automated CLI Scanners:**
+  - [`../implement/scripts/check_sdd_drift.py`](../implement/scripts/check_sdd_drift.py) — SDD 2.0 AST/Contract Drift Gate validator.
   - [`scripts/check_arch_boundaries.py`](./scripts/check_arch_boundaries.py) — Clean Architecture layer boundary linter.
   - [`scripts/scan_sinks.py`](./scripts/scan_sinks.py) — OWASP v2 dangerous sinks & code crawler.
   - [`scripts/ast_complexity.py`](./scripts/ast_complexity.py) — Python AST McCabe cyclomatic complexity scanner.
