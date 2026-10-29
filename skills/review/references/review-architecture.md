@@ -1,18 +1,19 @@
-# Operational Guide: Architecture & Coupling Audit
+# Operational Guide: Architecture, Coupling & SDD Drift Audit
 
-This guide governs the surgical audit of architectural boundary isolation, layer coupling, Dependency Inversion (DIP), DTO boundaries, and cohesion across the git diff.
+This guide governs the surgical audit of architectural boundary isolation, SDD 2.0 specification drift, layer coupling, Dependency Inversion (DIP), DTO boundaries, and cohesion across the git diff.
 
 ---
 
-## Phase 0 — Automated Boundary Check (Priority Guide)
+## Phase 0 — Automated Boundary & SDD Drift Checks (Priority Guide)
 
-Run the boundary linter against modified files to rapidly identify known boundary violations:
+Run the boundary linter and the SDD 2.0 Drift Gate validator against modified files to rapidly identify known boundary violations and unauthorized specification deviations:
 ```bash
 python skills/review/scripts/check_arch_boundaries.py <modified_files>
+python skills/implement/scripts/check_sdd_drift.py 01-concepcao/sdd-[slug].md <modified_files> --check-files --pivots 02-auditorias/pivots-[slug].md
 ```
 
 ### Evaluation Protocol:
-- Treat any `[VIOLATION]` as an immediate architectural investigation lead.
+- Treat any `[VIOLATION]` or `UNAUTHORIZED SPEC DRIFT` as an immediate architectural investigation lead.
 - **Critical:** Scanners prioritize reading but do NOT replace semantic architectural inspection. Always evaluate full class and module responsibilities across the diff.
 - If a target contains non-standard directory structures or unmapped languages, document the limitation in the report.
 
@@ -29,7 +30,8 @@ python skills/review/scripts/check_arch_boundaries.py <modified_files>
 - **Dependências Ocultas:** Detect direct instantiation of network clients, external services, or concrete repositories inside constructors or business methods (`new HttpClient()`, `DatabaseConnection()`).
 - **Injeção de Dependência:** Verify that use cases and domain services depend strictly on abstract interfaces/protocols injected via constructor (`__init__`), enabling isolated testability and loose coupling.
 
-### 2. Fronteiras de DTOs & Contratos de Transporte
+### 2. Paridade SDD <-> Código (Drift Gate) & Fronteiras de DTOs
+- **Fidelidade ao Contrato SDD (`01-concepcao/sdd-[slug].md`):** Verify that every class, `<<Interface>>` port, public method signature, and domain exception (`*Error` / `*Exception`) matches the approved SDD blueprint (or has a documented technical pivot in `02-auditorias/pivots-[slug].md`).
 - **Exposição de Modelos Internos:** Ensure persistence entities (ORM models) or rich domain models are never returned directly across API boundary layers without an explicit DTO mapper.
 - **Contratos Fortemente Tipados:** Verify that all inbound and outbound boundary payloads use immutable, validated schemas (Pydantic models, Python dataclasses, TypeScript interfaces).
 
@@ -72,4 +74,5 @@ When recording findings for `02-auditorias/audit-architecture-[slug].md`, instan
 | ID | File & Line | Architectural Principle | Primary Evidence / Tool | Severity | Status & Traceability |
 | :--- | :--- | :--- | :--- | :---: | :---: |
 | `ARC-01` | `src/domain/order.py:14` | Layer Boundary Isolation | check_arch_boundaries.py | High | 🔴 **Non-Compliant** ([see Finding 1](#-finding-1-direct-orm-import)) |
+| `ARC-02` | `src/services/order.py:30` | SDD Contract Parity | check_sdd_drift.py | High | 🔴 **Non-Compliant** ([see Finding 2](#-finding-2-missing-sdd-method)) |
 ```

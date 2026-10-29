@@ -53,7 +53,7 @@ The Obsidian Vault provides architectural intent, business constraints, and evol
 
 ---
 
-## 3. Inquiry Routing & Investigation Protocol
+## 3. Inquiry Routing & Context-Isolated Investigation Protocol (`Model: "flash_lite"`)
 
 When an inquiry arrives, execute this structured investigation workflow:
 
@@ -67,11 +67,13 @@ When an inquiry arrives, execute this structured investigation workflow:
        └─► Release / History Query?     ──► Inspect `03-releases/` & Git commit history
 ```
 
-### Search Tool Sequence:
-1. `grep_search`: Fast pattern match for class names, function definitions, routes, or error strings across the repository.
-2. `find_by_name`: Locate relevant files by name when file structure is known or suspected.
-3. `view_file`: Read specific line ranges containing the identified logic, imports, and docstrings.
-4. `read_vault_note` / `search_query`: Locate matching architectural rationale in the Obsidian Vault.
+### Search Tool Sequence & Conditional Subagent Routing (`Model: "flash_lite"`):
+- **Direct Lookup (1–2 known files):** Run `grep_search`, `find_by_name`, or `read_file` directly in the Main Orchestrator.
+- **Broad Survey (> 2 files or cross-module/Vault investigation):** Delegate the search sequence to the built-in read-only **`research`** subagent (`TypeName: "research"`, `Model: "flash_lite"`) so raw search outputs and intermediate file reads stay out of the main conversation context window:
+  1. `grep_search`: Fast pattern match for class names, function definitions, routes, or error strings across the repository.
+  2. `find_by_name`: Locate relevant files by name when file structure is known or suspected.
+  3. `view_file` / `read_file`: Read specific line ranges containing the identified logic, imports, and docstrings.
+  4. `read_vault_note` / `search_query`: Locate matching architectural rationale in the Obsidian Vault.
 
 ---
 

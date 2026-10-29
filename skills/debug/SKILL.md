@@ -1,38 +1,38 @@
 ---
 name: debug
-description: Conducts forensic root cause analysis (5 Whys framework) for critical crashes, exceptions, and complex runtime failures.
+description: Conducts forensic root cause analysis (5 Whys framework) for critical crashes, exceptions, and complex runtime failures using context-isolated probing subagents.
 ---
 
-# Skill: Forensic Bug Investigation & Root Cause Analysis (`/debug`)
+# Skill: Forensic Bug Investigation & Root Cause Analysis (`/debug` — SDD 2.0)
 
-Orchestrates deep forensic diagnosis of critical runtime crashes, unhandled exceptions, asynchronous race conditions, resource leaks, and integration failures that escaped pre-merge test suites or escalated from `/test-fix`. Employs the **Scientific Method**, **Empirical Probing Tests**, the **5 Whys Framework**, and an interactive Root Cause Analysis (RCA) approval gate before modifying code.
+Orchestrates deep forensic diagnosis of critical runtime crashes, unhandled exceptions, asynchronous race conditions, resource leaks, and integration failures that escaped pre-merge test suites or escalated from `/test-fix`. Employs the **Scientific Method**, a context-isolated **`forensic-prober` subagent** for empirical probing tests, the **5 Whys Framework**, and an interactive Root Cause Analysis (RCA) approval gate before modifying production code.
 
 ---
 
 ## Universal Operational Guardrails
 
-- **Mandatory Approval Phase Gate (`RequestFeedback: true`):** The agent is strictly prohibited from editing production code or test files until the Root Cause Analysis artifact (`root_cause_analysis.md`) has been generated from [`./resources/rca-template.md`](./resources/rca-template.md) and explicitly approved by the user.
-- **Scientific Evidence & Empirical Probing Tests:** Speculating, guessing, or patching symptoms blindly by merely reading source code is strictly forbidden. Competing hypotheses ($H_1, H_2$) must be empirically tested and falsified using **automated probing/characterization tests** or deterministic Minimal Reproducible Examples (MRE) before proposing solutions.
+- **Mandatory Approval Phase Gate (`RequestFeedback: true`):** The agent is strictly prohibited from editing production code or permanent test files until the Root Cause Analysis artifact (`root_cause_analysis.md`) has been generated from [`./resources/rca-template.md`](./resources/rca-template.md) and explicitly approved by the user.
+- **Context-Isolated Probing Tests (`forensic-prober`):** Speculating, guessing, or patching symptoms blindly by merely reading source code is strictly forbidden. Competing hypotheses ($H_1, H_2$) must be empirically tested and falsified inside the isolated **`forensic-prober`** subagent using automated probing/characterization tests or deterministic Minimal Reproducible Examples (MRE) so intermediate tracebacks never pollute the main conversation context window.
 - **Escalation Ingestion from `/test-fix`:** When invoked following a Double-Strike failure/rollback in `/test-fix`, immediately ingest the failing test node, full stack trace, and the two already-falsified hypotheses to avoid redundant investigations.
 - **Isolated Diagnostic Commands:** Provide all CLI diagnostic and reproduction commands in individual, isolated `bash` blocks for clean copying and execution.
 - **Strict 5 Whys Depth:** The 5th "Why?" in the analysis must mandatorily answer: *"Why did our existing automated test suite fail to catch this defect before runtime?"*
 - **Mandatory Regression Test:** Every bug resolution must include a permanent, reproducible regression test that fails before the fix (Red) and passes green after the fix (Green).
 - **Regression Recovery Loop:** If a proposed fix fails during verification or introduces collateral test breakages in Step 4, immediately revert via `git reset --hard HEAD`, record the falsification, and formulate a new hypothesis ($H_3$).
-- **Obsidian & Living DoD Persistence:** Record the resolution, root cause, and architectural takeaways in the Obsidian Vault at `02-auditorias/pivots-[slug].md` via `@obsidian` and synchronize status in `01-concepcao/dod-[slug].md`.
+- **Obsidian, SDD Drift Gate & Living DoD Persistence:** Record the resolution, root cause, and architectural takeaways in the Obsidian Vault at `02-auditorias/pivots-[slug].md` via `@obsidian`, verify contract parity with `check_sdd_drift.py` (when SDD exists), and synchronize status in `01-concepcao/dod-[slug].md`.
 
 ---
 
-## Execution Pipeline in 4 Steps
+## Execution Pipeline in 4 Steps (Orchestrator + `forensic-prober` Subagent)
 
 ```mermaid
 flowchart TD
-    Crash["Incident Report / Runtime Crash / Escalation"] --> S1["<b>Step 1: Evidence Ingestion & Vault Context</b><br/>• Parse exception, stack trace, headers, logs<br/>• Query Obsidian Vault (pivots & ADRs)<br/>• Ingest falsified hypotheses if from /test-fix"]
-    S1 --> S2["<b>Step 2: Probing Tests & 5 Whys Analysis</b><br/>• Formulate competing hypotheses (H1, H2)<br/>• Author automated probing tests / MRE<br/>• Falsify vs confirm hypotheses empirically<br/>• Drill 5 Whys down to test escape mechanism"]
-    S2 --> S3["<b>Step 3: Interactive RCA Artifact Gate</b><br/>• Instantiate root_cause_analysis.md<br/>• Compare Solution Option A vs Option B<br/>• RequestFeedback: true (Mandatory Pause)"]
-    S3 --> S4["<b>Step 4: Surgical Fix, Regression & Archiving</b><br/>• Verify regression test fails on unpatched code<br/>• Apply approved fix to production code<br/>• Verify 100% green; revert if regression<br/>• Archive lessons to pivots-[slug].md & DoD"]
+    Crash["Incident Report / Runtime Crash / Escalation"] --> S1["<b>Step 1 (Orchestrator): Evidence Ingestion & Vault Context</b><br/>• Parse exception, stack trace, headers, logs<br/>• Query Obsidian Vault (pivots & ADRs)<br/>• Ingest falsified hypotheses if from /test-fix"]
+    S1 --> S2["<b>Step 2 (Subagent forensic-prober): Probing Tests & 5 Whys</b><br/>• Formulate competing hypotheses (H1, H2)<br/>• Run isolated probing tests / MRE (Zero Main Context Pollution)<br/>• Falsify vs confirm hypotheses empirically & clean scratch files<br/>• Drill 5 Whys down to test escape mechanism"]
+    S2 --> S3["<b>Step 3 (Orchestrator): Interactive RCA Artifact Gate</b><br/>• Instantiate root_cause_analysis.md from subagent findings<br/>• Compare Solution Option A vs Option B<br/>• RequestFeedback: true (Mandatory Pause)"]
+    S3 --> S4["<b>Step 4 (Orchestrator): Surgical Fix, Regression & Archiving</b><br/>• Verify regression test fails on unpatched code<br/>• Apply approved fix + Verify 100% green + check_sdd_drift.py<br/>• Archive lessons to pivots-[slug].md & DoD"]
 ```
 
-### Step 1: Initial Triage & Evidence Gathering
+### Step 1: Initial Triage & Evidence Gathering *(Main Orchestrator)*
 1. Parse the incoming incident report, error logs, and stack traces to isolate:
    - Primary exception type and message.
    - HTTP status code or process exit code.
@@ -47,27 +47,27 @@ flowchart TD
 4. Confirm repository branch and working directory cleanliness via `git -C <path> status --short`.
 5. **Detailed Reference:** Review [`./references/debug-methodology.md`](./references/debug-methodology.md).
 
-### Step 2: Probing Tests & 5 Whys Analysis (Scientific Method)
-1. Formulate at least two competing hypotheses ($H_1$, $H_2$) to prevent confirmation bias.
-2. Define explicit falsification criteria for each hypothesis.
-3. **Execute Automated Probing Tests (Characterization Testing):**
-   - Do not guess or attempt to spot defects purely through visual code inspection.
-   - Author isolated, automated probing tests (or an MRE script) that programmatically exercise edge conditions, inject network/boundary errors via controlled mocks, or simulate concurrency to observe actual runtime state.
-   - Run probing tests to deterministically prove or falsify $H_1$ and $H_2$.
-4. Execute the **5 Whys Inquiry Chain**, starting from the observable symptom down to the systemic defect. Ensure Why 5 specifically addresses why the existing automated test suite allowed the defect to escape.
+### Step 2: Context-Isolated Probing Tests & 5 Whys Analysis *(Subagent `forensic-prober`)*
+1. Define and invoke the isolated **`forensic-prober`** subagent (`EnableWriteTools: true`, `Model: "inherit"`) following [`./references/debug-subagents.md`](./references/debug-subagents.md), passing the incident evidence, Vault context, and any prior falsified hypotheses from `/test-fix`.
+2. Inside its isolated context window, `forensic-prober` executes the Scientific Method:
+   - Formulates at least two competing hypotheses ($H_1$, $H_2$) with explicit falsification criteria.
+   - **Executes Automated Probing Tests (Characterization Testing):** Authors isolated probing tests or an MRE script to programmatically exercise edge conditions, inject boundary errors via controlled mocks, or simulate concurrency to observe actual runtime state.
+   - Runs the probing tests to deterministically prove or falsify $H_1$ and $H_2$, then removes temporary scratch probing files so the working tree stays clean.
+   - Executes the **5 Whys Inquiry Chain**, starting from the observable symptom down to the systemic defect, ensuring Why 5 explicitly addresses why the existing automated test suite allowed the defect to escape.
+3. `forensic-prober` returns a concise, structured forensic report to the Main Orchestrator (keeping all intermediate `pytest` tracebacks and dead-end explorations out of the main chat).
 
-### Step 3: Root Cause Analysis (RCA) Artifact & Interactive Approval Gate
-1. Instantiate the Root Cause Analysis artifact `root_cause_analysis.md` using [`./resources/rca-template.md`](./resources/rca-template.md).
+### Step 3: Root Cause Analysis (RCA) Artifact & Interactive Approval Gate *(Main Orchestrator)*
+1. Instantiate the Root Cause Analysis artifact `root_cause_analysis.md` using [`./resources/rca-template.md`](./resources/rca-template.md) and the verified findings from `forensic-prober`.
 2. Detail:
    - Incident context and verified symptoms.
    - Step-by-step 5 Whys derivation.
-   - Hypothesis evaluation matrix with probing test outcomes.
+   - Hypothesis evaluation matrix with empirical probing test outcomes.
    - Trade-off comparison between **Option A (Recommended Surgical Fix)** and **Option B (Alternative/Architectural Fix)**.
    - Concrete regression test design (derived directly from the confirmed probing test).
 3. **Phase Gate:** Present the artifact to the user with `RequestFeedback: true`.
    > ⚠️ **MANDATORY PAUSE:** Wait for explicit user confirmation before touching any codebase files.
 
-### Step 4: Surgical Resolution, Regression Safeguard & Knowledge Archiving
+### Step 4: Surgical Resolution, Regression Safeguard & Knowledge Archiving *(Main Orchestrator)*
 1. Upon user approval, author the permanent regression test in the appropriate test suite (e.g., `tests/regression/` or `tests/integration/`).
 2. Run the regression test to guarantee it **fails deterministically** on unpatched code:
    ```bash
@@ -81,21 +81,26 @@ flowchart TD
 5. **Regression Recovery Loop:**
    - If the regression test still fails or existing tests break, **do not layer unverified edits**.
    - Immediately execute `git reset --hard HEAD` to restore the clean baseline.
-   - Record the failed attempt as a falsified hypothesis, formulate $H_3$, and re-evaluate.
-6. Commit the fix and regression test using structured semantic format:
+   - Record the failed attempt as a falsified hypothesis, formulate $H_3$, and re-evaluate via `forensic-prober`.
+6. Append the incident resolution and takeaways to the Obsidian Vault in `02-auditorias/pivots-[slug].md` via `@obsidian` and update `01-concepcao/dod-[slug].md`.
+7. If operating within a feature with an SDD specification (`01-concepcao/sdd-[slug].md`), run the SDD Drift Gate to confirm contract parity:
+   ```bash
+   python skills/implement/scripts/check_sdd_drift.py 01-concepcao/sdd-[slug].md <modified_src_files> --batch --pivots 02-auditorias/pivots-[slug].md
+   ```
+8. Commit the fix and regression test using structured semantic format:
    ```bash
    git add path/to/source.py tests/path/test_regression.py
    git commit -m "fix(debug): resolve [defect description] with regression test"
    ```
-7. Append the incident resolution and takeaways to the Obsidian Vault in `02-auditorias/pivots-[slug].md` via `@obsidian` and update `01-concepcao/dod-[slug].md`.
-8. Issue the completion summary:
+9. Issue the completion summary:
    > **[NEXT STEP]** *"Forensic bug resolution complete! Root cause eradicated, regression test verified green, and findings archived in Obsidian. Resume normal operations or proceed to `/review` if preparing for release."*
 
 ---
 
 ## Bundled References, Resources & Concrete Examples
 
-- **Operational Methodology:**
+- **Operational Methodology & Subagents:**
+  - [`references/debug-subagents.md`](./references/debug-subagents.md) — Context-isolated `forensic-prober` subagent orchestration, scratch cleanup protocol, and SDD Drift Gate integration.
   - [`references/debug-methodology.md`](./references/debug-methodology.md) — Comprehensive guide covering the Scientific Method, MRE construction, Probing/Characterization Tests, 5 Whys execution, hypothesis evaluation, and interactive gate protocol.
 - **Pure Templates:**
   - [`resources/rca-template.md`](./resources/rca-template.md) — Unpopulated Root Cause Analysis artifact template for interactive phase gate submission (`root_cause_analysis.md`).
