@@ -1,11 +1,11 @@
 ---
 name: ask
-description: Answers conceptual, architectural, and codebase inquiries in strictly read-only mode, anchoring responses in source code and Obsidian vault citations.
+description: Answers conceptual, architectural, and codebase inquiries in strictly read-only mode, delegating broad multi-file searches to the built-in research subagent (flash_lite) to prevent context pollution.
 ---
 
-# Skill: Project Oracle (`/ask`)
+# Skill: Project Oracle (`/ask` — SDD 2.0)
 
-Operates as the **knowledge consultation bridge** across the project repository, architecture records, and the Obsidian Vault, answering conceptual, behavioral, and implementation questions in **Strictly Read-Only Mode**.
+Operates as the **knowledge consultation bridge** across the project repository, architecture records, and the Obsidian Vault, answering conceptual, behavioral, and implementation questions in **Strictly Read-Only Mode**, while protecting the main conversation context window via conditional delegation to the built-in **`research` subagent (`Model: "flash_lite"`)**.
 
 ---
 
@@ -16,23 +16,26 @@ Operates as the **knowledge consultation bridge** across the project repository,
 - **Zero Mutating Commands:**
   - Running modifying terminal commands (package installations, database migrations, build scripts that generate tracked artifacts, Git commits, branch checkouts) is strictly prohibited.
   - Permitted terminal usage is strictly limited to non-modifying diagnostics (`git --no-pager log`, `git status`, `python --version`).
+- **Context-Window Protection (`research` in `Model: "flash_lite"`):**
+  - For broad or exploratory inquiries that require scanning multiple modules and Vault directories, delegate Step 3 to the built-in read-only `research` subagent (`Model: "flash_lite"`) so raw `grep_search` outputs and intermediate file reads do not bloat the main conversation context.
 - **Grounded Evidence Requirement:**
   - Speculation, guessing, and hallucinating system behavior are strictly prohibited.
   - Every technical claim must be explicitly anchored in code lines (`file:///path#L10-L25`) or Obsidian Vault notes (`[[note]]`).
 
 ---
 
-## Execution Pipeline in 4 Steps
+## Execution Pipeline in 4 Steps (Orchestrator + Conditional `research` Subagent)
 
 ```mermaid
 flowchart TD
-    Query["User Question / Inquiry (/ask)"] --> S1["<b>Step 1: Query Ingestion & Keyword Parsing</b><br/>Extract entities, workflows, contracts, and error tokens"]
-    S1 --> S2["<b>Step 2: Source Triangulation & Routing</b><br/>Route across Codebase and Vault"]
-    S2 --> S3["<b>Step 3: Evidence-Based Investigation</b><br/>Execute read-only searches (grep, view_file, vault_read)"]
-    S3 --> S4["<b>Step 4: Grounded Response Synthesis</b><br/>Format structured answer with formal citations"]
+    Query["User Question / Inquiry (/ask)"] --> S1["<b>Step 1 (Orchestrator): Query Ingestion & Keyword Parsing</b><br/>Extract entities, workflows, contracts, and error tokens"]
+    S1 --> S2["<b>Step 2 (Orchestrator): Source Triangulation & Routing</b><br/>Classify Narrow Lookup vs. Broad Survey"]
+    S2 -->|"Narrow (1-2 known files)"| S3A["<b>Step 3A (Orchestrator Direct): Quick Read-Only Lookup</b><br/>Direct read_file / grep_search"]
+    S2 -->|"Broad / Exploratory"| S3B["<b>Step 3B (Subagent research in flash_lite): Context-Isolated Survey</b><br/>Scan Codebase & Vault in sandbox; return exact citations"]
+    S3A & S3B --> S4["<b>Step 4 (Orchestrator): Grounded Response Synthesis</b><br/>Format structured answer with formal citations"]
 ```
 
-### Step 1: Query Ingestion & Keyword Parsing
+### Step 1: Query Ingestion & Keyword Parsing *(Main Orchestrator)*
 1. Parse the incoming inquiry to identify core technical subjects:
    - Domain entities, interfaces, or classes.
    - Specific user journeys or API endpoints.
@@ -43,7 +46,7 @@ flowchart TD
    - *Architectural Rationale:* "Why was X designed this way?"
    - *Governance / Policy:* "What is our convention regarding Y?"
 
-### Step 2: Source Triangulation & Routing
+### Step 2: Source Triangulation & Routing *(Main Orchestrator)*
 Determine the authoritative sources required to answer the inquiry:
 - **Codebase Truth (Source of Execution):** Code files, test suites, and manifests (`pyproject.toml`, `package.json`).
 - **Obsidian Vault (Source of Intent & Decisions):**
@@ -53,14 +56,15 @@ Determine the authoritative sources required to answer the inquiry:
   - `03-releases/`: Consolidated changelogs and release notes.
 - **Guideline Reference:** See [`./references/ask-sources.md`](./references/ask-sources.md).
 
-### Step 3: Evidence-Based Investigation (Read-Only)
-1. Use non-mutating search tools (`grep_search`, `find_by_name`, `view_file`) to locate exact source lines.
-2. Read corresponding architecture notes in the Vault.
-3. Cross-reference claims between documentation and actual implementation:
+### Step 3: Evidence-Based Investigation *(Direct or `research` Subagent in `Model: "flash_lite"`)*
+1. **Routing Decision (Context Firewall):**
+   - **Narrow Inquiry (1–2 known files):** Execute `grep_search`, `find_by_name`, or `read_file` directly in the Main Orchestrator.
+   - **Broad / Cross-Module Inquiry (> 2 files or unknown location across Codebase + Vault):** Invoke the built-in read-only **`research`** subagent (`TypeName: "research"`, `Model: "flash_lite"`, `Role: "Read-Only Codebase & Vault Scout"`) to execute the multi-file search in an isolated context window and return strictly the verified evidence table (`file:///path#L10-L25` and `[[note-name]]`).
+2. Cross-reference claims between documentation and actual implementation:
    - If documentation contradicts code, document the discrepancy explicitly.
-4. If the requested information is absent or undocumented, state the absence transparently (epistemic humility).
+3. If the requested information is absent or undocumented, state the absence transparently (epistemic humility).
 
-### Step 4: Grounded Response Synthesis & Citations
+### Step 4: Grounded Response Synthesis & Citations *(Main Orchestrator)*
 1. Construct a structured, concise response directly in the conversation:
    - **Direct Answer:** Executive summary answering the query in 1-2 sentences.
    - **Architectural Rationale:** Policy or intent anchored in Vault wikilinks (`[[note-name]]`).
@@ -74,6 +78,6 @@ Determine the authoritative sources required to answer the inquiry:
 ## Bundled References & Examples
 
 - **Operational Guide:**
-  - [`references/ask-sources.md`](./references/ask-sources.md) — Source triangulation framework, Obsidian navigation taxonomy, citation standards, and inquiry routing.
+  - [`references/ask-sources.md`](./references/ask-sources.md) — Source triangulation framework, conditional `research` (`Model: "flash_lite"`) delegation rules, Obsidian navigation taxonomy, and citation standards.
 - **Session Walkthroughs:**
   - [`examples/ask-example.md`](./examples/ask-example.md) — Representative ask consultations (architectural query, code-tracing query, handling documentation gaps).
