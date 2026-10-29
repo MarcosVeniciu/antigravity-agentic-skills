@@ -69,7 +69,7 @@ Feature: {{FEATURE_NAME}}
     And {{HAPPY_AND}}
 
   @unhappy-path @validation
-  Scenario: Rejection of Invalid Request
+  Scenario: Rejection of Invalid or Conflicting Request
     Given {{UNHAPPY_GIVEN}}
     When {{UNHAPPY_WHEN}}
     Then {{UNHAPPY_THEN}}
@@ -90,13 +90,19 @@ sequenceDiagram
     participant Port as "Repository / Port"
     
     Client->>API: "POST /resource (RequestDTO)"
-    API->>Service: "execute(dto)"
-    Service->>Port: "find_by_key(key)"
-    Port-->>Service: "None (Available)"
-    Service->>Port: "save(entity)"
-    Port-->>Service: "persisted_entity"
-    Service-->>API: "ResponseDTO"
-    API-->>Client: "HTTP 201 Created (ResponseDTO)"
+    API->>Service: "execute(req)"
+    Service->>Port: "find_by_id(id)"
+    alt Entity Already Exists (@unhappy-path)
+        Port-->>Service: "existing_entity"
+        Service-->>API: "DuplicateEntityError"
+        API-->>Client: "HTTP 409 Conflict"
+    else Entity Available (@happy-path)
+        Port-->>Service: "None (Available)"
+        Service->>Port: "save(entity)"
+        Port-->>Service: "persisted_entity"
+        Service-->>API: "ResponseDTO"
+        API-->>Client: "HTTP 201 Created (ResponseDTO)"
+    end
 ```
 
 ### Component & Contract Structure (Class Diagram) [Mandatory]
@@ -138,6 +144,9 @@ classDiagram
 # Language-native typed contracts (e.g., Pydantic)
 from pydantic import BaseModel, Field
 
+class DuplicateEntityError(Exception):
+    """Raised when an entity with the given identifier already exists."""
+
 class RequestDTO(BaseModel):
     name: str = Field(..., min_length=2, description="Entity name")
     identifier: str = Field(..., description="Unique business identifier")
@@ -149,15 +158,23 @@ class ResponseDTO(BaseModel):
 
 ---
 
-## 6. Requirements & Architectural Traceability Matrix (RTM)
+## 6. Requirements Traceability & Goldfish Council Arbitration
 
 > **Traceability Standard:** Aligned with IEEE 829 and ISO/IEC/IEEE 29119 (Requirements Traceability Matrix).
 
 | BDD Scenario / User Requirement | SDD Contract / Component | Impacted Source Files | Living DoD Acceptance Gate | Traceability Status |
 | :--- | :--- | :--- | :--- | :---: |
 | `@happy-path` (Scenario 1) | `FeatureController.handle_request` | `src/api/routes.py` | 100% Green Unit Tests | 🟢 **Mapped** |
-| `@unhappy-path` (Scenario 2) | `RequestDTO.identifier` validation | `src/domain/entities.py` | HTTP 422 Rejection Test | 🟢 **Mapped** |
+| `@unhappy-path` (Scenario 2) | `DuplicateEntityError` / `RequestDTO` | `src/domain/entities.py` | HTTP 409 / 422 Rejection Test | 🟢 **Mapped** |
 | Boundary Integration | `IFeaturePort.save` / Adapter | `src/infra/repo.py` | Contract Test with Fake/Mock | 🟡 **Attention** ([see Architectural Point 1](#-architectural-point-1)) |
+
+### Goldfish Council Blind Review Summary (Step 5)
+
+| Persona (`Model: "flash"`) | Finding / Critique | User Arbitration Decision | Patch Applied |
+| :--- | :--- | :---: | :--- |
+| 🐠 `goldfish-yagni` | {{YAGNI_FINDING}} | {{YAGNI_DECISION}} | {{YAGNI_PATCH}} |
+| 🐠 `goldfish-adversary` | {{ADVERSARY_FINDING}} | {{ADVERSARY_DECISION}} | {{ADVERSARY_PATCH}} |
+| 🐠 `goldfish-implementer` | {{IMPLEMENTER_FINDING}} | {{IMPLEMENTER_DECISION}} | {{IMPLEMENTER_PATCH}} |
 
 ### Architectural Points of Attention & Trade-Offs
 
@@ -182,7 +199,7 @@ class ResponseDTO(BaseModel):
 
 ## 8. Living Definition of Done (DoD) Setup
 
-- [x] Phase 1: Architectural Conception & Planning completed
+- [x] Phase 1: Architectural Conception & Planning completed (SDD 2.0 + Goldfish Council)
 - [ ] Phase 2: Iterative TDD Implementation (`/implement`)
 - [ ] Phase 3: Macro-Refactoring across diff (`/refactor`)
 - [ ] Phase 4: Specialized 5-Domain Audits (`/review`)

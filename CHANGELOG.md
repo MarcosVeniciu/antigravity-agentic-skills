@@ -5,6 +5,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ---
 
+## Release Notes - v1.3.0 (2026-10-29)
+
+### New Features
+- `[feat: sdd-2.0-plan]`: Evolved `/plan` ([`skills/plan/SKILL.md`](skills/plan/SKILL.md)) to the **SDD 2.0 (Elephant & Goldfish)** multi-agent architecture with Context-Zero authoring subagents (`bdd-architect` and `sdd-architect` on `Model: inherit`), a parallel 3-persona **Goldfish Council** blind review (`goldfish-yagni`, `goldfish-adversary`, `goldfish-implementer` on `Model: flash`), and semantic parity validation in [`skills/plan/scripts/validate_sdd_contracts.py`](skills/plan/scripts/validate_sdd_contracts.py) (`sequenceDiagram` ↔ `classDiagram` method parity and BDD ↔ SDD error branch parity).
+- `[feat: sdd-2.0-implement]`: Evolved `/implement` ([`skills/implement/SKILL.md`](skills/implement/SKILL.md)) with explicit **Batch Acceptance Criteria** in `task_list.md`, per-batch context-isolated `batch-implementer` subagents (`Model: inherit`), the deterministic **SDD Drift Gate** CLI validator ([`skills/implement/scripts/check_sdd_drift.py`](skills/implement/scripts/check_sdd_drift.py)), and a post-TDD `goldfish-drift-auditor` (`Model: flash_lite`).
+- `[feat: sdd-2.0-review]`: Evolved `/review` ([`skills/review/SKILL.md`](skills/review/SKILL.md)) to a **5-Domain Parallel Map-Reduce** architecture (`auditor-architecture`, `auditor-security`, `auditor-quality`, `auditor-performance`, `auditor-resilience` running simultaneously on `Model: flash`) with pre-flight `check_sdd_drift.py` enforcement and conflict-free Mode B (`--fix`) orchestrator remediation.
+- `[feat: sdd-2.0-tier1-tier2]`: Extended Context-Zero subagent isolation across Tier 1 and Tier 2 skills to minimize token costs and prevent context window pollution:
+  - `/debug` ([`skills/debug/SKILL.md`](skills/debug/SKILL.md)): Added `forensic-prober` (`Model: inherit`) to isolate empirical Probing Tests, MRE execution, scratch cleanup, and 5 Whys derivation.
+  - `/refactor` ([`skills/refactor/SKILL.md`](skills/refactor/SKILL.md)): Added `solid-refactorer` (`Model: inherit`) and mandatory `check_sdd_drift.py` contract preservation gates.
+  - `/docs` ([`skills/docs/SKILL.md`](skills/docs/SKILL.md)): Added `docs-scribe` (`Model: flash`) for cost-efficient module `README.md` generation and non-destructive docstring enrichment verified via `pytest -q`.
+  - `/ask` ([`skills/ask/SKILL.md`](skills/ask/SKILL.md)): Added conditional delegation to the built-in read-only `research` subagent (`Model: flash_lite`) for broad multi-file codebase and Vault surveys.
+  - `/release` ([`skills/release/SKILL.md`](skills/release/SKILL.md)): Added `release-auditor` (`Model: flash_lite`) for 100% Living DoD gatekeeping and SemVer 2.0.0 changelog compilation.
+  - `/decompose` ([`skills/decompose/SKILL.md`](skills/decompose/SKILL.md)): Added blind `goldfish-dag-auditor` (`Model: flash_lite`) for pre-flight acyclic DAG and slice-sizing verification.
+
+### Documentation & Repository Structure
+- `[docs: architecture]`: Created comprehensive architectural documentation for all 12 skills under [`doc/`](doc/README.md) (`doc/<skill>/README.md`), relocated [`doc/references/OWASP_Code_Review_Guide_v2.pdf`](doc/references/OWASP_Code_Review_Guide_v2.pdf) into `doc/references/`, and updated the root [`README.md`](README.md) with the complete SDD 2.0 multi-agent topology and model tiering matrix.
+
+---
+
 ## Release Notes - v1.2.0 (2026-10-28)
 
 ### New Features

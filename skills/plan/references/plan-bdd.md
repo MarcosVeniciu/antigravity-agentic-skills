@@ -4,7 +4,15 @@ This guide defines the standards for formulating behavioral specifications durin
 
 ---
 
-## 1. Golden Rules of BDD
+## 1. Context-Zero Authoring via `bdd-architect`
+
+To prevent the Socratic interview transcript from contaminating behavioral specifications with technical jargon or unspoken assumptions:
+- Step 3 is executed by the isolated `bdd-architect` subagent (`Model: "inherit"`, `EnableWriteTools: true`) as defined in [`references/plan-goldfish.md`](./plan-goldfish.md).
+- The subagent receives **only** the approved Desired End-State and Architectural Proposal summary, never the raw Step 1 chat history.
+
+---
+
+## 2. Golden Rules of BDD
 
 1. **Ubiquitous, Accessible Language:**
    - Scenarios must be readable and verifiable by developers, product managers, and business stakeholders alike.
@@ -20,9 +28,9 @@ This guide defines the standards for formulating behavioral specifications durin
 
 ---
 
-## 2. Mandatory Coverage Matrix
+## 3. Mandatory Coverage Matrix
 
-Every behavioral specification artifact (`01-concepcao/bdd-[slug].md`) **MUST** cover both categories:
+Every behavioral specification artifact (`01-concepcao/bdd-[slug].md`) **MUST** cover both positive and negative categories:
 
 | Category | Tag | Focus | Examples |
 |---|---|---|---|
@@ -31,9 +39,12 @@ Every behavioral specification artifact (`01-concepcao/bdd-[slug].md`) **MUST** 
 | **Security / Auth** | `@security` | Permission boundaries, access denials, role restrictions | Unauthenticated request, forbidden role access, expired session |
 | **Concurrency / State** | `@concurrency` | Conflicting state, race conditions, double submissions | Concurrent duplicate registration, concurrent balance deduction |
 
+> [!IMPORTANT]
+> **Cross-Artifact Parity with SDD:** Every `@unhappy-path`, `@security`, and `@concurrency` scenario defined here will be verified against `01-concepcao/sdd-[slug].md` by both [`scripts/validate_sdd_contracts.py`](../scripts/validate_sdd_contracts.py) and the `goldfish-adversary` subagent.
+
 ---
 
-## 3. Gherkin Structural Pattern
+## 4. Gherkin Structural Pattern
 
 ```gherkin
 Feature: [Feature Name]
@@ -58,8 +69,8 @@ Feature: [Feature Name]
 
 ---
 
-## 4. Artifact Storage & Integration
+## 5. Artifact Storage & Integration
 
 - Specifications are saved at `01-concepcao/bdd-[slug].md` in the Obsidian Vault or documentation directory using the format in [`resources/plan-template.md`](../resources/plan-template.md).
-- BDD scenarios serve as the direct input to Phase 2 unit tests ([`skills/implement`](../SKILL.md)).
+- BDD scenarios serve as the sole behavioral input for `sdd-architect` in Step 4 and for Phase 2 unit tests (`/implement`).
 - See a complete working example in [`examples/plan-example.md`](../examples/plan-example.md).

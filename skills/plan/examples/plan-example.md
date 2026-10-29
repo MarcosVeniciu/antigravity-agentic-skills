@@ -2,7 +2,7 @@
 
 **Feature:** `producer-identity-verification`  
 **Date:** 2026-10-26  
-**Status:** Approved Phase 1 Specification  
+**Status:** Approved Phase 1 Specification (SDD 2.0)  
 **Obsidian Note Links:** [[bdd-producer-identity-verification]] | [[sdd-producer-identity-verification]] | [[dod-producer-identity-verification]]  
 
 ---
@@ -38,7 +38,7 @@
 
 ---
 
-## 4. Behavioral Specification (BDD Gherkin)
+## 4. Behavioral Specification (BDD Gherkin — `bdd-architect`)
 
 ```gherkin
 Feature: Rural Producer Identity Verification
@@ -65,7 +65,7 @@ Feature: Rural Producer Identity Verification
 
 ---
 
-## 5. Technical Architecture & Contracts (SDD)
+## 5. Technical Architecture & Contracts (SDD — `sdd-architect`)
 
 ### 5.1. Technical Execution Flow (Sequence Diagram)
 
@@ -83,11 +83,17 @@ sequenceDiagram
     Service->>Repo: "find_by_id(dto.producer_id)"
     Repo-->>Service: "producer_entity"
     Service->>Gateway: "validate_credentials(dto.registry_id)"
-    Gateway-->>Service: "VerificationResult(status='VERIFIED')"
-    Service->>Repo: "update_status(producer_id, 'VERIFIED')"
-    Repo-->>Service: "updated_producer"
-    Service-->>Controller: "VerifyResponseDTO(status='VERIFIED')"
-    Controller-->>Client: "HTTP 200 OK (VerifyResponseDTO)"
+    alt Registry ID Suspended or Invalid (@unhappy-path)
+        Gateway-->>Service: "VerificationResult(status='SUSPENDED')"
+        Service-->>Controller: "ProducerSuspendedError"
+        Controller-->>Client: "HTTP 422 Unprocessable Entity"
+    else Registry ID Valid (@happy-path)
+        Gateway-->>Service: "VerificationResult(status='VERIFIED')"
+        Service->>Repo: "update_status(producer_id, 'VERIFIED')"
+        Repo-->>Service: "updated_producer"
+        Service-->>Controller: "VerifyResponseDTO(status='VERIFIED')"
+        Controller-->>Client: "HTTP 200 OK (VerifyResponseDTO)"
+    end
 ```
 
 ### 5.2. Component & Contract Structure (Class Diagram)
@@ -144,6 +150,9 @@ classDiagram
 from pydantic import BaseModel, Field
 from typing import Optional
 
+class ProducerSuspendedError(Exception):
+    """Raised when the national registry marks a producer ID as SUSPENDED."""
+
 class VerifyRequestDTO(BaseModel):
     producer_id: str = Field(..., description="Internal producer UUID")
     registry_id: str = Field(..., min_length=5, max_length=20, description="National Registry ID")
@@ -153,6 +162,14 @@ class VerifyResponseDTO(BaseModel):
     status: str = Field(..., description="Verification outcome: VERIFIED or REJECTED")
     certificate_id: Optional[str] = Field(None, description="Immutable audit certificate UUID")
 ```
+
+### 5.4. Goldfish Council Blind Review & Arbitration Summary
+
+| Persona (`Model: "flash"`) | Finding / Critique | Arbitration Verdict | Surgical Patch Applied |
+| :--- | :--- | :---: | :--- |
+| 🐠 `goldfish-yagni` | `ZERO_FINDINGS` — Port/Fake split is minimal and justified for offline resilience. | Approved | None required |
+| 🐠 `goldfish-adversary` | Missing explicit domain exception for `@unhappy-path` suspended producer in `sequenceDiagram`. | Accepted | Added `ProducerSuspendedError` and `alt/else` branch |
+| 🐠 `goldfish-implementer` | `InMemoryVerificationGateway` needed helper method to seed suspended IDs in unit tests. | Accepted | Added `+seed_status(registry_id: str, status: str) void` |
 
 ---
 
@@ -170,11 +187,12 @@ class VerifyResponseDTO(BaseModel):
 
 ## 7. Living Definition of Done (DoD) Setup
 
-- [x] **Phase 1: Architecture & Conception (`/plan`)**
+- [x] **Phase 1: Architecture & Conception (`/plan` — SDD 2.0)**
   - [x] Desired End-State aligned and Proposal 2 approved.
   - [x] Branch `feature/producer-identity-verification` validated.
-  - [x] BDD scenarios documented in pure Gherkin syntax.
-  - [x] SDD Mermaid models and Pydantic contracts validated.
+  - [x] Context-Zero BDD scenarios documented in pure Gherkin syntax (`bdd-architect`).
+  - [x] Context-Zero SDD Mermaid models and Pydantic contracts validated (`sdd-architect`).
+  - [x] Parallel Goldfish Council review completed and arbitrated (`goldfish-yagni`, `goldfish-adversary`, `goldfish-implementer`).
   - [x] Semantic commit: `docs(conception): BDD, SDD, and DoD specifications for producer-identity-verification`.
 - [ ] **Phase 2: Iterative TDD Implementation (`/implement`)**
 - [ ] **Phase 3: Macro-Refactoring (`/refactor`)**
