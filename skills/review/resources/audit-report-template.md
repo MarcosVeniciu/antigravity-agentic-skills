@@ -1,6 +1,7 @@
 # Audit Report: [DOMAIN] — [FEATURE_SLUG]
 
 > **Specification Standard:** Aligned with ISO 19011 (Management Systems Audit), IEEE 829 / ISO 29119 (Traceability Matrix), and Forensic Chain of Custody standards.
+> **Static Audit Scope Disclaimer (`[REV-ASI09-05]`):** This report reflects automated static AST/regex analysis and LLM-assisted code inspection over the target `git diff`. A `🟢 Compliant` status attests ONLY to the absence of known static anti-patterns within the inspected scope and does NOT replace dynamic application security testing (DAST), interactive penetration testing, or human cryptographic/architectural sign-off. Do not succumb to Automation Bias.
 
 **Audit Date:** [YYYY-MM-DD]  
 **Audited Domain:** [Architecture & Coupling | OWASP Security | Code Quality & AST | Performance | Resilience]  

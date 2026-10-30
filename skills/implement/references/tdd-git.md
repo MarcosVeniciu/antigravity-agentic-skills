@@ -5,8 +5,8 @@
 | Mode | Stage | Commands & Format |
 | :--- | :--- | :--- |
 | **Atomic** | Sub-phases | RED: `test(<scope>): unit tests`<br>GREEN: `feat(<scope>): minimal logic`<br>BLUE: `refactor(<scope>): clean code` |
-| **Checkpoint** | Batch $N$ | `git add <batch_files> && git commit -m "checkpoint(implement): batch [N] - <desc>"` |
-| **Rollback** | > 2 strikes | `git reset --hard HEAD` (restores green baseline) |
+| **Checkpoint** | Batch $N$ | Verify `git status --porcelain` / `git diff --name-only` touches ONLY planned Batch $N$ files, then `git add <batch_files> && git commit -m "checkpoint(implement): batch [N] - <desc>"` |
+| **Rollback** | > 2 strikes | `git stash push -u -m "antigravity-safety-rollback-strike2" && git reset --hard HEAD` (or `git checkout -- <batch_files>` to preserve untracked work and restore green baseline) |
 
 ## 2. Phase 2 Closure & Squash Protocol (Mode 3)
 

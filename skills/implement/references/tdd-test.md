@@ -1,8 +1,9 @@
 # TDD Red Phase Specification (`references/tdd-test.md`)
 
 ## 1. Invariants & Standards
-- **Test-First:** Zero live I/O. Fixtures in `conftest.py`. Ref: [`test-template.py`](../resources/test-template.py).
+- **Test-First & Isolated Execution:** Zero live network/socket or disk I/O in unit tests. Run `python -m pytest tests/unit/ -v --tb=short` (add `--timeout=30` when `pytest-timeout` is available). Fixtures in `conftest.py`. Ref: [`test-template.py`](../resources/test-template.py).
 - **Mocks:** `create_autospec(IPort, instance=True)`. Never mock entities/VOs.
+- **Assertion Rigor:** Forbid trivial/tautological assertions (`assert True`, `assert res is not None`, `assert len(x) >= 0`). Require concrete state, exception, or redaction checks.
 - **Naming:** `tests/unit/test_<mod>.py`; `test_should_<outcome>_when_<cond>()`.
 
 ## 2. 6-Category Coverage Matrix

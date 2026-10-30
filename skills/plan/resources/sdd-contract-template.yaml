@@ -9,7 +9,14 @@ contracts:
   - name: "{{CONTRACT_NAME}}"
     description: "{{CONTRACT_DESCRIPTION}}"
     endpoint: "{{HTTP_METHOD_AND_PATH}}"
-    
+
+    security:
+      authorization_scope: "{{REQUIRED_RBAC_ROLE_OR_SCOPE}}"
+      rate_limit_tier: "{{RATE_LIMIT_TIER_EG_STANDARD_STRICT}}"
+      idempotency_required: true
+      sensitive_fields:
+        - "{{FIELD_TO_REDACT_IN_LOGS}}"
+
     request:
       type: "object"
       required:
@@ -41,6 +48,12 @@ contracts:
           enum: ["active", "pending", "disabled"]
 
     exceptions:
+      - name: "UnauthorizedError"
+        status_code: 401
+        message: "Missing or expired authentication credentials"
+      - name: "ForbiddenError"
+        status_code: 403
+        message: "Caller lacks required authorization_scope"
       - name: "DuplicateEntityError"
         status_code: 409
         message: "Entity with specified identifier already exists"

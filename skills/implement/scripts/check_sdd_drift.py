@@ -257,6 +257,45 @@ def collect_implemented_symbols(
     return implemented_classes, scanned_files, parse_errors
 
 
+def parse_structured_pivots(pivots_text: str) -> Tuple[Set[str], Set[str]]:
+    """
+    Extracts structured pivot authorizations from YAML blocks (```yaml ... ```)
+    or YAML frontmatter inside a pivots markdown document.
+    Supports entries under `pivots:` list with `symbol` and/or `file` keys.
+    """
+    pivoted_symbols: Set[str] = set()
+    pivoted_files: Set[str] = set()
+    if not pivots_text:
+        return pivoted_symbols, pivoted_files
+
+    yaml_blocks = re.findall(r"```ya?ml\r?\n(.*?)```", pivots_text, re.DOTALL)
+    fm_match = re.match(r"^---\r?\n(.*?)\r?\n---", pivots_text, re.DOTALL)
+    if fm_match:
+        yaml_blocks.append(fm_match.group(1))
+
+    for block in yaml_blocks:
+        try:
+            data = yaml.safe_load(block)
+        except Exception:
+            continue
+        if not isinstance(data, dict):
+            continue
+        pivots_list = data.get("pivots", [])
+        if isinstance(pivots_list, list):
+            for entry in pivots_list:
+                if isinstance(entry, dict):
+                    sym = entry.get("symbol")
+                    if sym:
+                        pivoted_symbols.add(str(sym).strip())
+                    f_entry = entry.get("file")
+                    if f_entry:
+                        pivoted_files.add(str(f_entry).strip().replace("\\", "/"))
+                elif isinstance(entry, str):
+                    pivoted_symbols.add(entry.strip())
+
+    return pivoted_symbols, pivoted_files
+
+
 def check_drift(
     sdd_path: Path,
     targets: List[Path],
@@ -269,7 +308,7 @@ def check_drift(
     Returns (findings, errors).
     - If batch_mode=True, only verifies methods on classes already present in targets
       (does not fail on classes belonging to future batches).
-    - If pivots_path is provided and exists, any symbol or file path mentioned in the
+    - If pivots_path is provided and exists, any symbol or exact file path authorized in the
       pivots document is marked as `authorized_by_pivot=True`.
     """
     errors: List[str] = []
@@ -292,7 +331,11 @@ def check_drift(
     if pivots_path and pivots_path.exists():
         pivots_text = pivots_path.read_text(encoding="utf-8", errors="replace")
 
+    structured_symbols, structured_files = parse_structured_pivots(pivots_text)
+
     def is_in_pivots(token: str) -> bool:
+        if token in structured_symbols or token in structured_files:
+            return True
         return bool(pivots_text and re.search(rf"\b{re.escape(token)}\b", pivots_text))
 
     # 1. Check Classes / Interfaces and their Public Methods
@@ -312,13 +355,18 @@ def check_drift(
         actual_methods = implemented_classes[expected_cls]
         for expected_method in sorted(expected_methods):
             if expected_method not in actual_methods:
-                pivoted = is_in_pivots(expected_method) or is_in_pivots(expected_cls)
+                qualified_symbol = f"{expected_cls}.{expected_method}"
+                pivoted = (
+                    is_in_pivots(qualified_symbol)
+                    or is_in_pivots(expected_method)
+                    or is_in_pivots(expected_cls)
+                )
                 findings.append(
                     DriftFinding(
                         category="MISSING_METHOD",
-                        symbol=f"{expected_cls}.{expected_method}",
+                        symbol=qualified_symbol,
                         details=(
-                            f"Method '{expected_cls}.{expected_method}()' declared in SDD "
+                            f"Method '{qualified_symbol}()' declared in SDD "
                             f"is missing from implemented class '{expected_cls}'."
                         ),
                         authorized_by_pivot=pivoted,
@@ -350,8 +398,10 @@ def check_drift(
                 for planned in spec.planned_files
             )
             if not matched:
-                pivoted = is_in_pivots(fpath.name) or any(
-                    is_in_pivots(part) for part in norm_path.split("/")
+                pivoted = (
+                    (bool(pivots_text) and norm_path in pivots_text)
+                    or any(norm_path.endswith(sf) or sf.endswith(norm_path) for sf in structured_files)
+                    or is_in_pivots(fpath.name)
                 )
                 findings.append(
                     DriftFinding(

@@ -50,20 +50,20 @@ flowchart TD
 
 | Etapa | Responsável | Modelo (`invoke_subagent`) | Permissão de Escrita | Insumos Recebidos | Entregável |
 | :--- | :--- | :---: | :--- | :--- | :--- |
-| **Step 1: Entry Gate & Scope Discovery** | **Orquestrador Principal** | Sessão Ativa | Somente Leitura / CLI | Repositório na branch ativa, `develop...HEAD`. | Confirmação de 100% dos testes verdes, lista de arquivos do diff e relatório baseline de complexidade. |
+| **Step 1: Entry Gate & Scope Discovery** | **Orquestrador Principal** | Sessão Ativa | Somente Leitura / CLI | Repositório na branch ativa, `develop...HEAD`. | Confirmação de 100% dos testes verdes + verificação de cobertura (`pytest --cov=<target_files>`, alerta se < 80% em alvos $V(G)>10$), lista de arquivos do diff e relatório baseline de complexidade. |
 | **Step 2: Mapeamento de Oportunidades** | **Orquestrador Principal** | Sessão Ativa | Escrita em `task_list.md` | Relatório baseline de complexidade + [`solid-catalog.md`](../../skills/refactor/references/solid-catalog.md). | `task_list.md` preenchido com alvos cirúrgicos, smells identificados e transformações planejadas. |
-| **Step 3: Loop de Refatoração Cirúrgica** | **Subagente `solid-refactorer`** | `Model: "inherit"` | `EnableWriteTools: true` *(código de produção e task_list.md)* | `task_list.md`, `01-concepcao/sdd-[slug].md`, `solid-catalog.md` e código-fonte. | Código refatorado, zero quebra de contratos, $V(G) \le 10$, micro-checkpoints no git e Matriz de Evidências consolidada. |
-| **Step 4: Validação Final, Drift Gate & Squash** | **Orquestrador Principal** | Sessão Ativa | CLI + `@obsidian` + Git | Matriz de Evidências entregue pelo `solid-refactorer`, `01-concepcao/dod-[slug].md`. | Validação de saída com `check_sdd_drift.py --check-files`, DoD atualizado, Phase Squash Commit e recomendação de `/review`. |
+| **Step 3: Loop de Refatoração Cirúrgica** | **Subagente `solid-refactorer`** | `Model: "inherit"` | `EnableWriteTools: true` *(restrito a `src/` e `task_list.md`; proibido alterar `tests/`)* | `task_list.md`, `01-concepcao/sdd-[slug].md`, `solid-catalog.md` e código-fonte. | Código refatorado (Zero Novas Dependências Externas — apenas stdlib/manifesto; `MaxIterations: 2` por alvo), zero quebra de contratos, $V(G) \le 10$, micro-checkpoints no git e Matriz de Evidências consolidada. |
+| **Step 4: Validação Final, Tampering Gate, Drift Gate & Squash** | **Orquestrador Principal** | Sessão Ativa | CLI + `@obsidian` + Git | Matriz de Evidências entregue pelo `solid-refactorer`, `01-concepcao/dod-[slug].md`. | Auditoria determinística contra adulteração de testes (`git diff --exit-code <PHASE_START_HASH>...HEAD -- tests/`), validação com `check_sdd_drift.py --check-files`, DoD atualizado, Phase Squash Commit e recomendação de `/review`. |
 
 ---
 
-## 4. Os Dois Guardiões Determinísticos: Complexidade AST e SDD Drift Gate
+## 4. Os Guardiões Determinísticos: Complexidade AST, SDD Drift Gate e Test Tampering Gate
 
-A refatoração no SDD 2.0 não depende de opiniões abstratas; ela é blindada por duas ferramentas CLI determinísticas:
+A refatoração no SDD 2.0 não depende de opiniões abstratas; ela é blindada por ferramentas CLI determinísticas:
 
 ### 4.1. Analisador AST de Complexidade Ciclomática (`ast_complexity.py`)
 Localizado em [`skills/refactor/scripts/ast_complexity.py`](../../skills/refactor/scripts/ast_complexity.py), o script analisa a Árvore Sintática Abstrata (AST) do Python:
-- **Teto Rigoroso de Complexidade:** Nenhuma função ou método pode ultrapassar $V(G) \le 10$. Métodos com $V(G) > 10$ devem ser decompostos com cláusulas guarda, extração de métodos privados e padrões polimórficos.
+- **Teto Rigoroso e Bloqueante de Complexidade (`[REF-ASI06-01]`):** Nenhuma função ou método pode ultrapassar $V(G) \le 10$. O script retorna obrigatoriamente `exit 1` sempre que houver funções acima do threshold ou erros de parsing (sem flag `--exit-zero` de bypass).
 - **Detecção de Gargalos Assintóticos:** Emite alertas para laços aninhados ($O(N^2)$) e operações lineares de pertinência (`item in list`) dentro de loops.
 
 ### 4.2. O Guardião de Contratos SDD (`check_sdd_drift.py`)
@@ -73,21 +73,29 @@ Localizado em [`skills/implement/scripts/check_sdd_drift.py`](../../skills/imple
   - *Modo Alvo (`--batch`):* Executado pelo `solid-refactorer` logo após cada refatoração individual.
   - *Modo Exit Gate Completo (`--check-files`):* Executado pelo Orquestrador no Step 4 para assegurar integridade global da feature.
 
+### 4.3. Gate Determinístico Contra Adulteração de Testes (`[REF-ASI02-01]`)
+No Step 4 (Verify), antes de executar o *Phase Squash Commit*, o Orquestrador executa obrigatoriamente:
+```bash
+git diff --exit-code <PHASE_START_HASH>...HEAD -- tests/
+```
+Se o código de saída for diferente de zero (qualquer arquivo de teste modificado, excluído ou enfraquecido durante a refatoração), a Fase 3 é imediatamente **ABORTADA** e as modificações em `tests/` são revertidas.
+
 ---
 
-## 5. Governança Git Flow: Micro-Checkpoints, Rollback Seguro e Phase Squash
+## 5. Governança Git Flow & Guardrails OWASP (2026)
 
-A manipulação do histórico git em `/refactor` segue quatro modos operacionais estritos:
-1. **Zero-Regression Rollback (Mode 4):** Se qualquer transformação introduzir falha em testes unitários ou violação de contrato e não for corrigida no mesmo instante, o subagente descarta as alterações via:
+A manipulação do histórico git e da cadeia de suprimentos em `/refactor` segue modos operacionais estritos:
+1. **Zero-Regression Safe Rollback (`[REF-LLM03-01]`, Mode 4):** Se qualquer transformação introduzir falha em testes unitários ou violação de contrato e atingir a **Regra do Double-Strike** (`MaxIterations: 2` por alvo, `[REF-ASI08-01]`), o rollback é precedido por um stash de segurança para nunca destruir arquivos não rastreados do desenvolvedor:
    ```bash
-   git reset --hard HEAD
+   git stash push -u -m "antigravity-refactor-safety-rollback"
+   git reset --hard <target_start_hash>
    ```
-   Aplica-se a **Regra do Double-Strike**: se após 2 tentativas a refatoração daquele alvo não estabilizar verde sem regressões, o código de trabalho anterior é mantido, o motivo é registrado no relatório e o fluxo avança para o próximo alvo.
-2. **Micro-Checkpoints Atômicos (Mode 2):** A cada alvo refatorado com testes 100% verdes, $V(G) \le 10$ e drift zero, registra-se um micro-commit:
+2. **Zero Novas Dependências Externas (`[REF-LLM04-01]`):** Durante a refatoração SOLID, é estritamente proibido introduzir pacotes externos não declarados no manifesto do projeto (`pyproject.toml` / `requirements.txt`). Padrões como DIP, ISP e Strategy devem utilizar exclusivamente a biblioteca padrão do Python (`typing.Protocol`, `dataclasses`, `abc`, `functools`, `enum`), prevenindo *Slopsquatting*.
+3. **Micro-Checkpoints Atômicos (Mode 2):** A cada alvo refatorado com testes 100% verdes, $V(G) \le 10$ e drift zero, registra-se um micro-commit:
    ```bash
    git commit -m "checkpoint(refactor): [target] - [action applied]"
    ```
-3. **Consolidação em Phase Squash Commit (Mode 3):** No Step 4, todos os micro-checkpoints intermediários são condensados em um único commit semântico limpo para a Fase 3:
+4. **Consolidação em Phase Squash Commit (Mode 3):** No Step 5, após aprovação no Tampering Gate, AST Gate e Drift Gate, todos os micro-checkpoints intermediários são condensados em um único commit semântico limpo para a Fase 3:
    ```bash
    git reset --soft <PHASE_START_HASH>
    git commit -m "refactor(consolidation): apply Clean Code and SOLID for [slug]"
