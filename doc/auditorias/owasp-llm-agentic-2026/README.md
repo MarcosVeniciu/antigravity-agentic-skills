@@ -19,7 +19,7 @@ Cada uma das 12 skills do projeto foi auditada em profundidade sob duas perspect
 | # | Skill | Fase no Ciclo SDD 2.0 | Modelo Agêntico | Status Geral | Relatório Detalhado |
 | :---: | :--- | :--- | :--- | :---: | :--- |
 | 1 | **`/decompose`** | Fase 0: Decomposição de Épicos | Orchestrator + `goldfish-dag-auditor` (`flash_lite`, RO) | 🟢 Totalmente Mitigado (5/5) | [`audit-decompose.md`](./audit-decompose.md) |
-| 2 | **`/plan`** | Fase 1: Concepção BDD, SDD & Living DoD | Orchestrator + `bdd-architect` / `sdd-architect` (`inherit`) + Goldfish Council (3x `flash`, RO) | 🟢 Totalmente Mitigado (8/8) | [`audit-plan.md`](./audit-plan.md) |
+| 2 | **`/plan`** | Fase 1: Concepção BDD, SDD & Living DoD | Orchestrator + `bdd-architect` / `sdd-architect` (`inherit`) + Goldfish Council (3x `flash`, RO) | 🟡 Substancialmente Mitigado (7/9) | [`audit-plan.md`](./audit-plan.md) |
 | 3 | **`/implement`** | Fase 2: Implementação TDD em Lotes | Orchestrator + `batch-implementer` (`inherit`) + `goldfish-drift-auditor` (`flash_lite`, RO) | 🟢 Totalmente Mitigado (6/6) | [`audit-implement.md`](./audit-implement.md) |
 | 4 | **`/refactor`** | Fase 3: Refatoração SOLID & AST | Orchestrator + `solid-refactorer` (`inherit`) | 🟢 Totalmente Mitigado (7/7) | [`audit-refactor.md`](./audit-refactor.md) |
 | 5 | **`/review`** | Fase 4: Auditoria em 5 Domínios | Orchestrator + 5x Subagentes Map-Reduce (`flash`) | 🟢 Totalmente Mitigado (7/7) | [`audit-review.md`](./audit-review.md) |
@@ -114,10 +114,10 @@ Legenda:
 | **LLM04: Supply Chain Vulnerabilities** | ⚪ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | ⚪ | 🟢 | ⚪ |
 | **LLM05: Data & Model Poisoning** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
 | **LLM06: Unbounded Consumption** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
-| **LLM07: System Prompt Leakage / Misinfo** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **LLM07: System Prompt Leakage / Misinfo** | 🟢 | 🟡 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
 | **LLM08: Hidden Context Exposure** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
 | **LLM09: Vector & Embedding Weaknesses** | ⚪ | 🟢 | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | 🟢 | ⚪ | 🟢 |
-| **LLM10: Improper Output Handling** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **LLM10: Improper Output Handling** | 🟢 | 🟡 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
 | **ASI01: Agent Goal Hijack** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
 | **ASI02: Tool Misuse & Exploitation** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
 | **ASI03: Identity & Privilege Abuse** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
@@ -125,7 +125,7 @@ Legenda:
 | **ASI05: Unexpected Code Exec (RCE)** | ⚪ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | ⚪ |
 | **ASI06: Memory & Context Poisoning** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
 | **ASI07: Insecure Inter-Agent Comm** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | ⚪ |
-| **ASI08: Cascading Failures** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **ASI08: Cascading Failures** | 🟢 | 🟡 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
 | **ASI09: Human-Agent Trust Exploit** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
 | **ASI10: Rogue Agents (Goal Drift)** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
 

@@ -38,7 +38,7 @@ A skill `/implement` governa a Fase 2 do ciclo SDD 2.0 (Desenvolvimento TDD Iter
 | **LLM07** | **System Prompt Leakage / Misinformation** | Média | Context-Zero no `goldfish-drift-auditor` ([`tdd-subagents.md:17`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-subagents.md#L17)); validação determinística de assinaturas via AST elimina alucinações. | Mitigado. | 🟢 Conforme |
 | **LLM08** | **Hidden Context Exposure** | Baixa | Tracebacks e histórico de tentativas de lotes anteriores são expurgados ao fechar o subagente `batch-implementer` ([`doc/skills/implement/README.md:20`](file:///e:/Codigos/antigravity-agentic-workflows/doc/skills/implement/README.md#L20)). | Nenhum vazamento detectado; isolamento atua prevenindo contaminação cruzada. | 🟢 Conforme |
 | **LLM09** | **Vector and Embedding Weaknesses** | Baixa | A skill não utiliza banco vetorial proprietário para RAG; opera sobre arquivos locais explícitos via caminhos relativos determinísticos. | Não aplicável diretamente ao fluxo da skill. | 🟢 Conforme |
-| **LLM10** | **Improper Output Handling** | Média-Alta | `check_sdd_drift.py` utiliza `ast.parse` e `yaml.safe_load` ([`check_sdd_drift.py:97`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/scripts/check_sdd_drift.py#L97)). Execução de testes isolada via `pytest_sandbox.py`. | Execução de testes contida sem acesso a redes externas. | 🟢 Conforme |
+| **LLM10** | **Improper Output Handling** | Média-Alta | `check_sdd_drift.py` utiliza `ast.parse` e `yaml.safe_load` ([`check_sdd_drift.py:98,183,287`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/scripts/check_sdd_drift.py#L98)). Execução de testes isolada via `pytest_sandbox.py` ([`pytest_sandbox.py:65-81`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/scripts/pytest_sandbox.py#L65-L81)). | Execução de testes contida sem acesso a redes externas. | 🟢 Conforme |
 
 ---
 
@@ -65,7 +65,7 @@ A skill `/implement` governa a Fase 2 do ciclo SDD 2.0 (Desenvolvimento TDD Iter
 - **Categorias OWASP:** ASI05 (Unexpected Code Execution), LLM03 (Excessive Agency)
 - **Status:** 🟢 Totalmente Mitigado
 - **Mitigação Implementada:**
-  Desenvolvido o plugin Pytest [`skills/implement/scripts/pytest_sandbox.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/scripts/pytest_sandbox.py), carregado automaticamente nos comandos de teste (`-p skills.implement.scripts.pytest_sandbox`). O plugin intercepta `socket.socket.connect` e `socket.socket.connect_ex`, bloqueando qualquer tentativa de comunicação com endereços de rede externa através de `RuntimeError("Security Error [IMP-ASI05-01]: Conexão de rede externa bloqueada em teste unitário...")`. Conexões de loopback local (`127.0.0.1`, `localhost`, `::1`, Unix sockets) permanecem autorizadas para uso de mocks/stubs locais. Caso um teste de integração precise de rede externa intencionalmente, deve ser anotado explicitamente com `@pytest.mark.allow_network`.
+  Desenvolvido o plugin Pytest [`skills/implement/scripts/pytest_sandbox.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/scripts/pytest_sandbox.py#L65-L81), carregado automaticamente nos comandos de teste (`-p skills.implement.scripts.pytest_sandbox`). O plugin intercepta `socket.socket.connect` e `socket.socket.connect_ex`, bloqueando qualquer tentativa de comunicação com endereços de rede externa através de `RuntimeError("Security Error [IMP-ASI05-01]: Conexão de rede externa bloqueada em teste unitário...")`. Conexões de loopback local (`127.0.0.1`, `localhost`, `::1`, Unix sockets) permanecem autorizadas para uso de mocks/stubs locais. Caso um teste de integração precise de rede externa intencionalmente, deve ser anotado explicitamente com `@pytest.mark.allow_network`.
 
 ---
 
@@ -73,7 +73,7 @@ A skill `/implement` governa a Fase 2 do ciclo SDD 2.0 (Desenvolvimento TDD Iter
 - **Categorias OWASP:** ASI06 (Memory and Context Poisoning), ASI02 (Tool Misuse), LLM05 (Model Poisoning)
 - **Status:** 🟢 Totalmente Mitigado
 - **Mitigação Implementada:**
-  Refatorada a função `parse_structured_pivots` em [`skills/implement/scripts/check_sdd_drift.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/scripts/check_sdd_drift.py) para processar exclusivamente blocos ````yaml pivots: [...] ```` ou frontmatter YAML. Cada entrada é obrigatoriamente validada para a presença do atributo `authorized_by: "human"` (case-insensitive). Qualquer entrada gerada por agente ou sem autorização explícita humana é sumariamente descartada. O fallback de busca lexical por regex em texto livre foi totalmente eliminado, impedindo que termos genéricos no documento autorizem drift de contratos ou arquivos arbitrários.
+  Refatorada a função `parse_structured_pivots` em [`skills/implement/scripts/check_sdd_drift.py`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/scripts/check_sdd_drift.py#L261-L314) para processar exclusivamente blocos ````yaml pivots: [...] ```` ou frontmatter YAML. Cada entrada é obrigatoriamente validada para a presença do atributo `authorized_by: "human"` (case-insensitive). Qualquer entrada gerada por agente ou sem autorização explícita humana é sumariamente descartada. O fallback de busca lexical por regex em texto livre foi totalmente eliminado, impedindo que termos genéricos no documento autorizem drift de contratos ou arquivos arbitrários.
 
 ---
 
@@ -81,7 +81,7 @@ A skill `/implement` governa a Fase 2 do ciclo SDD 2.0 (Desenvolvimento TDD Iter
 - **Categorias OWASP:** ASI03 (Identity and Privilege Abuse), LLM03 (Excessive Agency), ASI10 (Rogue Agents)
 - **Status:** 🟢 Totalmente Mitigado
 - **Mitigação Implementada:**
-  Inserido no Step 2.5 da skill e nas diretivas do Orquestrador a verificação automatizada `git diff --name-only` e `git status --porcelain`. Qualquer alteração realizada pelo subagente fora dos arquivos planejados de `src/` e `tests/unit/` do lote (como `.env`, `.github/` ou `skills/`) dispara aborto e reversão imediata.
+  Inserido no Step 2.5 da skill ([`SKILL.md:19`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/SKILL.md#L19)), em [`tdd-subagents.md:24`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-subagents.md#L24) e em [`tdd-git.md:8`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-git.md#L8) a verificação automatizada `git diff --name-only` e `git status --porcelain`. Qualquer alteração realizada pelo subagente fora dos arquivos planejados de `src/` e `tests/unit/` do lote (como `.env`, `.github/` ou `skills/`) dispara aborto e reversão imediata.
 
 ---
 
@@ -89,7 +89,7 @@ A skill `/implement` governa a Fase 2 do ciclo SDD 2.0 (Desenvolvimento TDD Iter
 - **Categorias OWASP:** ASI09 (Human-Agent Trust Exploitation), LLM07 (Misinformation)
 - **Status:** 🟢 Totalmente Mitigado
 - **Mitigação Implementada:**
-  O System Prompt do subagente `goldfish-drift-auditor` proíbe expressamente asserções vazias ou tautológicas (`assert True`, `assert res is not None`, `assert len(x) >= 0`), exigindo validação concreta de regras de negócio, exceções esperadas e mascaramento de dados confidenciais (`***REDACTED***`).
+  O System Prompt do subagente `goldfish-drift-auditor` ([`tdd-subagents.md:17`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-subagents.md#L17), [`tdd-test.md:6`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-test.md#L6), [`SKILL.md:27`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/SKILL.md#L27)) proíbe expressamente asserções vazias ou tautológicas (`assert True`, `assert res is not None`, `assert len(x) >= 0`), exigindo validação concreta de regras de negócio, exceções esperadas e mascaramento de dados confidenciais (`***REDACTED***`).
 
 ---
 
@@ -97,21 +97,21 @@ A skill `/implement` governa a Fase 2 do ciclo SDD 2.0 (Desenvolvimento TDD Iter
 - **Categorias OWASP:** LLM03 (Excessive Agency), ASI02 (Tool Misuse)
 - **Status:** 🟢 Totalmente Mitigado
 - **Mitigação Implementada:**
-  A política de Double-Strike (> 2 falhas consecutivas) foi atualizada para exigir a execução de `git stash push -u -m "antigravity-safety-rollback-strike2"` antes de rodar `git reset --hard HEAD`, garantindo que modificações e arquivos não rastreados no workspace sejam preservados.
+  A política de Double-Strike (> 2 falhas consecutivas) foi atualizada em [`tdd-code.md:29`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-code.md#L29), [`tdd-git.md:9`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-git.md#L9), [`SKILL.md:16`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/SKILL.md#L16) e [`tdd-subagents.md:16`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-subagents.md#L16) para exigir a execução de `git stash push -u -m "antigravity-safety-rollback-strike2"` antes de rodar `git reset --hard HEAD`, garantindo que modificações e arquivos não rastreados no workspace sejam preservados.
 
 ---
 
 ## 5. Plano de Ação Priorizado para a Skill `/implement`
 
 ### Quick Wins (Baixo Esforço / Alto Impacto)
-- [x] **Endurecimento de `check_sdd_drift.py`:** Remover a validação de partes de diretório (`any(is_in_pivots(part) for part in norm_path.split("/"))`), exigindo caminho relativo exato ou nome de classe qualificado para concessão de pivot.
-- [x] **Salvaguarda de Git Rollback em `tdd-git.md`:** Alterar a instrução de Double-Strike para executar `git stash push -u -m "antigravity-safety-rollback-strike2"` antes de rodar `git reset --hard HEAD` (preservando alterações e arquivos não rastreados via `-u`).
-- [x] **Adição de Validação de Asserções Específicas em `goldfish-drift-auditor`:** Adicionar no System Prompt do auditor a proibição expressa de asserções triviais (`assert x is not None`, `assert True`) para cenários marcados com `@security`.
+- [x] **Endurecimento de `check_sdd_drift.py`:** Remover a validação de partes de diretório (`any(is_in_pivots(part) for part in norm_path.split("/"))`), exigindo caminho relativo exato ou nome de classe qualificado para concessão de pivot ([`check_sdd_drift.py:420-424`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/scripts/check_sdd_drift.py#L420-L424)).
+- [x] **Salvaguarda de Git Rollback em `tdd-git.md`:** Alterar a instrução de Double-Strike para executar `git stash push -u -m "antigravity-safety-rollback-strike2"` antes de rodar `git reset --hard HEAD` (preservando alterações e arquivos não rastreados via `-u`) ([`tdd-git.md:9`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-git.md#L9), [`tdd-code.md:29`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-code.md#L29), [`SKILL.md:16`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/SKILL.md#L16), [`tdd-subagents.md:16`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-subagents.md#L16)).
+- [x] **Adição de Validação de Asserções Específicas em `goldfish-drift-auditor`:** Adicionar no System Prompt do auditor a proibição expressa de asserções triviais (`assert x is not None`, `assert True`) para cenários marcados com `@security` ([`tdd-subagents.md:17`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-subagents.md#L17), [`tdd-test.md:6`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-test.md#L6), [`SKILL.md:27`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/SKILL.md#L27)).
 
 ### Evoluções Estruturais (Scripts / Arquitetura de Subagentes)
-- [x] **Schema YAML Rígido para Notas de Pivô (`[IMP-ASI06-01]`):** Modificar `check_sdd_drift.py` para processar apenas blocos ```yaml estruturados dentro de `02-auditorias/pivots-[slug].md`, exigindo o campo `authorized_by: "human"`.
-- [x] **Verificação de Integridade de Escopo Pós-Lote no Step 2.5 (`[IMP-ASI03-01]`):** Inserir um hook de validação no Orquestrador que confere se o git diff do lote tocou exclusivamente arquivos de `src/` e `tests/unit/` pertencentes ao Lote N planejado antes de gravar o checkpoint.
-- [x] **Isolamento de Execução de Testes (Sandbox Fixtures) (`[IMP-ASI05-01]`):** Criar plugin Pytest nativo (`skills/implement/scripts/pytest_sandbox.py`) que bloqueia chamadas externas de rede (`socket.connect`) com `RuntimeError` durante a execução de `pytest tests/unit/`.
+- [x] **Schema YAML Rígido para Notas de Pivô (`[IMP-ASI06-01]`):** Modificar `check_sdd_drift.py` para processar apenas blocos ```yaml estruturados dentro de `02-auditorias/pivots-[slug].md`, exigindo o campo `authorized_by: "human"` ([`check_sdd_drift.py:261-314`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/scripts/check_sdd_drift.py#L261-L314)).
+- [x] **Verificação de Integridade de Escopo Pós-Lote no Step 2.5 (`[IMP-ASI03-01]`):** Inserir um hook de validação no Orquestrador que confere se o git diff do lote tocou exclusivamente arquivos de `src/` e `tests/unit/` pertencentes ao Lote N planejado antes de gravar o checkpoint ([`SKILL.md:19`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/SKILL.md#L19), [`tdd-subagents.md:24`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-subagents.md#L24), [`tdd-git.md:8`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-git.md#L8)).
+- [x] **Isolamento de Execução de Testes (Sandbox Fixtures) (`[IMP-ASI05-01]`):** Criar plugin Pytest nativo (`skills/implement/scripts/pytest_sandbox.py`) que bloqueia chamadas externas de rede (`socket.connect`) com `RuntimeError` durante a execução de `pytest tests/unit/` ([`pytest_sandbox.py:1-142`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/scripts/pytest_sandbox.py#L1-L142), [`SKILL.md:8,15,16,17,25`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/SKILL.md#L8-L25), [`tdd-test.md:4`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-test.md#L4), [`tdd-subagents.md:16`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-subagents.md#L16)).
 
 ---
 
@@ -120,17 +120,19 @@ A skill `/implement` governa a Fase 2 do ciclo SDD 2.0 (Desenvolvimento TDD Iter
 A conformidade e eficácia dos controles de segurança da skill `/implement` foram integralmente validadas através da suíte automatizada de testes e da inspeção dos guardrails:
 
 ### 1. Suíte de Testes Automatizados (`tests/skills/test_scanners.py`)
-- **`TestCheckSddDrift.test_zero_drift_passes_full_gate`**: Comprova que classes e métodos aderentes ao SDD passam no gate.
-- **`TestCheckSddDrift.test_batch_mode_ignores_future_classes_but_catches_missing_method`**: Valida a verificação isolada de lote sem falsos positivos em classes futuras.
-- **`TestCheckSddDrift.test_pivots_file_authorizes_drift`**: Valida que blocos YAML estruturados com `authorized_by: "human"` autorizam desvios contratuais formais (`[IMP-ASI06-01]`).
-- **`TestCheckSddDrift.test_unplanned_file_not_bypassed_by_generic_word_in_pivots`**: Comprova que palavras genéricas em texto livre (ex.: `"src"`) não autorizam arquivos não planejados, eliminando totalmente o risco de evasão lexical (`[IMP-ASI06-01]`).
-- **`TestPytestSandbox.test_is_local_address_detection`**: Valida detecção determinística de endereços de loopback (`127.0.0.1`, `localhost`, `::1`, Unix sockets) vs endereços de rede externa (`8.8.8.8`, `api.openai.com`).
-- **`TestPytestSandbox.test_socket_blocking_in_sandbox`**: Valida interceptação de `socket.connect` com disparo de `RuntimeError` (`[IMP-ASI05-01]`).
-- **`TestPytestSandbox.test_socket_connect_ex_blocking_in_sandbox`**: Valida interceptação de `socket.connect_ex` bloqueando conexões externas com `RuntimeError`.
-- **`TestPytestSandbox.test_disable_sandbox_restores_original_socket`**: Confirma restauração higiênica dos métodos nativos de socket.
-- **`TestPytestSandbox.test_pytest_item_hook_controls_sandbox`**: Confirma ativação padrão do sandbox em testes unitários e bypass controlado apenas em testes explicitamente marcados com `@pytest.mark.allow_network`.
+- **`TestCheckSddDrift.test_zero_drift_passes_full_gate`** ([L385](file:///e:/Codigos/antigravity-agentic-workflows/tests/skills/test_scanners.py#L385)): Comprova que classes e métodos aderentes ao SDD passam no gate.
+- **`TestCheckSddDrift.test_batch_mode_ignores_future_classes_but_catches_missing_method`** ([L403](file:///e:/Codigos/antigravity-agentic-workflows/tests/skills/test_scanners.py#L403)): Valida a verificação isolada de lote sem falsos positivos em classes futuras.
+- **`TestCheckSddDrift.test_pivots_file_authorizes_drift`** ([L420](file:///e:/Codigos/antigravity-agentic-workflows/tests/skills/test_scanners.py#L420)): Valida que blocos YAML estruturados com `authorized_by: "human"` autorizam desvios contratuais formais (`[IMP-ASI06-01]`).
+- **`TestCheckSddDrift.test_unplanned_file_not_bypassed_by_generic_word_in_pivots`** ([L453](file:///e:/Codigos/antigravity-agentic-workflows/tests/skills/test_scanners.py#L453)): Comprova que palavras genéricas em texto livre (ex.: `"src"`) não autorizam arquivos não planejados, eliminando totalmente o risco de evasão lexical (`[IMP-ASI06-01]`).
+- **`TestCheckSddDrift.test_agent_or_missing_authorization_rejected`** ([L1123](file:///e:/Codigos/antigravity-agentic-workflows/tests/skills/test_scanners.py#L1123)): Comprova que entradas em blocos YAML com `authorized_by: "agent"`, `"llm"` ou sem campo de autorização são rejeitadas (`[IMP-ASI06-01]`).
+- **`TestCheckSddDrift.test_free_text_in_markdown_does_not_authorize_drift`** ([L1141](file:///e:/Codigos/antigravity-agentic-workflows/tests/skills/test_scanners.py#L1141)): Comprova que texto livre em Markdown não autoriza drift de símbolos ou arquivos (`[IMP-ASI06-01]`).
+- **`TestPytestSandbox.test_is_local_address_detection`** ([L1160](file:///e:/Codigos/antigravity-agentic-workflows/tests/skills/test_scanners.py#L1160)): Valida detecção determinística de endereços de loopback (`127.0.0.1`, `localhost`, `::1`, Unix sockets) vs endereços de rede externa (`8.8.8.8`, `api.openai.com`).
+- **`TestPytestSandbox.test_socket_blocking_in_sandbox`** ([L1177](file:///e:/Codigos/antigravity-agentic-workflows/tests/skills/test_scanners.py#L1177)): Valida interceptação de `socket.connect` com disparo de `RuntimeError` (`[IMP-ASI05-01]`).
+- **`TestPytestSandbox.test_socket_connect_ex_blocking_in_sandbox`** ([L1190](file:///e:/Codigos/antigravity-agentic-workflows/tests/skills/test_scanners.py#L1190)): Valida interceptação de `socket.connect_ex` bloqueando conexões externas com `RuntimeError`.
+- **`TestPytestSandbox.test_disable_sandbox_restores_original_socket`** ([L1200](file:///e:/Codigos/antigravity-agentic-workflows/tests/skills/test_scanners.py#L1200)): Confirma restauração higiênica dos métodos nativos de socket.
+- **`TestPytestSandbox.test_pytest_item_hook_controls_sandbox`** ([L1206](file:///e:/Codigos/antigravity-agentic-workflows/tests/skills/test_scanners.py#L1206)): Confirma ativação padrão do sandbox em testes unitários e bypass controlado apenas em testes explicitamente marcados com `@pytest.mark.allow_network`.
 
-*Resultado de Execução:* `python -m unittest tests/skills/test_scanners.py` $\rightarrow$ **61/61 testes aprovados (100% verde)**.
+*Resultado de Execução:* `python -m unittest tests/skills/test_scanners.py` $\rightarrow$ **73/73 testes aprovados (100% verde)**.
 
 ### 2. Suíte de Integridade Estrutural das Skills (`tests/test_flow_skills_integrity.py`)
 - Validação de conformidade estrutural, frontmatter YAML, higiene de referências e separação estrita de diretórios (`references/`, `resources/`, `scripts/`).
@@ -138,10 +140,10 @@ A conformidade e eficácia dos controles de segurança da skill `/implement` for
 
 ### 3. Inspeção Forense dos Prompts e Pipelines de Governança
 - **`skills/implement/references/tdd-subagents.md`**:
-  - `batch-implementer`: Insumos de especificação delimitados estritamente em `<spec_context>`, anti-slopsquatting mandatário e execução de testes via `-p skills.implement.scripts.pytest_sandbox`.
-  - `goldfish-drift-auditor`: Read-only (`Write: false`), Context-Zero, modelo rápido `flash_lite`, e proibição explícita de asserções vazias/tautológicas (`assert True`, `assert res is not None`, `assert len(x) >= 0`) (`[IMP-ASI09-01]`).
+  - `batch-implementer` ([L16](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-subagents.md#L16)): Insumos de especificação delimitados estritamente em `<spec_context>`, anti-slopsquatting mandatário e execução de testes via `-p skills.implement.scripts.pytest_sandbox`.
+  - `goldfish-drift-auditor` ([L17](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-subagents.md#L17)): Read-only (`Write: false`), Context-Zero, modelo rápido `flash_lite`, e proibição explícita de asserções vazias/tautológicas (`assert True`, `assert res is not None`, `assert len(x) >= 0`) (`[IMP-ASI09-01]`).
 - **`skills/implement/SKILL.md`**:
-  - Step 2.5: Verificação determinística de integridade de escopo pós-lote (`git diff --name-only` e `git status --porcelain`) com aborto/reversão se arquivos protegidos forem tocados (`[IMP-ASI03-01]`).
-  - Step 3: Exit Gates sequenciais determinísticos (Suite com sandbox, Drift AST com autorização humana estrita, Audit semântico e Closure com Phase Squash).
+  - Step 2.5 ([L19](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/SKILL.md#L19)): Verificação determinística de integridade de escopo pós-lote (`git diff --name-only` e `git status --porcelain`) com aborto/reversão se arquivos protegidos forem tocados (`[IMP-ASI03-01]`).
+  - Step 3 ([L21-29](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/SKILL.md#L21-L29)): Exit Gates sequenciais determinísticos (Suite com sandbox, Drift AST com autorização humana estrita, Audit semântico e Closure com Phase Squash).
 - **`skills/implement/references/tdd-git.md` e `tdd-code.md`**:
-  - Double-Strike com salvaguarda não-destrutiva mandatária: `git stash push -u -m "antigravity-safety-rollback-strike2"` antes de `git reset --hard HEAD` (`[IMP-LLM03-01]`).
+  - Double-Strike com salvaguarda não-destrutiva mandatária: `git stash push -u -m "antigravity-safety-rollback-strike2"` antes de `git reset --hard HEAD` (`[IMP-LLM03-01]`) ([`tdd-git.md:9`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-git.md#L9), [`tdd-code.md:29`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-code.md#L29)).
