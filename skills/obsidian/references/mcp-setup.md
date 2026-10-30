@@ -18,31 +18,35 @@ In each vault, also enable **Enable Non-encrypted (HTTP) Server** (Settings > Lo
   "mcpServers": {
     "obsidian": {
       "type": "http",
-      "enabledTools": [
-        "search_query",
-        "vault_read",
-        "vault_get_document_map",
-        "vault_patch",
-        "vault_write",
-        "vault_list"
-      ],
       "url": "http://127.0.0.1:27123/mcp/",
       "headers": {
         "Authorization": "Bearer <YOUR_API_KEY>"
-      }
+      },
+      "disabledTools": [
+        "vault_append",
+        "vault_delete",
+        "vault_move",
+        "active_file_get_path",
+        "periodic_note_get_path",
+        "search_simple",
+        "tag_list",
+        "command_list",
+        "command_execute",
+        "open_file"
+      ]
     }
   }
 }
 ```
 
-`enabledTools` is an allowlist: only the tools the skill needs stay exposed (the other 10 are hidden to keep context lean and avoid destructive tools such as `vault_delete`/`vault_move`).
+`disabledTools` is a denylist (verified working; `enabledTools` is **ignored** by Antigravity). It leaves only the 6 tools the skill needs active: `search_query`, `vault_read`, `vault_get_document_map`, `vault_patch`, `vault_write`, `vault_list`. The rest are hidden to keep context lean and to block destructive tools (`vault_delete`, `vault_move`, `command_execute`). After restarting the server, the Customizations tab should show **6 tools enabled**.
 
 | Scope | File |
 | :--- | :--- |
 | Global (all projects) | `~/.gemini/config/mcp_config.json` |
 | Per project | `.agents/mcp_config.json` (add to `.gitignore`: it holds the token) |
 
-Restart the session/chat after editing.
+Restart the server from the Customizations tab after editing.
 
 ## 3. One API Key for all vaults (recommended)
 
@@ -68,7 +72,7 @@ Result: one global MCP config works for every vault.
 | `Server not initialized` | Request sent without MCP `initialize` handshake (client issue, not server) |
 | 401 / unauthorized | `apiKey` in the open vault differs from the one in `mcp_config.json` |
 | `x509: certificate signed by unknown authority` | Using the HTTPS endpoint (27124, self-signed). Enable the HTTP server in the plugin and use `http://127.0.0.1:27123/mcp/`. Alternative: import the plugin's `.crt` into the Windows Trusted Root store |
-| Tools not appearing | Restart session; check **... > MCP Servers** |
+| Tools not appearing / wrong count | Restart the server from Customizations; if all 16 show up, check that the key is `disabledTools` (not `enabledTools`) |
 
 ## Security
 
