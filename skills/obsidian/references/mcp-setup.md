@@ -9,6 +9,8 @@ Source: https://github.com/coddingtonbear/obsidian-local-rest-api#readme
 
 Each vault gets its own plugin instance and its own API Key (Settings > Local REST API > API Key).
 
+In each vault, also enable **Enable Non-encrypted (HTTP) Server** (Settings > Local REST API). The default HTTPS endpoint (port 27124) uses a self-signed certificate that the Antigravity MCP client rejects (`x509: certificate signed by unknown authority`). The HTTP endpoint (port 27123) listens on loopback only, so traffic never leaves the machine.
+
 ## 2. Configure the MCP in Antigravity
 
 ```json
@@ -24,7 +26,7 @@ Each vault gets its own plugin instance and its own API Key (Settings > Local RE
         "vault_write",
         "vault_list"
       ],
-      "url": "https://127.0.0.1:27124/mcp/",
+      "url": "http://127.0.0.1:27123/mcp/",
       "headers": {
         "Authorization": "Bearer <YOUR_API_KEY>"
       }
@@ -55,7 +57,7 @@ Result: one global MCP config works for every vault.
 ## 4. Runtime requirements
 
 - Obsidian must be **open**, with the **project's vault selected**.
-- Only one vault can serve at a time: all vaults share port `27124`, so keep a single vault open.
+- Only one vault can serve at a time: all vaults share port `27123`, so keep a single vault open.
 - Switching vault = the MCP now reads/writes that vault; confirm it before patching.
 
 ## Troubleshooting
@@ -65,7 +67,7 @@ Result: one global MCP config works for every vault.
 | Connection refused | Obsidian closed, plugin disabled, or wrong vault open |
 | `Server not initialized` | Request sent without MCP `initialize` handshake (client issue, not server) |
 | 401 / unauthorized | `apiKey` in the open vault differs from the one in `mcp_config.json` |
-| Certificate error (manual `curl`) | Self-signed cert: use `curl -k` |
+| `x509: certificate signed by unknown authority` | Using the HTTPS endpoint (27124, self-signed). Enable the HTTP server in the plugin and use `http://127.0.0.1:27123/mcp/`. Alternative: import the plugin's `.crt` into the Windows Trusted Root store |
 | Tools not appearing | Restart session; check **... > MCP Servers** |
 
 ## Security
