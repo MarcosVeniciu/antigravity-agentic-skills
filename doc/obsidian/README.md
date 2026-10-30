@@ -57,6 +57,19 @@ flowchart TD
 | **Alinhamento de Feature** | O campo `feature` deve coincidir rigorosamente com o slug da branch ativa ou ser `"global"` |
 | **Integridade de Links** | Todo wikilink `[[nota]]` gerado deve obrigatoriamente existir no disco |
 
+### 3.1 Ciclo de Vida e Transições de Estado
+
+```mermaid
+stateDiagram-v2
+    [*] --> Discovery: Query Vault (search_query)
+    Discovery --> Draft: Extract Context / Template
+    Draft --> Active: Create Note with Schema (vault_write)
+    Active --> Patched: Surgical Patching (vault_patch)
+    Patched --> Active: Verification & Link Validation
+    Active --> Superseded: New ADR Replaces Previous
+    Superseded --> [*]: Permanent Immutability (Preserved)
+```
+
 ---
 
 ## 4. O Pipeline em 4 Passos

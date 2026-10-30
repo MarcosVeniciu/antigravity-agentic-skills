@@ -25,6 +25,7 @@ A skill `/debug` adota uma separação rigorosa entre orquestração de incident
 
 ```mermaid
 flowchart TD
+    Crash["Incident Report / Runtime Crash / Escalation"] --> S1
     subgraph MainChat["Agente Principal (Orquestrador / Maestro)"]
         S1["<b>Step 1: Ingestão de Evidências & Vault</b><br/>• Parse de stack trace, exceção e logs<br/>• Ingestão de hipóteses falsificadas do /test-fix<br/>• Consulta ao Obsidian: pivots-[slug].md e ADRs"]
         S3["<b>Step 3: Artefato RCA & Gate Interativo</b><br/>• Gera root_cause_analysis.md via rca-template.md<br/>• Trade-off explícito: Opção A vs Opção B<br/>• RequestFeedback: true (Pausa Obrigatória)"]
