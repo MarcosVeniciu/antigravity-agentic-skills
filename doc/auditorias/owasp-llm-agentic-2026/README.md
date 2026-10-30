@@ -159,3 +159,4 @@ Quando decidirmos abrir uma nova iniciativa para aplicar as correções nas skil
    - Em [`skills/ask/references/ask-sources.md`](../../../skills/ask/references/ask-sources.md), permitir leitura apenas de `.env.example`, proibindo leitura de `.env` real.
 10. **Novos Validadores Determinísticos para `/decompose` (`validate_dag.py`) e `/obsidian` (`validate_vault_note.py`) (`[DECOMPOSE-ASI08-01]`, `[OBS-ASI06-01]`):**
     - Criar verificador de grafos acíclicos com `graphlib.TopologicalSorter` na `/decompose` e validador de frontmatter/links e detector de Prompt Injection na `/obsidian`.
+
