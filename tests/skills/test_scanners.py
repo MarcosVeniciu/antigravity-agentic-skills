@@ -19,12 +19,14 @@ sys.path.insert(0, str(REPO_ROOT / "skills" / "review" / "scripts"))
 sys.path.insert(0, str(REPO_ROOT / "skills" / "refactor" / "scripts"))
 sys.path.insert(0, str(REPO_ROOT / "skills" / "plan" / "scripts"))
 sys.path.insert(0, str(REPO_ROOT / "skills" / "implement" / "scripts"))
+sys.path.insert(0, str(REPO_ROOT / "skills" / "infra" / "scripts"))
 
 import check_arch_boundaries
 import scan_sinks
 import ast_complexity
 import validate_sdd_contracts
 import check_sdd_drift
+import audit_dependencies
 
 
 class TestCheckArchBoundaries(unittest.TestCase):
@@ -416,6 +418,94 @@ contracts:
         self.assertEqual(len(unauthorized), 0)
         self.assertEqual(len(authorized), 1)
         self.assertEqual(authorized[0].symbol, "PaymentDeniedError")
+
+
+class TestAuditDependencies(unittest.TestCase):
+    def setUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.base_path = Path(self.temp_dir.name)
+
+    def tearDown(self):
+        self.temp_dir.cleanup()
+
+    def test_hallucinated_pypi_package_detected(self):
+        def fake_fetcher(url: str):
+            return 404, None
+
+        res = audit_dependencies.audit_package("pypi", "hallucinated-ai-magic-sdk", fetcher=fake_fetcher)
+        self.assertFalse(res.exists)
+        self.assertTrue(any("HALLUCINATION / MISSING" in e for e in res.errors))
+
+    def test_slopsquatting_heuristics_young_package_and_no_repo(self):
+        def fake_fetcher(url: str):
+            return 200, {
+                "info": {
+                    "version": "0.1.0",
+                    "project_urls": {},
+                    "home_page": None,
+                },
+                "releases": {
+                    "0.1.0": [{"upload_time_iso_8601": "2026-10-28T12:00:00Z"}]
+                },
+            }
+
+        res = audit_dependencies.audit_package("pypi", "suspicious-pkg", fetcher=fake_fetcher, min_age_days=60)
+        self.assertTrue(res.exists)
+        self.assertTrue(res.needs_web_audit)
+        self.assertTrue(any("NEW_PACKAGE" in w for w in res.warnings))
+        self.assertTrue(any("NO_REPO" in w for w in res.warnings))
+        self.assertTrue(any("SINGLE_RELEASE" in w for w in res.warnings))
+
+    def test_dart_flutter_pub_dev_audit_and_import_parity(self):
+        pubspec = self.base_path / "pubspec.yaml"
+        pubspec.write_text(
+            "name: my_flutter_app\n"
+            "dependencies:\n"
+            "  flutter:\n"
+            "    sdk: flutter\n"
+            "  provider: ^6.1.0\n",
+            encoding="utf-8",
+        )
+        lib_dir = self.base_path / "lib"
+        lib_dir.mkdir(parents=True, exist_ok=True)
+        dart_file = lib_dir / "main.dart"
+        dart_file.write_text(
+            "import 'package:flutter/material.dart';\n"
+            "import 'package:provider/provider.dart';\n"
+            "import 'package:hallucinated_flutter_pkg/widget.dart';\n",
+            encoding="utf-8",
+        )
+
+        eco, deps, local_names = audit_dependencies.parse_manifest(pubspec)
+        self.assertEqual(eco, "pub")
+        self.assertIn("provider", deps)
+        self.assertNotIn("flutter", deps)
+
+        errors = audit_dependencies.verify_import_parity(lib_dir, eco, deps, local_names)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("hallucinated_flutter_pkg", errors[0])
+
+    def test_python_ast_import_parity_maps_known_aliases(self):
+        pyproject = self.base_path / "pyproject.toml"
+        pyproject.write_text(
+            '[project]\nname = "demo"\ndependencies = ["beautifulsoup4>=4.12.0", "pyyaml==6.0.1"]\n',
+            encoding="utf-8",
+        )
+        src_dir = self.base_path / "src"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        py_file = src_dir / "app.py"
+        py_file.write_text(
+            "import os\n"
+            "import yaml\n"
+            "from bs4 import BeautifulSoup\n"
+            "import non_existent_ghost_lib\n",
+            encoding="utf-8",
+        )
+
+        eco, deps, local_names = audit_dependencies.parse_manifest(pyproject)
+        errors = audit_dependencies.verify_import_parity(src_dir, eco, deps, local_names)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("non_existent_ghost_lib", errors[0])
 
 
 if __name__ == "__main__":

@@ -299,7 +299,7 @@ flowchart TD
 | `/debug` | [`skills/debug/`](skills/debug/SKILL.md) | **Support** | `forensic-prober` (`Model: inherit`) | 5 Whys forensic investigation, isolated empirical probing/characterization tests, and RCA approval gate. |
 | `/ask` | [`skills/ask/`](skills/ask/SKILL.md) | **Support** | Direct Orchestrator + conditional `research` (`Model: flash_lite`) | Read-only oracle; direct quick lookups and isolated broad surveys with strict code/vault citations. |
 | `/test-fix` | [`skills/test-fix/`](skills/test-fix/SKILL.md) | **Support** | Direct Main Orchestrator *(Zero Boot Overhead)* | Reactive debugger: 1-sentence root cause isolation, minimal surgical fix, and Double-Strike escalation. |
-| `/infra` | [`skills/infra/`](skills/infra/SKILL.md) | **Support** | Direct Main Orchestrator *(Zero Boot Overhead)* | Package manifests, Docker multi-stage configs, and secret-safe environment validation (`validate_env.py`). |
+| `/infra` | [`skills/infra/`](skills/infra/SKILL.md) | **Support** | Direct Orchestrator + conditional `dependency-auditor` (`Model: flash`) | Package manifests, anti-slopsquatting multi-ecosystem audit (`audit_dependencies.py`), Docker configs, and secret-safe env validation (`validate_env.py`). |
 | `@obsidian` | [`skills/obsidian/`](skills/obsidian/SKILL.md) | **Foundation** | Direct Main Orchestrator *(Zero Boot Overhead)* | Second Brain SSOT: Knowledge graph, metadata queries, ADR governance, and surgical vault patching. |
 
 > [!NOTE]
@@ -323,7 +323,7 @@ All 12 skills adhere to the Single Responsibility Principle (SRP) and Google Ant
 | **Documentation & Release** | [`release`](skills/release/SKILL.md) | `release-auditor` (`flash_lite`), `scripts/validate_release.py`, `references/release-checklist.md` | 100% Living DoD audit gate, staged E2E suite, SemVer 2.0.0 calculation, changelog sync, and Git Flow finish. |
 | **Support & Knowledge** | [`ask`](skills/ask/SKILL.md) | Direct lookup + conditional `research` subagent (`flash_lite`), `references/ask-sources.md` | Strictly read-only repository and Obsidian Vault knowledge retrieval with line-anchored citations. |
 | **Support & Knowledge** | [`debug`](skills/debug/SKILL.md) | `forensic-prober` (`inherit`), `references/debug-methodology.md`, `resources/rca-template.md` | 5 Whys forensic investigation, isolated empirical probing/characterization tests, and RCA approval gate. |
-| **Support & Knowledge** | [`infra`](skills/infra/SKILL.md) | `scripts/validate_env.py`, `references/infra-setup.md`, `resources/env-template.md` *(Direct Orchestrator)* | Manifest hygiene, container configurations, and secret-safe environment validation. |
+| **Support & Knowledge** | [`infra`](skills/infra/SKILL.md) | `scripts/validate_env.py`, `scripts/audit_dependencies.py`, `references/infra-setup.md`, `resources/env-template.md` | Manifest hygiene, multi-ecosystem anti-slopsquatting dependency audit, container configurations, and secret-safe environment validation. |
 | **Support & Knowledge** | [`obsidian`](skills/obsidian/SKILL.md) | `references/obsidian-protocol.md`, `resources/note-template.md` *(Direct Orchestrator)* | SSOT Vault governance, metadata search, surgical patching, and ADR management. |
 
 ---
