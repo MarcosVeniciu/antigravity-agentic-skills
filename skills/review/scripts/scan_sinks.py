@@ -11,10 +11,11 @@ Part of the workflows-skill/review package.
 import sys
 import os
 import re
+import ast
 import argparse
 from pathlib import Path
 from dataclasses import dataclass
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Set
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -226,7 +227,108 @@ def scan_file(file_path: Path) -> Tuple[List[Finding], Optional[str]]:
                 rule=rule,
                 snippet=snippet
             ))
+
+    if ext == ".py":
+        ast_findings = _scan_python_ast_sinks(file_path, content)
+        existing_keys = {(f.line_number, f.rule.rule_id) for f in findings}
+        for af in ast_findings:
+            if (af.line_number, af.rule.rule_id) not in existing_keys:
+                findings.append(af)
+                existing_keys.add((af.line_number, af.rule.rule_id))
+
     return findings, None
+
+
+def _scan_python_ast_sinks(file_path: Path, content: str) -> List[Finding]:
+    """
+    Secondary AST-based detector for Python files to catch obfuscated dangerous calls
+    (e.g. getattr(subprocess, "Popen"|"run"|"call"), __import__("os").system, eval(), exec())
+    that may bypass static regular expressions.
+    """
+    findings: List[Finding] = []
+    try:
+        tree = ast.parse(content, filename=str(file_path))
+    except SyntaxError:
+        return findings
+
+    lines = content.splitlines()
+    rule_map = {r.rule_id: r for r in RULES}
+    sec_exec_rule = rule_map["SEC-EXEC-01"]
+    sec_cmd_rule = rule_map["SEC-CMD-01"]
+    sec_deser_rule = rule_map["SEC-DESER-01"]
+
+    subprocess_funcs = {"Popen", "run", "call", "check_call", "check_output"}
+    os_cmd_funcs = {"system", "popen"}
+    exec_builtins = {"eval", "exec", "compile"}
+
+    def _get_snippet(lineno: int) -> str:
+        if 1 <= lineno <= len(lines):
+            return " ".join(lines[lineno - 1].split())
+        return ""
+
+    def _has_shell_true(call_node: ast.Call) -> bool:
+        for kw in call_node.keywords:
+            if kw.arg == "shell":
+                if isinstance(kw.value, ast.Constant) and bool(kw.value.value) is True:
+                    return True
+                if not isinstance(kw.value, ast.Constant):
+                    return True
+        return False
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        lineno = getattr(node, "lineno", 1)
+        func = node.func
+
+        # 1. Direct or builtins eval / exec
+        if isinstance(func, ast.Name) and func.id in ("eval", "exec"):
+            findings.append(Finding(str(file_path), lineno, sec_exec_rule, _get_snippet(lineno)))
+        elif isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name):
+            if func.value.id in ("builtins", "__builtins__") and func.attr in ("eval", "exec"):
+                findings.append(Finding(str(file_path), lineno, sec_exec_rule, _get_snippet(lineno)))
+            elif func.value.id == "subprocess" and func.attr in subprocess_funcs and _has_shell_true(node):
+                findings.append(Finding(str(file_path), lineno, sec_cmd_rule, _get_snippet(lineno)))
+            elif func.value.id == "os" and func.attr in os_cmd_funcs:
+                findings.append(Finding(str(file_path), lineno, sec_cmd_rule, _get_snippet(lineno)))
+            elif func.value.id == "pickle" and func.attr in ("load", "loads", "Unpickler"):
+                findings.append(Finding(str(file_path), lineno, sec_deser_rule, _get_snippet(lineno)))
+
+        # 2. Obfuscated getattr(...) calls: getattr(subprocess, "run") or getattr(os, "system")
+        if isinstance(func, ast.Name) and func.id == "getattr" and len(node.args) >= 2:
+            target_obj = node.args[0]
+            attr_arg = node.args[1]
+            attr_name = attr_arg.value if isinstance(attr_arg, ast.Constant) and isinstance(attr_arg.value, str) else None
+            target_name = target_obj.id if isinstance(target_obj, ast.Name) else None
+            if isinstance(target_obj, ast.Call) and isinstance(target_obj.func, ast.Name) and target_obj.func.id == "__import__":
+                if target_obj.args and isinstance(target_obj.args[0], ast.Constant) and isinstance(target_obj.args[0].value, str):
+                    target_name = target_obj.args[0].value
+
+            if target_name == "subprocess" and attr_name in subprocess_funcs:
+                findings.append(Finding(str(file_path), lineno, sec_cmd_rule, _get_snippet(lineno)))
+            elif target_name == "os" and attr_name in os_cmd_funcs:
+                findings.append(Finding(str(file_path), lineno, sec_cmd_rule, _get_snippet(lineno)))
+            elif target_name in ("builtins", "__builtins__") and attr_name in exec_builtins:
+                findings.append(Finding(str(file_path), lineno, sec_exec_rule, _get_snippet(lineno)))
+            elif target_name == "pickle" and attr_name in ("load", "loads", "Unpickler"):
+                findings.append(Finding(str(file_path), lineno, sec_deser_rule, _get_snippet(lineno)))
+
+        # 3. Obfuscated __import__("os").system(...) or __import__("subprocess").Popen(...)
+        if isinstance(func, ast.Attribute) and isinstance(func.value, ast.Call):
+            inner_call = func.value
+            if isinstance(inner_call.func, ast.Name) and inner_call.func.id == "__import__":
+                if inner_call.args and isinstance(inner_call.args[0], ast.Constant) and isinstance(inner_call.args[0].value, str):
+                    mod_name = inner_call.args[0].value
+                    if mod_name == "os" and func.attr in os_cmd_funcs:
+                        findings.append(Finding(str(file_path), lineno, sec_cmd_rule, _get_snippet(lineno)))
+                    elif mod_name == "subprocess" and func.attr in subprocess_funcs:
+                        findings.append(Finding(str(file_path), lineno, sec_cmd_rule, _get_snippet(lineno)))
+                    elif mod_name in ("builtins", "__builtins__") and func.attr in exec_builtins:
+                        findings.append(Finding(str(file_path), lineno, sec_exec_rule, _get_snippet(lineno)))
+                    elif mod_name == "pickle" and func.attr in ("load", "loads", "Unpickler"):
+                        findings.append(Finding(str(file_path), lineno, sec_deser_rule, _get_snippet(lineno)))
+
+    return findings
 
 
 def print_report(

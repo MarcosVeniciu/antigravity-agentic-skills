@@ -7,10 +7,11 @@ Converted from legacy skills/infra/scripts/validate_env.sh to Multiplatform Pyth
 Enforces:
 1. Syntax validity of KEY=VALUE pairs in .env and .env.example files.
 2. Quoting rules for values containing spaces or special characters.
-3. Secret containment heuristics (detects exposed AWS keys, JWTs, OpenAI keys, RSA/SSH private keys).
-4. Parity and completeness between .env and .env.example (flags missing variables).
-5. Warning detection for empty variables in template files.
-6. Multiplatform UTF-8 console stream safety on Windows (cp1252 fix).
+3. Secret containment heuristics (detects exposed AWS keys, JWTs, OpenAI/Anthropic/Stripe/GCP keys, DB URLs, RSA/SSH private keys).
+4. Strict placeholder validation (`is_safe_placeholder`) preventing naive substring bypasses ([INF-LLM02-02]).
+5. Parity and completeness between .env and .env.example (flags missing variables).
+6. Warning detection for empty variables in template files.
+7. Multiplatform UTF-8 console stream safety on Windows (cp1252 fix).
 """
 
 import sys
@@ -47,6 +48,28 @@ SECURITY_PATTERNS = [
         "CRITICAL: Possible live OpenAI API key detected.",
     ),
     (
+        "Anthropic API Key",
+        re.compile(r"sk-ant-[0-9a-zA-Z_-]{20,}"),
+        "CRITICAL: Possible live Anthropic API key detected.",
+    ),
+    (
+        "Stripe Live Key",
+        re.compile(r"(?:sk|rk)_live_[0-9a-zA-Z]{20,}"),
+        "CRITICAL: Possible live Stripe secret/restricted key detected.",
+    ),
+    (
+        "Google Cloud API Key",
+        re.compile(r"AIza[0-9A-Za-z_-]{35}"),
+        "CRITICAL: Possible live Google Cloud API key detected.",
+    ),
+    (
+        "Database Connection URL with Password",
+        re.compile(
+            r"(?:postgres|postgresql|mysql|mongodb|redis)://[^:]+:(?!password|postgres|root|admin|changeme|<)[^@]{8,}@"
+        ),
+        "CRITICAL: Database connection URL with embedded non-placeholder password detected.",
+    ),
+    (
         "Private Key",
         re.compile(r"-----BEGIN[ A-Z_-]*PRIVATE KEY"),
         "CRITICAL: Cryptographic Private Key block detected.",
@@ -57,6 +80,39 @@ SECURITY_PATTERNS = [
         "CRITICAL: Possible live GitHub personal access or OAuth token detected.",
     ),
 ]
+
+EXACT_SAFE_PLACEHOLDERS: Set[str] = {
+    "",
+    "changeme",
+    "your-super-secret-jwt-key-change-me",
+    "your-super-secret-jwt-key-minimum-32-chars",
+    "session-cookie-secret-key-placeholder",
+    "sk-proj-your-api-key-here",
+    "sk-proj-placeholder_key_here",
+    "sk-proj-placeholder",
+    "sk-ant-your-api-key-here",
+    "your-api-key-here",
+}
+
+ANGLE_BRACKET_PLACEHOLDER_RE = re.compile(r"^<YOUR_[A-Z0-9_]+>$", re.IGNORECASE)
+YOUR_HERE_PLACEHOLDER_RE = re.compile(r"^YOUR_[A-Z0-9_]+_HERE$", re.IGNORECASE)
+
+
+def is_safe_placeholder(val: str) -> bool:
+    """
+    Strictly validates whether a value is a known safe template placeholder.
+    Prevents substring bypass attacks (e.g. 'ghp_example123456...') while allowing
+    canonical template values ([INF-LLM02-02]).
+    """
+    cleaned = val.strip()
+    if cleaned.lower() in EXACT_SAFE_PLACEHOLDERS:
+        return True
+    if ANGLE_BRACKET_PLACEHOLDER_RE.match(cleaned) or YOUR_HERE_PLACEHOLDER_RE.match(cleaned):
+        for _, regex, _ in SECURITY_PATTERNS:
+            if regex.search(cleaned):
+                return False
+        return True
+    return False
 
 
 class EnvFileValidator:
@@ -132,16 +188,12 @@ class EnvFileValidator:
                 )
 
             # Security heuristics: scan for leaked credentials
-            for pattern_name, regex, desc in SECURITY_PATTERNS:
-                # Exclude explicit placeholder values from false positives
-                lower_val = unquoted_val.lower()
-                if "placeholder" in lower_val or "your-super-secret" in lower_val or "example" in lower_val:
-                    continue
-
-                if regex.search(unquoted_val):
-                    self.errors.append(
-                        f"[Line {line_num}] Security Alert: Exposed {pattern_name} in '{clean_key}'! {desc}"
-                    )
+            if not is_safe_placeholder(unquoted_val):
+                for pattern_name, regex, desc in SECURITY_PATTERNS:
+                    if regex.search(unquoted_val):
+                        self.errors.append(
+                            f"[Line {line_num}] Security Alert: Exposed {pattern_name} in '{clean_key}'! {desc}"
+                        )
 
             self.parsed_vars[clean_key] = unquoted_val
 

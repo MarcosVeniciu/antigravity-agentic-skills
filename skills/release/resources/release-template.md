@@ -17,8 +17,8 @@
 
 | Feature Branch | Obsidian SDD Reference | Description | Living DoD Status |
 |:---|:---|:---|:---|
-| `feature/{{FEATURE_SLUG_1}}` | `[[sdd-{{FEATURE_SLUG_1}}]]` | {{FEATURE_DESC_1}} | [x] 100% Complete |
-| `feature/{{FEATURE_SLUG_2}}` | `[[sdd-{{FEATURE_SLUG_2}}]]` | {{FEATURE_DESC_2}} | [x] 100% Complete |
+| `feature/{{FEATURE_SLUG_1}}` | `[[sdd-{{FEATURE_SLUG_1}}]]` | {{FEATURE_DESC_1}} | {{DOD_STATUS_AND_EVIDENCE}} |
+| `feature/{{FEATURE_SLUG_2}}` | `[[sdd-{{FEATURE_SLUG_2}}]]` | {{FEATURE_DESC_2}} | {{DOD_STATUS_AND_EVIDENCE}} |
 
 ---
 
@@ -47,16 +47,15 @@
 
 ## Quality & Verification Audit Sign-Off
 
-> **Audit Standard:** Aligned with ISO 19011 Quality Management Systems Audit and Pre-Release Verification standards.
+> **Verification Policy:** Every row below MUST cite actual verification outputs from the current release execution or explicit links to `02-auditorias/audit-*` reports (or `N/A - Verified in Pre-Merge Gate 2`). Never claim static compliance without executed evidence.
 
-| Audit Domain | Validation Criteria | Primary Evidence / Tool | Conformity Status |
-|:---|:---|:---|:---:|
-| **Living DoD Gate** | 100% verified across all bundled features | [`../references/release-checklist.md`](../references/release-checklist.md) | 🟢 **100% Compliant** |
-| **Integration Suite** | 100% green pass with zero regressions | `python -m pytest tests/integration/ -v` | 🟢 **100% Green** |
-| **Domain Audits** | 5-Domain Review signed off | `02-auditorias/audit-*.md` | 🟢 **100% Compliant** |
-| **Static Security & Boundaries** | Zero dangerous sinks / clean architecture | Boundary & Sink Scanners | 🟢 **100% Compliant** |
-| **Automated Release Validation** | Validated via release gate script | [`../scripts/validate_release.py`](../scripts/validate_release.py) | 🟢 **100% Compliant** |
-| **Manifest Synchronization** | Orchestrated in accordance with manifest | [`../SKILL.md`](../SKILL.md) | 🟢 **100% Compliant** |
+| Audit Domain | Validation Criteria | Primary Evidence / Tool | Conformity Status & Evidence |
+|:---|:---|:---|:---|
+| **Living DoD Gate** | 100% verified across all bundled features | [`../references/release-checklist.md`](../references/release-checklist.md) | `{{DOD_STATUS_AND_EVIDENCE}}` |
+| **Integration Suite** | 100% green pass with zero regressions | `python -m pytest tests/integration/ -v` | `{{INTEGRATION_TEST_LOG_EVIDENCE}}` |
+| **Domain & Security Audits** | 5-Domain Review & Sinks signed off | `02-auditorias/audit-*.md` / `scan_sinks.py` | `{{SECURITY_AUDIT_REPORT_LINKS}}` |
+| **Automated Release Validation** | Validated via release gate script | [`../scripts/validate_release.py`](../scripts/validate_release.py) | `{{DOD_STATUS_AND_EVIDENCE}}` |
+| **Manifest Synchronization** | Orchestrated in accordance with manifest | [`../SKILL.md`](../SKILL.md) | `{{SECURITY_AUDIT_REPORT_LINKS}}` |
 
 ### Release Findings & Residual Risk Disclosures
 

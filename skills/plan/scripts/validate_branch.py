@@ -5,7 +5,8 @@ Cross-platform Git Flow Branch Validator (Converted from legacy validate_branch.
 
 Enforces:
 1. Rejection of protected base branches (main, master, develop, production).
-2. Conformance with Git Flow naming conventions (feature/, feat/, bugfix/, fix/, refactor/, etc.).
+2. Conformance with Git Flow naming conventions (feature/, feat/, bugfix/, fix/, refactor/, etc.)
+   and strict lowercase alphanumeric + hyphen slug sanitization (preventing shell metacharacter injection).
 3. Resilient Git discovery across Windows PowerShell and Unix terminals.
 4. UTF-8 console encoding safety on Windows (cp1252 fix).
 """
@@ -25,8 +26,7 @@ if hasattr(sys.stderr, "reconfigure"):
 PROTECTED_BASE_BRANCHES = {"main", "master", "develop", "production"}
 
 VALID_BRANCH_REGEX = re.compile(
-    r"^(feature|feat|bugfix|fix|hotfix|refactor|chore|docs|style|test|release)/.+$",
-    re.IGNORECASE,
+    r"^(feature|feat|bugfix|fix|hotfix|refactor|chore|docs|style|test|release)/[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*$"
 )
 
 
@@ -63,7 +63,7 @@ def get_active_git_branch() -> Optional[str]:
 
 
 def validate_branch_name(branch_name: str) -> Tuple[bool, str]:
-    """Validates branch name against base branch locks and accepted prefixes."""
+    """Validates branch name against base branch locks, accepted prefixes, and strict slug safety."""
     clean_name = branch_name.strip()
     if not clean_name:
         return False, "Branch name is empty."
@@ -74,18 +74,19 @@ def validate_branch_name(branch_name: str) -> Tuple[bool, str]:
             False,
             f"⛔ [PHASE GATE LOCK]: You are currently on protected branch '{clean_name}'.\n"
             f"   Planning or implementing features directly on base branches is strictly prohibited.\n"
-            f"   Please create a dedicated working branch: git checkout -b feature/<name> (or feat/<name>).",
+            f"   Please create a dedicated working branch: git checkout -b feature/<slug> (or feat/<slug>).",
         )
 
-    # 2. Accepted Git Flow Regex Pattern
+    # 2. Accepted Git Flow Regex Pattern (strict lowercase alphanumeric + single hyphen slug)
     if VALID_BRANCH_REGEX.match(clean_name):
-        return True, f"✅ Success: Branch '{clean_name}' strictly adheres to project Git Flow conventions."
+        return True, f"✅ Success: Branch '{clean_name}' strictly adheres to project Git Flow and slug safety conventions."
 
     return (
         False,
         f"❌ Error: Branch name '{clean_name}' is invalid.\n"
         f"   Accepted prefix patterns: feature/*, feat/*, bugfix/*, fix/*, hotfix/*, "
-        f"refactor/*, chore/*, docs/*, style/*, test/*, release/*",
+        f"refactor/*, chore/*, docs/*, style/*, test/*, release/*\n"
+        f"   Slug must strictly match '[a-z0-9]+(-[a-z0-9]+)*' (lowercase alphanumeric and hyphens only; no shell metacharacters or spaces).",
     )
 
 

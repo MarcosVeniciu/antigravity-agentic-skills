@@ -10,8 +10,10 @@ Enforces:
    - Semantic Method Parity: methods invoked in Mermaid sequenceDiagram (->> / ->)
      must exist in the Mermaid classDiagram when both diagrams are present.
    - Semantic Error Parity: when BDD scenarios (@unhappy-path, @security, @concurrency)
-     are provided via --bdd or embedded ```gherkin blocks, verifies that the SDD models
-     error branches (alt/else in sequenceDiagram or explicit exception contracts).
+     are provided via --bdd or embedded ```gherkin blocks, counts negative/edge scenario tags,
+     verifies that the SDD models error branches (alt/else in sequenceDiagram), declares
+     typed error/exception contracts, and when @security is present in BDD, ensures the SDD
+     explicitly models security/auth error handling or status codes (401, 403, 422, *Error, *Exception, security).
 2. YAML SDD Contracts (.yaml, .yml):
    - Valid YAML syntax and non-empty dictionary/mapping.
    - Presence of architectural contract structure (e.g. contracts, interfaces, version, etc.).
@@ -118,36 +120,69 @@ def check_bdd_sdd_error_parity(
 ) -> List[str]:
     """
     Verifies that when BDD specifications include @unhappy-path, @security, or @concurrency
-    tags, the SDD models error branches (alt/else in sequenceDiagram) or explicit error/exception contracts.
+    tags:
+    1. Counts negative/edge scenario tags (@unhappy-path, @security, @concurrency) in bdd_content.
+    2. Ensures sequenceDiagram has alt/else blocks and SDD declares error/exception contracts.
+    3. If @security is present in BDD, ensures the SDD explicitly mentions security/auth error
+       handling or status codes (e.g., 401, 403, 422, Auth*Error, Permission*Error, Security*Error,
+       Unauthorized*, Forbidden*, or security:/authorization_scope).
     """
     errors: List[str] = []
-    negative_tags = re.findall(r"@(?:unhappy-path|security|concurrency)\b", bdd_content, re.IGNORECASE)
-    if not negative_tags:
+    unhappy_tags = re.findall(r"@unhappy-path\b", bdd_content, re.IGNORECASE)
+    security_tags = re.findall(r"@security\b", bdd_content, re.IGNORECASE)
+    concurrency_tags = re.findall(r"@concurrency\b", bdd_content, re.IGNORECASE)
+
+    negative_tags = unhappy_tags + security_tags + concurrency_tags
+    negative_tag_count = len(negative_tags)
+    if negative_tag_count == 0:
         return errors
 
-    # Check if sequenceDiagram models alternative/error branches via alt/else
-    has_seq_alt_branch = any(
-        re.search(r"^\s*(?:alt|else|opt)\b", block, re.MULTILINE)
+    # Count alt/else/opt branches in sequenceDiagram blocks
+    seq_branch_count = sum(
+        len(re.findall(r"^\s*(?:alt|else|opt)\b", block, re.MULTILINE))
         for block in sequence_blocks
     )
+    has_seq_alt_branch = seq_branch_count > 0
+
     # Check if SDD defines explicit exception classes or error contracts
-    has_exception_contract = bool(
-        re.search(
-            r"\b(?:[A-Z][A-Za-z0-9_]*(?:Error|Exception)|exceptions\s*:|HTTP\s+4\d\d|status_code\s*:\s*4\d\d)\b",
-            sdd_content,
-        )
+    exception_matches = re.findall(
+        r"\b(?:[A-Z][A-Za-z0-9_]*(?:Error|Exception)|exceptions\s*:|HTTP\s+4\d\d|status_code\s*:\s*4\d\d)\b",
+        sdd_content,
     )
+    has_exception_contract = len(exception_matches) > 0
 
     if sequence_blocks and not has_seq_alt_branch:
         errors.append(
-            f"Semantic Parity Error (BDD <-> SDD): BDD defines negative scenarios ({sorted(set(negative_tags))}), "
+            f"Semantic Parity Error (BDD <-> SDD): BDD defines {negative_tag_count} negative/edge scenario tag(s) "
+            f"({sorted(set(t.lower() for t in negative_tags))}), "
             "but the Mermaid sequenceDiagram has no 'alt' / 'else' error branches."
         )
     if not has_exception_contract:
         errors.append(
-            f"Semantic Parity Error (BDD <-> SDD): BDD defines negative scenarios ({sorted(set(negative_tags))}), "
+            f"Semantic Parity Error (BDD <-> SDD): BDD defines {negative_tag_count} negative/edge scenario tag(s) "
+            f"({sorted(set(t.lower() for t in negative_tags))}), "
             "but SDD contracts do not define any typed domain exceptions (*Error / *Exception) or HTTP 4xx error responses."
         )
+
+    # Specific check when @security is present in BDD
+    if security_tags:
+        has_security_handling = bool(
+            re.search(
+                r"(?:\b(?:401|403|422)\b"
+                r"|\b[A-Z][A-Za-z0-9_]*(?:Auth[A-Za-z0-9_]*|Security[A-Za-z0-9_]*|Permission[A-Za-z0-9_]*|Forbidden[A-Za-z0-9_]*|Unauthorized[A-Za-z0-9_]*|AccessDenied[A-Za-z0-9_]*|Token[A-Za-z0-9_]*|Role[A-Za-z0-9_]*)(?:Error|Exception)\b"
+                r"|\b(?:UnauthorizedError|ForbiddenError|AuthenticationError|AuthorizationError|SecurityError|PermissionDeniedError|InvalidTokenError)\b"
+                r"|\b(?:security\s*:|authorization_scope|rate_limit_tier|rbac|unauthorized|forbidden)\b)",
+                sdd_content,
+                re.IGNORECASE,
+            )
+        )
+        if not has_security_handling:
+            errors.append(
+                f"Semantic Security Parity Error (BDD @security <-> SDD): BDD defines {len(security_tags)} '@security' scenario(s), "
+                "but SDD does not specify any security/auth error handling, status codes (401, 403, 422), "
+                "security exceptions (*Auth*Error, *Forbidden*Error, *Security*Error), or 'security:' contract metadata."
+            )
+
     return errors
 
 

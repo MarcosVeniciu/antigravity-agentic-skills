@@ -17,6 +17,7 @@
 | **LSP** | Narrowed params / `NotImplementedError`: Honor contracts; segregate protocol hierarchy. |
 | **ISP** | Fat interfaces: Define lean `typing.Protocol` interfaces (`Reader`, `Writer`). |
 | **DIP** | Direct instantiation (`PostgresClient()`): Constructor inject protocols.<br>`def __init__(self, repo: OrderRepoProtocol): self._repo = repo` |
+| **Zero New External Deps** | **Anti-Slopsquatting Rule:** Refactoring MUST use ONLY Python stdlib (`typing.Protocol`, `dataclasses`, `abc`, `functools`, `enum`) or packages already declared in the project manifest (`pyproject.toml` / `requirements.txt`). Never introduce new third-party dependencies during refactoring. |
 
 ## 3. AST Complexity & Performance ([`ast_complexity.py`](../scripts/ast_complexity.py))
 

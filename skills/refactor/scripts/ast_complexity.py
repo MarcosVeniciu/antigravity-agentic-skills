@@ -139,7 +139,6 @@ def main():
     parser = argparse.ArgumentParser(description="AST Cyclomatic Complexity and Asymptotic Heuristic Scanner")
     parser.add_argument("targets", nargs="+", help="Files or directories to scan (.py)")
     parser.add_argument("--threshold", type=int, default=10, help="Cyclomatic complexity threshold (default: 10)")
-    parser.add_argument("--exit-zero", action="store_true", help="Always exit with 0 (non-blocking mode)")
     args = parser.parse_args()
 
     files_to_scan: List[Path] = []
@@ -219,8 +218,6 @@ def main():
         or len(files_not_found) > 0
     )
 
-    if args.exit_zero:
-        sys.exit(0)
     sys.exit(1 if has_blocking_issues else 0)
 
 

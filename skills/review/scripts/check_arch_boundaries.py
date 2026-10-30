@@ -14,7 +14,7 @@ import re
 import argparse
 from pathlib import Path
 from dataclasses import dataclass
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Set, Iterable
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -76,16 +76,22 @@ RULES: List[BoundaryRule] = [
 DOMAIN_DIR_SEGMENTS = {
     "domain", "entities", "entity", "use_cases", "usecases", "usecase"
 }
+DOMAIN_PATH_SEGMENTS = DOMAIN_DIR_SEGMENTS
 
 
-def is_domain_file(path: Path) -> bool:
+def is_domain_file(path: Path, domain_dirs: Optional[Iterable[str]] = None) -> bool:
     """
     Checks if a file resides inside a domain directory boundary.
     Uses directory path segments rather than raw substring matching to avoid false positives.
     """
+    active_segments = (
+        {d.strip().lower() for d in domain_dirs if d.strip()}
+        if domain_dirs is not None
+        else DOMAIN_DIR_SEGMENTS
+    )
     parts = [part.lower() for part in path.parts]
     for part in parts[:-1]:
-        if part in DOMAIN_DIR_SEGMENTS:
+        if part in active_segments:
             return True
         if part == "core" and "domain" in parts:
             return True
@@ -100,10 +106,14 @@ class BoundaryViolation:
     reason: str
 
 
-def check_file(file_path: Path, force_check: bool = False) -> Tuple[List[BoundaryViolation], Optional[str]]:
+def check_file(
+    file_path: Path,
+    force_check: bool = False,
+    domain_dirs: Optional[Iterable[str]] = None
+) -> Tuple[List[BoundaryViolation], Optional[str]]:
     violations: List[BoundaryViolation] = []
     
-    if not force_check and not is_domain_file(file_path):
+    if not force_check and not is_domain_file(file_path, domain_dirs=domain_dirs):
         return violations, None
 
     ext = file_path.suffix.lower()
@@ -203,12 +213,22 @@ def main():
         help="Treat all specified files as domain files regardless of folder name"
     )
     parser.add_argument(
+        "--domain-dirs",
+        type=str,
+        default=None,
+        help="Comma-separated list of custom domain directory names (defaults to DOMAIN_PATH_SEGMENTS)"
+    )
+    parser.add_argument(
         "--exit-zero",
         action="store_true",
         help="Always exit with code 0 (warning mode)"
     )
 
     args = parser.parse_args()
+
+    custom_domain_dirs: Optional[Set[str]] = None
+    if args.domain_dirs:
+        custom_domain_dirs = {seg.strip().lower() for seg in args.domain_dirs.split(",") if seg.strip()}
 
     files: List[Path] = []
     files_not_found: List[str] = []
@@ -228,10 +248,10 @@ def main():
     scanned_domain_count = 0
 
     for f in files:
-        is_target_domain = args.force_all or is_domain_file(f)
+        is_target_domain = args.force_all or is_domain_file(f, domain_dirs=custom_domain_dirs)
         if is_target_domain:
             scanned_domain_count += 1
-            f_violations, err = check_file(f, force_check=args.force_all)
+            f_violations, err = check_file(f, force_check=args.force_all, domain_dirs=custom_domain_dirs)
             if err:
                 files_with_errors.append((str(f), err))
             violations.extend(f_violations)

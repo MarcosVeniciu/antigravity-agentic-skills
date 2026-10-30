@@ -24,5 +24,6 @@ class RegisterUserUseCase:
 
 | Rule | Directive |
 | :--- | :--- |
-| **SDD Pivot** | Log in `02-auditorias/pivots-[slug].md` via `@obsidian` (`type: pivot`, `Deviation`, `Solution`). Pass `--pivots` to `check_sdd_drift.py`. |
-| **Strikes** | Strike 1: root cause in 1 sentence, fix `src/`. Strike 2: 2nd fix. > 2: `git reset --hard HEAD`; escalate. |
+| **SDD Pivot** | Log in `02-auditorias/pivots-[slug].md` via `@obsidian` (`type: pivot`, `Deviation`, `Solution`, or YAML `pivots:` list). Pass `--pivots` to `check_sdd_drift.py`. |
+| **Anti-Slopsquatting** | Import ONLY Python stdlib or packages explicitly declared in the project manifest (`pyproject.toml` / `requirements.txt`). |
+| **Strikes** | Strike 1: root cause in 1 sentence, fix `src/`. Strike 2: 2nd fix. > 2: run `git stash push -u -m "antigravity-safety-rollback-strike2"` then `git reset --hard HEAD` (or `git checkout -- <batch_files>`); escalate. |
