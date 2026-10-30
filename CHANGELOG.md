@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ---
 
+## Release Notes - v1.5.2 (2026-10-30)
+
+### Documentation
+- `[docs(obsidian)]`: Added [`skills/obsidian/references/mcp-setup.md`](skills/obsidian/references/mcp-setup.md): Obsidian MCP installation (global or per project), `enabledTools` allowlist, API Key retrieval from the Local REST API plugin, shared API Key across vaults, runtime requirements (Obsidian open with the project vault selected) and troubleshooting. `SKILL.md` now links to it as a prerequisite.
+
+---
 ## Release Notes - v1.5.1 (2026-10-30)
 
 ### Hotfix: GitHub Secret Scanning False Positive
