@@ -131,12 +131,12 @@ A skill `/refactor` governa a Fase 3 do ciclo SDD 2.0 (Macro-Refatoração e Con
 ## 5. Plano de Ação Priorizado para a Skill `/refactor`
 
 ### Quick Wins (Baixo Esforço / Alto Impacto)
-- [ ] **Hardening do Exit Gate no Orquestrador contra Modificação de Testes:** Inserir a verificação `git diff --quiet <PHASE_START_HASH>...HEAD tests/` no Step 4 de [`SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/refactor/SKILL.md). Se os testes tiverem sido alterados, a execução falha e aborta o squash.
-- [ ] **Remoção da Flag `--exit-zero` em `ast_complexity.py`:** Eliminar o argumento não seguro da CLI em [`ast_complexity.py:142`](file:///e:/Codigos/antigravity-agentic-workflows/skills/refactor/scripts/ast_complexity.py#L142) para impedir bypasses mecânicos do teto $V(G) \le 10$.
-- [ ] **Salvaguarda de Git Rollback em `refactor-git.md`:** Alterar a instrução de Double-Strike para criar um `git stash` ou backup antes do comando `git reset --hard HEAD`.
-- [ ] **Invariante de Biblioteca Padrão em `solid-catalog.md`:** Declarar explicitamente que refatorações devem usar exclusivamente a biblioteca padrão Python (`typing.Protocol`, etc.), sem inclusão de novas dependências externas.
+- [x] **Hardening do Exit Gate no Orquestrador contra Modificação de Testes:** Inserir a verificação `git diff --quiet <PHASE_START_HASH>...HEAD tests/` no Step 4 de [`SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/refactor/SKILL.md). Se os testes tiverem sido alterados, a execução falha e aborta o squash.
+- [x] **Remoção da Flag `--exit-zero` em `ast_complexity.py`:** Eliminar o argumento não seguro da CLI em [`ast_complexity.py:142`](file:///e:/Codigos/antigravity-agentic-workflows/skills/refactor/scripts/ast_complexity.py#L142) para impedir bypasses mecânicos do teto $V(G) \le 10$.
+- [x] **Salvaguarda de Git Rollback em `refactor-git.md`:** Alterar a instrução de Double-Strike para criar um `git stash` ou backup antes do comando `git reset --hard HEAD`.
+- [x] **Invariante de Biblioteca Padrão em `solid-catalog.md`:** Declarar explicitamente que refatorações devem usar exclusivamente a biblioteca padrão Python (`typing.Protocol`, etc.), sem inclusão de novas dependências externas.
 
 ### Evoluções Estruturais (Scripts / Arquitetura de Subagentes)
-- [ ] **Gating de Cobertura Prévia no Step 1:** Integrar a medição de cobertura de ramificações (`pytest --cov`) no Entry Gate, alertando o arquiteto caso funções com $V(G) > 10$ não possuam testes suficientes para garantir refatoração segura.
+- [x] **Gating de Cobertura Prévia no Step 1:** Integrar a medição de cobertura de ramificações (`pytest --cov`) no Entry Gate, alertando o arquiteto caso funções com $V(G) > 10$ não possuam testes suficientes para garantir refatoração segura.
 - [ ] **Validador Programático da Matriz de Evidências:** Criar um script verificador que lê a tabela do relatório de refatoração gerada pelo subagente e confere contra os números reais de `ast_complexity.py`, evitando que métricas $V(G)$ alucinadas sejam aceitas.
 - [ ] **Isolamento de Execução de Testes Unitários:** Encapsular o comando de teste em modo estrito de isolamento (sem acesso a sockets de rede externos e sem permissão de gravação fora do diretório temporário do projeto).

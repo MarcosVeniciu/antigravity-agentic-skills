@@ -27,7 +27,7 @@ Cada uma das 12 skills do projeto foi auditada em profundidade sob duas perspect
 | 7 | **`/release`** | Gatekeeper: Publicação SemVer 2.0.0 | Orchestrator + `release-auditor` (`flash_lite`) | 🟡 Atenção Moderada | [`audit-release.md`](./audit-release.md) |
 | 8 | **`/debug`** | Suporte Forense: 5 Whys & MRE | Orchestrator + `forensic-prober` (`inherit`) | 🟡 Atenção Moderada | [`audit-debug.md`](./audit-debug.md) |
 | 9 | **`/test-fix`** | Suporte Reativo: Correção Cirúrgica | 100% Main Orchestrator (Double-Strike Rule) | 🟡 Atenção Moderada | [`audit-test-fix.md`](./audit-test-fix.md) |
-| 10 | **`/ask`** | Oráculo Read-Only da Base & Vault | Orchestrator + `research` (`flash_lite`, RO) | 🟢 Robusto com Pontos de Atenção | [`audit-ask.md`](./audit-ask.md) |
+| 10 | **`/ask`** | Oráculo Read-Only da Base & Vault | Orchestrator + `research` (`flash_lite`, RO) | 🟢 Totalmente Mitigado | [`audit-ask.md`](./audit-ask.md) |
 | 11 | **`/infra`** | Governança: Deps, Anti-Slopsquatting & `.env` | Orchestrator + `audit_dependencies.py` + `dependency-auditor` (`flash`) | 🟡 Atenção Moderada | [`audit-infra.md`](./audit-infra.md) |
 | 12 | **`/obsidian`** | Governança da Memória SSOT (Vault) | 100% Main Orchestrator (`vault_patch`) | 🟡 Atenção Moderada | [`audit-obsidian.md`](./audit-obsidian.md) |
 
@@ -57,10 +57,10 @@ Respondendo diretamente à questão central: **"Existem outros pontos de atenç�
 ### 2.4. Gate Evasion & Bypasses Silenciosos em Scripts de Governança (`ASI02` / `ASI06`)
 * **O Fenômeno:** Scripts determinísticos de verificação que possuem flags de escape ou falhas lógicas de substring/globbing que um agente (ou erro de invocação) pode acionar para obter um `[PASS]` falso.
 * **Como afeta nosso projeto:**
-  1. **`check_sdd_drift.py` (Bypass por Substring de Path em Pivots):** Nas linhas 353–356 de [`skills/implement/scripts/check_sdd_drift.py`](../../../skills/implement/scripts/check_sdd_drift.py#L353-L356), a checagem de arquivos não planejados verifica `any(part in pivots_text for part in norm_path.split("/") if len(part) > 2)`. Se o arquivo `pivots-[slug].md` contiver a palavra genérica `"src"` ou `"api"`, **qualquer arquivo novo dentro de `src/` é automaticamente autorizado**!
-  2. **`ast_complexity.py` (Flag `--exit-zero`):** Em [`skills/refactor/scripts/ast_complexity.py`](../../../skills/refactor/scripts/ast_complexity.py) e [`skills/review/scripts/ast_complexity.py`](../../../skills/review/scripts/ast_complexity.py), existe a flag `--exit-zero`, que força o script a retornar código `0` mesmo quando há funções violando $V(G) > 10$.
-  3. **`validate_release.py` (Skip Silencioso de DoD):** Na linha 169 de [`skills/release/scripts/validate_release.py`](../../../skills/release/scripts/validate_release.py#L169), se o glob de `--check-dod` não encontrar arquivos (por erro de path), a função imprime um aviso e retorna `True` (`exit 0`), aprovando o release sem validar nenhum DoD.
-  4. **`validate_env.py` (Bypass por Substring `"example"`):** Na linha 138 de [`skills/infra/scripts/validate_env.py`](../../../skills/infra/scripts/validate_env.py#L138), se uma chave real contiver a substring `"example"` ou `"test"`, o detector de segredos a ignora.
+  - [x] **1. `check_sdd_drift.py` (Bypass por Substring de Path em Pivots):** Nas linhas 353–356 de [`skills/implement/scripts/check_sdd_drift.py`](../../../skills/implement/scripts/check_sdd_drift.py#L353-L356), a checagem de arquivos não planejados verifica `any(part in pivots_text for part in norm_path.split("/") if len(part) > 2)`. Se o arquivo `pivots-[slug].md` contiver a palavra genérica `"src"` ou `"api"`, **qualquer arquivo novo dentro de `src/` é automaticamente autorizado**!
+  - [x] **2. `ast_complexity.py` (Flag `--exit-zero`):** Em [`skills/refactor/scripts/ast_complexity.py`](../../../skills/refactor/scripts/ast_complexity.py) e [`skills/review/scripts/ast_complexity.py`](../../../skills/review/scripts/ast_complexity.py), existe a flag `--exit-zero`, que força o script a retornar código `0` mesmo quando há funções violando $V(G) > 10$.
+  - [x] **3. `validate_release.py` (Skip Silencioso de DoD):** Na linha 169 de [`skills/release/scripts/validate_release.py`](../../../skills/release/scripts/validate_release.py#L169), se o glob de `--check-dod` não encontrar arquivos (por erro de path), a função imprime um aviso e retorna `True` (`exit 0`), aprovando o release sem validar nenhum DoD.
+  - [x] **4. `validate_env.py` (Bypass por Substring `"example"`):** Na linha 138 de [`skills/infra/scripts/validate_env.py`](../../../skills/infra/scripts/validate_env.py#L138), se uma chave real contiver a substring `"example"` ou `"test"`, o detector de segredos a ignora.
 
 ### 2.5. Indirect Prompt Injection via Fontes Externas, Logs e Diffs (`LLM01` / `ASI01`)
 * **O Fenômeno:** Agentes que leem conteúdos não confiáveis (páginas web via `search_web`, stack traces de produção, mensagens de commit de terceiros, docstrings em código auditado) sem delimitadores de isolamento (`<UNTRUSTED_DATA>`) podem sofrer sequestro de objetivo (*Goal Hijack*).
@@ -109,7 +109,7 @@ Legenda:
 | Categoria OWASP | `/decompose` | `/plan` | `/implement` | `/refactor` | `/review` | `/docs` | `/release` | `/debug` | `/test-fix` | `/ask` | `/infra` | `/obsidian` |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **LLM01: Prompt Injection** | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🔴 | 🟡 |
-| **LLM02: Sensitive Info Disclosure** | 🟢 | 🟡 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | 🔴 | 🟡 | 🔴 | 🟡 | 🟡 |
+| **LLM02: Sensitive Info Disclosure** | 🟢 | 🟡 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | 🔴 | 🟡 | 🟢 | 🟡 | 🟡 |
 | **LLM03: Excessive Agency** | 🟢 | 🔴 | 🟡 | 🟡 | 🟡 | 🟡 | 🔴 | 🟡 | 🔴 | 🟡 | 🟢 | 🟡 |
 | **LLM04: Supply Chain Vulnerabilities** | ⚪ | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟡 | 🟡 | 🟢 | ⚪ | 🟡 | ⚪ |
 | **LLM05: Data & Model Poisoning** | 🟡 | 🟡 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟢 | 🔴 |
@@ -136,27 +136,27 @@ Legenda:
 Quando decidirmos abrir uma nova iniciativa para aplicar as correções nas skills, esta é a ordem de prioridade recomendada (do maior impacto/menor esforço para evoluções estruturais):
 
 ### Fase A: Quick Wins Determinísticos em Scripts Existentes (Alta Prioridade)
-1. **Corrigir o Bypass de Substring de Pivots em [`skills/implement/scripts/check_sdd_drift.py`](../../../skills/implement/scripts/check_sdd_drift.py#L353-L356) (`[IMP-ASI06-01]`):**
+- [x] **1. Corrigir o Bypass de Substring de Pivots em [`skills/implement/scripts/check_sdd_drift.py`](../../../skills/implement/scripts/check_sdd_drift.py#L353-L356) (`[IMP-ASI06-01]`):**
    - Exigir match do caminho relativo completo (`norm_path in pivots_text`) ou do nome exato do arquivo (`Path(norm_path).name in pivots_text`), removendo o `norm_path.split("/")` que autoriza qualquer arquivo caso palavras como `"src"` apareçam no documento de pivots.
-2. **Corrigir o Skip Silencioso de DoD em [`skills/release/scripts/validate_release.py`](../../../skills/release/scripts/validate_release.py#L169) (`[REL-ASI02-02]`):**
+- [x] **2. Corrigir o Skip Silencioso de DoD em [`skills/release/scripts/validate_release.py`](../../../skills/release/scripts/validate_release.py#L169) (`[REL-ASI02-02]`):**
    - Se `--check-dod` for passado na linha de comando e nenhum arquivo corresponder ao glob/caminho informado, falhar imediatamente (`return False` / `exit 1`) em vez de pular silenciosamente a verificação.
-3. **Remover a Flag `--exit-zero` de `ast_complexity.py` (`[REF-ASI06-01]`):**
+- [x] **3. Remover a Flag `--exit-zero` de `ast_complexity.py` (`[REF-ASI06-01]`):**
    - Remover `--exit-zero` de [`skills/refactor/scripts/ast_complexity.py`](../../../skills/refactor/scripts/ast_complexity.py) e [`skills/review/scripts/ast_complexity.py`](../../../skills/review/scripts/ast_complexity.py) para impedir bypasses de complexidade ciclomática.
-4. **Refinar o Whitelisting de Placeholders em [`skills/infra/scripts/validate_env.py`](../../../skills/infra/scripts/validate_env.py#L138) (`[INF-LLM02-02]`):**
+- [x] **4. Refinar o Whitelisting de Placeholders em [`skills/infra/scripts/validate_env.py`](../../../skills/infra/scripts/validate_env.py#L138) (`[INF-LLM02-02]`):**
    - Validar placeholders por igualdade ou prefixo/sufixo explícito e adicionar padrões para chaves Anthropic (`sk-ant-...`), Stripe (`sk_live_...`), Google Cloud (`AIza...`) e senhas em URLs de conexão.
-5. **Inverter a Ordem do Step 1 no `/review` e Substituir `pytest` por `py_compile` no `/docs` (`[REV-ASI05-01]` / `[DOC-ASI05-02]`):**
+- [x] **5. Inverter a Ordem do Step 1 no `/review` e Substituir `pytest` por `py_compile` no `/docs` (`[REV-ASI05-01]` / `[DOC-ASI05-02]`):**
    - Em [`skills/review/SKILL.md`](../../../skills/review/SKILL.md), executar os 4 scanners estáticos (`scan_sinks.py`, `check_arch_boundaries.py`, `ast_complexity.py`, `check_sdd_drift.py`) **antes** de rodar `python -m pytest -v`.
    - Em [`skills/docs/SKILL.md`](../../../skills/docs/SKILL.md), usar `python -m py_compile` para validar se docstrings não quebraram a sintaxe Python, sem executar código dinâmico.
 
 ### Fase B: Guardrails de Protocolo, Git Safety e Subagentes (Média/Alta Prioridade)
-6. **Proteção contra Perda de Dados em Rollbacks (`[TESTFIX-LLM03-01]`, `[IMP-LLM03-01]`, `[DEBUG-ASI02-03]`):**
+- [x] **6. Proteção contra Perda de Dados em Rollbacks (`[TESTFIX-LLM03-01]`, `[IMP-LLM03-01]`, `[DEBUG-ASI02-03]`):**
    - Substituir `git reset --hard HEAD && git clean -fd` por um stash de segurança auditável (`git stash push -u -m "antigravity-safety-rollback-$(date +%s)"`) antes de reverter o estado nos fluxos de *Double-Strike*.
-7. **Bloqueio de *Assertion Tampering* em `/refactor` e `/test-fix` (`[REF-ASI02-01]`, `[TESTFIX-ASI10-03]`):**
+- [x] **7. Bloqueio de *Assertion Tampering* em `/refactor` e `/test-fix` (`[REF-ASI02-01]`, `[TESTFIX-ASI10-03]`):**
    - No `/refactor`, adicionar comando determinístico `git diff --exit-code <base>...HEAD -- tests/` no Step 4 para garantir que nenhum teste unitário foi adulterado.
-8. **Redução de Privilégios (`EnableWriteTools: false`) em Subagentes Auditores e Arquitetos (`[PLAN-ASI03-01]`, `[REV-ASI03-02]`, `[REL-ASI03-01]`):**
+- [x] **8. Redução de Privilégios (`EnableWriteTools: false`) em Subagentes Auditores e Arquitetos (`[PLAN-ASI03-01]`, `[REV-ASI03-02]`, `[REL-ASI03-01]`):**
    - Nos subagentes `sdd-architect`, `release-auditor` e nos 5 auditores do `/review`, fazer com que retornem o Markdown estruturado ao Orquestrador Principal (ou remover o uso de `run_command` em subagentes de concepção) e impor teto explícito de `MaxIterations: 3` em loops de validação.
-9. **Remoção do `.env` Real das Fontes de Leitura do `/ask` e Sanitização de Logs no `/debug` (`[ASK-LLM02-01]`, `[DEBUG-LLM02-02]`):**
+- [x] **9. Remoção do `.env` Real das Fontes de Leitura do `/ask` e Sanitização de Logs no `/debug` (`[ASK-LLM02-01]`, `[DEBUG-LLM02-02]`):**
    - Em [`skills/ask/references/ask-sources.md`](../../../skills/ask/references/ask-sources.md), permitir leitura apenas de `.env.example`, proibindo leitura de `.env` real.
-10. **Novos Validadores Determinísticos para `/decompose` (`validate_dag.py`) e `/obsidian` (`validate_vault_note.py`) (`[DECOMPOSE-ASI08-01]`, `[OBS-ASI06-01]`):**
+- [x] **10. Novos Validadores Determinísticos para `/decompose` (`validate_dag.py`) e `/obsidian` (`validate_vault_note.py`) (`[DECOMPOSE-ASI08-01]`, `[OBS-ASI06-01]`):**
     - Criar verificador de grafos acíclicos com `graphlib.TopologicalSorter` na `/decompose` e validador de frontmatter/links e detector de Prompt Injection na `/obsidian`.
 

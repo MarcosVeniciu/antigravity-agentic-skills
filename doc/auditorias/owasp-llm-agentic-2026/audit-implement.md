@@ -130,11 +130,11 @@ A skill `/implement` governa a Fase 2 do ciclo SDD 2.0 (Desenvolvimento TDD Iter
 ## 5. Plano de Ação Priorizado para a Skill `/implement`
 
 ### Quick Wins (Baixo Esforço / Alto Impacto)
-- [ ] **Endurecimento de `check_sdd_drift.py`:** Remover a validação de partes de diretório (`any(is_in_pivots(part) for part in norm_path.split("/"))`) nas linhas 353-355, exigindo caminho relativo exato ou nome de classe qualificado para concessão de pivot.
-- [ ] **Salvaguarda de Git Rollback em `tdd-git.md`:** Alterar a instrução de Double-Strike para executar `git stash push -m "rescue-strike-checkpoint"` antes de rodar `git reset --hard HEAD`.
-- [ ] **Adição de Validação de Asserções Específicas em `goldfish-drift-auditor`:** Adicionar no System Prompt do auditor a proibição expressa de asserções triviais (`assert x is not None`, `assert True`) para cenários marcados com `@security`.
+- [x] **Endurecimento de `check_sdd_drift.py`:** Remover a validação de partes de diretório (`any(is_in_pivots(part) for part in norm_path.split("/"))`) nas linhas 353-355, exigindo caminho relativo exato ou nome de classe qualificado para concessão de pivot.
+- [x] **Salvaguarda de Git Rollback em `tdd-git.md`:** Alterar a instrução de Double-Strike para executar `git stash push -m "rescue-strike-checkpoint"` antes de rodar `git reset --hard HEAD`.
+- [x] **Adição de Validação de Asserções Específicas em `goldfish-drift-auditor`:** Adicionar no System Prompt do auditor a proibição expressa de asserções triviais (`assert x is not None`, `assert True`) para cenários marcados com `@security`.
 
 ### Evoluções Estruturais (Scripts / Arquitetura de Subagentes)
 - [ ] **Schema YAML Rígido para Notas de Pivô:** Modificar `check_sdd_drift.py` para processar apenas blocos ```yaml estruturados dentro de `02-auditorias/pivots-[slug].md`, exigindo o campo `authorized_by: "human"`.
-- [ ] **Verificação de Integridade de Escopo Pós-Lote no Step 2.5:** Inserir um hook de validação no Orquestrador que confere se o git diff do lote tocou exclusivamente arquivos de `src/` e `tests/unit/` pertencentes ao Lote N planejado antes de gravar o checkpoint.
+- [x] **Verificação de Integridade de Escopo Pós-Lote no Step 2.5:** Inserir um hook de validação no Orquestrador que confere se o git diff do lote tocou exclusivamente arquivos de `src/` e `tests/unit/` pertencentes ao Lote N planejado antes de gravar o checkpoint.
 - [ ] **Isolamento de Execução de Testes (Sandbox Fixtures):** Configurar um plugin ou fixture padrão no repositório de testes que bloqueia chamadas externas de rede (`socket.connect`) e subprocessos durante a execução de `pytest tests/unit/`.
