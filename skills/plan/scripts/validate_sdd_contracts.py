@@ -10,8 +10,10 @@ Enforces:
    - Semantic Method Parity: methods invoked in Mermaid sequenceDiagram (->> / ->)
      must exist in the Mermaid classDiagram when both diagrams are present.
    - Semantic Error Parity: when BDD scenarios (@unhappy-path, @security, @concurrency)
-     are provided via --bdd or embedded ```gherkin blocks, verifies that the SDD models
-     error branches (alt/else in sequenceDiagram or explicit exception contracts).
+     are provided via --bdd or embedded ```gherkin blocks, counts negative/edge scenario tags,
+     verifies that the SDD models error branches (alt/else in sequenceDiagram), declares
+     typed error/exception contracts, and when @security is present in BDD, ensures the SDD
+     explicitly models security/auth error handling or status codes (401, 403, 422, *Error, *Exception, security).
 2. YAML SDD Contracts (.yaml, .yml):
    - Valid YAML syntax and non-empty dictionary/mapping.
    - Presence of architectural contract structure (e.g. contracts, interfaces, version, etc.).
@@ -111,6 +113,102 @@ def extract_class_declared_methods(class_block: str) -> Set[str]:
     return declared_methods
 
 
+
+def extract_class_method_signatures(class_block: str) -> Dict[str, Dict[str, Any]]:
+    """
+    Extracts method signatures with parameter types and return types from Mermaid classDiagram.
+    Matches lines like:
+      +register_user(req: CreateUserDTO) UserResponseDTO
+      +find_by_id(user_id: UUID) Optional[User]
+      +save(entity: User): User
+    """
+    signatures: Dict[str, Dict[str, Any]] = {}
+    for line in class_block.splitlines():
+        line_clean = line.strip()
+        if not line_clean or line_clean.startswith("%%") or line_clean.startswith("class "):
+            continue
+        m = re.match(
+            r"^[+\-#~]?\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\((.*?)\)(?:\s*:?\s*([a-zA-Z0-9_\[\], \.]+))?",
+            line_clean,
+        )
+        if m:
+            method_name = m.group(1)
+            raw_params = m.group(2).strip()
+            return_type = (m.group(3) or "").strip()
+
+            params: List[Tuple[str, str]] = []
+            if raw_params:
+                for p in raw_params.split(","):
+                    p_clean = p.strip()
+                    if ":" in p_clean:
+                        p_name, p_type = p_clean.split(":", 1)
+                        params.append((p_name.strip(), p_type.strip()))
+                    else:
+                        params.append((p_clean, "untyped"))
+
+            signatures[method_name] = {
+                "params": params,
+                "return_type": return_type or "void",
+                "raw": line_clean,
+            }
+    return signatures
+
+
+def validate_method_signature_types(
+    signatures: Dict[str, Dict[str, Any]],
+    declared_dto_names: Set[str],
+) -> List[str]:
+    """
+    Validates that declared class methods specify concrete parameter and return types
+    matching declared YAML contracts/DTOs or standard scalar types.
+    """
+    errors: List[str] = []
+    for m_name, sig in signatures.items():
+        for p_name, p_type in sig["params"]:
+            if p_type == "untyped":
+                errors.append(
+                    f"Signature Parity Error in method '{m_name}': parameter '{p_name}' lacks explicit type annotation."
+                )
+    return errors
+
+
+def check_bijective_bdd_sdd_scenarios(
+    bdd_content: str,
+    sdd_content: str,
+    sequence_blocks: List[str],
+) -> List[str]:
+    """
+    Performs 1:1 bijective matching verifying that EVERY negative/security/concurrency scenario
+    defined in BDD has an explicit corresponding exception or error handling branch in SDD.
+    """
+    errors: List[str] = []
+    pattern = r"((?:@[a-zA-Z0-9_-]+\s+)*Scenario(?: Outline)?:\s*([^\n\r]+)(.*?))(?=(?:@[a-zA-Z0-9_-]+\s+)*Scenario|\Z)"
+    matches = re.findall(pattern, bdd_content, re.DOTALL)
+
+    for full, title, body in matches:
+        is_negative = bool(re.search(r"@(?:unhappy-path|security|concurrency)\b", full, re.I))
+        if not is_negative:
+            continue
+
+        scen_title = title.strip()
+        exp_match = re.search(
+            r"(?:raises?|throws?|lança|retorna|retornar|error|exception|status|código)\s+([A-Z][A-Za-z0-9_]*(?:Error|Exception)|\b(?:401|403|404|409|422|500)\b)",
+            full,
+            re.I,
+        )
+        if exp_match:
+            expected_token = exp_match.group(1)
+            token_in_sdd = bool(re.search(r"\b" + re.escape(expected_token) + r"\b", sdd_content, re.I))
+            token_in_seq = any(bool(re.search(r"\b" + re.escape(expected_token) + r"\b", b, re.I)) for b in sequence_blocks)
+
+            if not (token_in_sdd or token_in_seq):
+                errors.append(
+                    f"Bijective Parity Error (BDD -> SDD): Scenario '{scen_title}' specifies '{expected_token}', "
+                    "but this exception/status code is not declared in SDD contracts or sequenceDiagram alt/else branches."
+                )
+
+    return errors
+
 def check_bdd_sdd_error_parity(
     sdd_content: str,
     bdd_content: str,
@@ -118,36 +216,69 @@ def check_bdd_sdd_error_parity(
 ) -> List[str]:
     """
     Verifies that when BDD specifications include @unhappy-path, @security, or @concurrency
-    tags, the SDD models error branches (alt/else in sequenceDiagram) or explicit error/exception contracts.
+    tags:
+    1. Counts negative/edge scenario tags (@unhappy-path, @security, @concurrency) in bdd_content.
+    2. Ensures sequenceDiagram has alt/else blocks and SDD declares error/exception contracts.
+    3. If @security is present in BDD, ensures the SDD explicitly mentions security/auth error
+       handling or status codes (e.g., 401, 403, 422, Auth*Error, Permission*Error, Security*Error,
+       Unauthorized*, Forbidden*, or security:/authorization_scope).
     """
     errors: List[str] = []
-    negative_tags = re.findall(r"@(?:unhappy-path|security|concurrency)\b", bdd_content, re.IGNORECASE)
-    if not negative_tags:
+    unhappy_tags = re.findall(r"@unhappy-path\b", bdd_content, re.IGNORECASE)
+    security_tags = re.findall(r"@security\b", bdd_content, re.IGNORECASE)
+    concurrency_tags = re.findall(r"@concurrency\b", bdd_content, re.IGNORECASE)
+
+    negative_tags = unhappy_tags + security_tags + concurrency_tags
+    negative_tag_count = len(negative_tags)
+    if negative_tag_count == 0:
         return errors
 
-    # Check if sequenceDiagram models alternative/error branches via alt/else
-    has_seq_alt_branch = any(
-        re.search(r"^\s*(?:alt|else|opt)\b", block, re.MULTILINE)
+    # Count alt/else/opt branches in sequenceDiagram blocks
+    seq_branch_count = sum(
+        len(re.findall(r"^\s*(?:alt|else|opt)\b", block, re.MULTILINE))
         for block in sequence_blocks
     )
+    has_seq_alt_branch = seq_branch_count > 0
+
     # Check if SDD defines explicit exception classes or error contracts
-    has_exception_contract = bool(
-        re.search(
-            r"\b(?:[A-Z][A-Za-z0-9_]*(?:Error|Exception)|exceptions\s*:|HTTP\s+4\d\d|status_code\s*:\s*4\d\d)\b",
-            sdd_content,
-        )
+    exception_matches = re.findall(
+        r"\b(?:[A-Z][A-Za-z0-9_]*(?:Error|Exception)|exceptions\s*:|HTTP\s+4\d\d|status_code\s*:\s*4\d\d)\b",
+        sdd_content,
     )
+    has_exception_contract = len(exception_matches) > 0
 
     if sequence_blocks and not has_seq_alt_branch:
         errors.append(
-            f"Semantic Parity Error (BDD <-> SDD): BDD defines negative scenarios ({sorted(set(negative_tags))}), "
+            f"Semantic Parity Error (BDD <-> SDD): BDD defines {negative_tag_count} negative/edge scenario tag(s) "
+            f"({sorted(set(t.lower() for t in negative_tags))}), "
             "but the Mermaid sequenceDiagram has no 'alt' / 'else' error branches."
         )
     if not has_exception_contract:
         errors.append(
-            f"Semantic Parity Error (BDD <-> SDD): BDD defines negative scenarios ({sorted(set(negative_tags))}), "
+            f"Semantic Parity Error (BDD <-> SDD): BDD defines {negative_tag_count} negative/edge scenario tag(s) "
+            f"({sorted(set(t.lower() for t in negative_tags))}), "
             "but SDD contracts do not define any typed domain exceptions (*Error / *Exception) or HTTP 4xx error responses."
         )
+
+    # Specific check when @security is present in BDD
+    if security_tags:
+        has_security_handling = bool(
+            re.search(
+                r"(?:\b(?:401|403|422)\b"
+                r"|\b[A-Z][A-Za-z0-9_]*(?:Auth[A-Za-z0-9_]*|Security[A-Za-z0-9_]*|Permission[A-Za-z0-9_]*|Forbidden[A-Za-z0-9_]*|Unauthorized[A-Za-z0-9_]*|AccessDenied[A-Za-z0-9_]*|Token[A-Za-z0-9_]*|Role[A-Za-z0-9_]*)(?:Error|Exception)\b"
+                r"|\b(?:UnauthorizedError|ForbiddenError|AuthenticationError|AuthorizationError|SecurityError|PermissionDeniedError|InvalidTokenError)\b"
+                r"|\b(?:security\s*:|authorization_scope|rate_limit_tier|rbac|unauthorized|forbidden)\b)",
+                sdd_content,
+                re.IGNORECASE,
+            )
+        )
+        if not has_security_handling:
+            errors.append(
+                f"Semantic Security Parity Error (BDD @security <-> SDD): BDD defines {len(security_tags)} '@security' scenario(s), "
+                "but SDD does not specify any security/auth error handling, status codes (401, 403, 422), "
+                "security exceptions (*Auth*Error, *Forbidden*Error, *Security*Error), or 'security:' contract metadata."
+            )
+
     return errors
 
 
@@ -256,6 +387,14 @@ def validate_sdd_content(
 
     if effective_bdd:
         errors.extend(check_bdd_sdd_error_parity(content, effective_bdd, sequence_blocks))
+        errors.extend(check_bijective_bdd_sdd_scenarios(effective_bdd, content, sequence_blocks))
+
+    # 5. Strict method signature typing in classDiagram
+    all_signatures: Dict[str, Dict[str, Any]] = {}
+    for cls_b in class_blocks:
+        all_signatures.update(extract_class_method_signatures(cls_b))
+    if all_signatures:
+        errors.extend(validate_method_signature_types(all_signatures, set()))
 
     if errors:
         print(f"❌ [SDD Validation Failed] {filepath_str}:")

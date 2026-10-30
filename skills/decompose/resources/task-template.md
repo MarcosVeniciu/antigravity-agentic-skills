@@ -10,16 +10,26 @@ base_branch: develop
 # Task Breakdown: {{EPIC_OR_FEATURE_TITLE}}
 
 ## 1. Overview & Observable Desired End-State
+
+### 1.1 Core Objective & Outcome
 - **Core Objective:** {{CORE_OBJECTIVE_DESCRIPTION}}
 - **Desired Observable Outcome:** {{DESIRED_OBSERVABLE_OUTCOME}}
-- **Target Branch / Integration:** `{{TARGET_BRANCH}}` into `{{BASE_BRANCH}}`
+- **Target Branch / Integration:** `{{TARGET_BRANCH}}` into `{{BASE_BRANCH}}` (Slug must match `^[a-z0-9]+(-[a-z0-9]+)*$`)
 
-### Success Criteria
+### 1.2 Success Criteria
 
 | ID | Criteria | Validation Method |
 |:---|:---|:---|
 | S1 | {{CRITERIA_DESCRIPTION}} | {{TEST_COMMAND_OR_INSPECTION}} |
 | S2 | {{CRITERIA_DESCRIPTION}} | {{TEST_COMMAND_OR_INSPECTION}} |
+
+### 1.3 Security & Trust Boundaries (OWASP Guardrails)
+
+| Slice / Batch | PII / Sensitive Data Classification | RBAC / Auth & Rate-Limit Boundary | Trust Boundary & Redaction Rules |
+|:---|:---|:---|:---|
+| T1 (`batch-1-domain`) | {{PII_FIELDS_OR_NONE}} | {{DOMAIN_INVARIANTS}} | Zero raw secrets/PII in domain exceptions or logs |
+| T2 (`batch-2-service`) | {{SERVICE_DATA_CLASSIFICATION}} | {{AUTHZ_SCOPE_AND_IDEMPOTENCY}} | Enforce authorization scope prior to state mutation |
+| T3 (`batch-3-adapter`) | {{INFRA_ENCRYPTION_AT_REST_TRANSIT}} | {{RATE_LIMIT_AND_INGRESS_GUARD}} | External I/O untrusted; parameterize queries & redact logs |
 
 ---
 
@@ -33,11 +43,11 @@ flowchart TD
 
 ### Task Inventory
 
-| ID | Task Description | Size | Depends On | Status | Target Branch / Batch |
-|:---|:---|:---:|:---:|:---:|:---|
-| T1 | {{TASK_1_NAME}} | [S] | — | [ ] | `batch-1-domain` |
-| T2 | {{TASK_2_NAME}} | [M] | T1 | [ ] | `batch-2-service` |
-| T3 | {{TASK_3_NAME}} | [M] | T2 | [ ] | `batch-3-adapter` |
+| Task ID | Slice / Feature | Size | Dependencies | Contracts Introduced | Contracts Consumed | Status | Target Branch / Batch |
+|:---|:---|:---:|:---:|:---|:---|:---:|:---|
+| T1 | {{TASK_1_NAME}} | [S] | — | `I{{ENTITY}}Repository`, `{{ENTITY}}` | — | [ ] | `batch-1-domain` |
+| T2 | {{TASK_2_NAME}} | [M] | T1 | `I{{SERVICE}}UseCase` | `I{{ENTITY}}Repository`, `{{ENTITY}}` | [ ] | `batch-2-service` |
+| T3 | {{TASK_3_NAME}} | [M] | T2 | — | `I{{ENTITY}}Repository`, `I{{SERVICE}}UseCase` | [ ] | `batch-3-adapter` |
 
 ---
 
@@ -73,11 +83,12 @@ flowchart TD
 
 ## 4. Definition of Done Checklist
 
+- [ ] Deterministic DAG validation passed (`python skills/decompose/scripts/validate_dag.py 01-concepcao/epic-{{EPIC_SLUG}}.md --slug {{EPIC_SLUG}}`).
 - [ ] All atomic tasks marked completed (`[x]`).
 - [ ] Unit test suite passing 100% green (`pytest tests/unit/ -v`).
 - [ ] In-memory Fakes match interface signatures of real adapters.
 - [ ] Real infrastructure integration tests passing (`pytest tests/integration/ -v`).
-- [ ] No regression introduced into existing baseline.
+- [ ] Security & Trust Boundaries (Section 1.3) verified with zero PII/secret leakage.
 - [ ] Clean semantic commits recorded per batch.
 
 ---
@@ -85,7 +96,7 @@ flowchart TD
 ## 5. Handover
 
 - **Next Phase:** Phase 1 (`/plan`) or Phase 2 (`/implement`)
-- **Checkout Command:**
+- **Checkout Command (slug strictly validated via `^[a-z0-9]+(-[a-z0-9]+)*$`):**
   ```bash
   git switch develop; git pull --ff-only; git switch -c feature/{{FIRST_FEATURE_SLUG}}
   ```

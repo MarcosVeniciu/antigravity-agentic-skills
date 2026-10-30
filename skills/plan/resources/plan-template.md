@@ -73,6 +73,12 @@ Feature: {{FEATURE_NAME}}
     Given {{UNHAPPY_GIVEN}}
     When {{UNHAPPY_WHEN}}
     Then {{UNHAPPY_THEN}}
+
+  @security
+  Scenario: Rejection of Unauthorized Caller
+    Given {{SECURITY_GIVEN}}
+    When {{SECURITY_WHEN}}
+    Then {{SECURITY_THEN}}
 ```
 
 ---
@@ -90,18 +96,22 @@ sequenceDiagram
     participant Port as "Repository / Port"
     
     Client->>API: "POST /resource (RequestDTO)"
-    API->>Service: "execute(req)"
-    Service->>Port: "find_by_id(id)"
-    alt Entity Already Exists (@unhappy-path)
-        Port-->>Service: "existing_entity"
-        Service-->>API: "DuplicateEntityError"
-        API-->>Client: "HTTP 409 Conflict"
-    else Entity Available (@happy-path)
-        Port-->>Service: "None (Available)"
-        Service->>Port: "save(entity)"
-        Port-->>Service: "persisted_entity"
-        Service-->>API: "ResponseDTO"
-        API-->>Client: "HTTP 201 Created (ResponseDTO)"
+    alt Unauthorized Role (@security)
+        API-->>Client: "HTTP 403 Forbidden (ForbiddenError)"
+    else Authorized Caller
+        API->>Service: "execute(req)"
+        Service->>Port: "find_by_id(id)"
+        alt Entity Already Exists (@unhappy-path)
+            Port-->>Service: "existing_entity"
+            Service-->>API: "DuplicateEntityError"
+            API-->>Client: "HTTP 409 Conflict"
+        else Entity Available (@happy-path)
+            Port-->>Service: "None (Available)"
+            Service->>Port: "save(entity)"
+            Port-->>Service: "persisted_entity"
+            Service-->>API: "ResponseDTO"
+            API-->>Client: "HTTP 201 Created (ResponseDTO)"
+        end
     end
 ```
 
@@ -138,18 +148,30 @@ classDiagram
     InMemoryFeaturePort ..|> IFeaturePort : implements
 ```
 
-### Typed Contracts & Boundary Mocks [Mandatory]
+### Typed Contracts, Security Metadata & Boundary Mocks [Mandatory]
+
+```yaml
+security:
+  authorization_scope: "{{REQUIRED_RBAC_ROLE_OR_SCOPE}}"
+  rate_limit_tier: "strict"
+  idempotency_required: true
+  sensitive_fields:
+    - "identifier"
+```
 
 ```python
 # Language-native typed contracts (e.g., Pydantic)
 from pydantic import BaseModel, Field
 
+class ForbiddenError(Exception):
+    """Raised when caller lacks the required authorization_scope (HTTP 403)."""
+
 class DuplicateEntityError(Exception):
-    """Raised when an entity with the given identifier already exists."""
+    """Raised when an entity with the given identifier already exists (HTTP 409)."""
 
 class RequestDTO(BaseModel):
     name: str = Field(..., min_length=2, description="Entity name")
-    identifier: str = Field(..., description="Unique business identifier")
+    identifier: str = Field(..., description="Unique business identifier (redact in logs)")
 
 class ResponseDTO(BaseModel):
     id: str = Field(..., description="Generated UUID")
@@ -166,15 +188,16 @@ class ResponseDTO(BaseModel):
 | :--- | :--- | :--- | :--- | :---: |
 | `@happy-path` (Scenario 1) | `FeatureController.handle_request` | `src/api/routes.py` | 100% Green Unit Tests | 🟢 **Mapped** |
 | `@unhappy-path` (Scenario 2) | `DuplicateEntityError` / `RequestDTO` | `src/domain/entities.py` | HTTP 409 / 422 Rejection Test | 🟢 **Mapped** |
+| `@security` (Scenario 3) | `ForbiddenError` / `security.authorization_scope` | `src/api/routes.py` | HTTP 401 / 403 Auth Guard Test | 🟢 **Mapped** |
 | Boundary Integration | `IFeaturePort.save` / Adapter | `src/infra/repo.py` | Contract Test with Fake/Mock | 🟡 **Attention** ([see Architectural Point 1](#-architectural-point-1)) |
 
-### Goldfish Council Blind Review Summary (Step 5)
+### Goldfish Council Blind Review Summary (Step 5 — Structured JSON Schema)
 
-| Persona (`Model: "flash"`) | Finding / Critique | User Arbitration Decision | Patch Applied |
-| :--- | :--- | :---: | :--- |
-| 🐠 `goldfish-yagni` | {{YAGNI_FINDING}} | {{YAGNI_DECISION}} | {{YAGNI_PATCH}} |
-| 🐠 `goldfish-adversary` | {{ADVERSARY_FINDING}} | {{ADVERSARY_DECISION}} | {{ADVERSARY_PATCH}} |
-| 🐠 `goldfish-implementer` | {{IMPLEMENTER_FINDING}} | {{IMPLEMENTER_DECISION}} | {{IMPLEMENTER_PATCH}} |
+| Persona (`Model: "flash"`) | Severity & Category | Finding / Critique | User Arbitration Decision | Patch Applied |
+| :--- | :---: | :--- | :---: | :--- |
+| 🐠 `goldfish-yagni` | {{YAGNI_SEVERITY}} | {{YAGNI_FINDING}} | {{YAGNI_DECISION}} | {{YAGNI_PATCH}} |
+| 🐠 `goldfish-adversary` | {{ADVERSARY_SEVERITY}} | {{ADVERSARY_FINDING}} | {{ADVERSARY_DECISION}} | {{ADVERSARY_PATCH}} |
+| 🐠 `goldfish-implementer` | {{IMPLEMENTER_SEVERITY}} | {{IMPLEMENTER_FINDING}} | {{IMPLEMENTER_DECISION}} | {{IMPLEMENTER_PATCH}} |
 
 ### Architectural Points of Attention & Trade-Offs
 

@@ -4,8 +4,9 @@
 
 | Gate | Technical Directive | Pass Criteria |
 | :--- | :--- | :--- |
-| **Entry** | `python -m pytest tests/unit/ -v` | 100% green before edits. |
-| **4.1 AST** | `python skills/refactor/scripts/ast_complexity.py <FILES> --threshold 10` | $V(G) \le 10$; zero $O(N^2)$. |
+| **Entry** | `python -m pytest tests/unit/ -v` (`--cov=<target_files>` coverage awareness when available) | 100% green before edits; warn if coverage < 80% on $V(G)>10$ targets. |
+| **4.0 Tampering** | `git diff --exit-code <PHASE_START_HASH>...HEAD -- tests/` | Exit 0 (zero test modifications; ABORT & revert if non-zero). |
+| **4.1 AST** | `python skills/refactor/scripts/ast_complexity.py <FILES> --threshold 10` | Exit 0 ($V(G) \le 10$; zero $O(N^2)$). |
 | **4.2 Drift** | `python skills/implement/scripts/check_sdd_drift.py 01-concepcao/sdd-[slug].md <FILES> --check-files --pivots 02-auditorias/pivots-[slug].md` | Exit 0 (zero SDD drift). |
 | **4.3 Matrix** | Schema below; ref: [`refactor-report-template.md`](../resources/refactor-report-template.md) | All targets mapped. |
 | **4.4 DoD** | Update Section 3 in `01-concepcao/dod-[slug].md`. | All items `[x]`. |

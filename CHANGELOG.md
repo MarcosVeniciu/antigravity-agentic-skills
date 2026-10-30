@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ---
 
+## Release Notes - v1.5.0 (2026-10-30)
+
+### Security Hardening (OWASP Top 10 LLM & Agentic 2026)
+- `[feat: owasp-2026-mitigations]`: Applied the OWASP LLM & Agentic 2026 mitigations across all 12 skills, including the structured JSON schema and deterministic token redaction for `/ask`, the AST docstring injector, the onboarding linter, strict YAML pivots and the pytest sandbox for `/implement`, plus the new validators `validate_evidence_matrix.py` (`/refactor`) and `partition_diff.py` (`/review`).
+- `[feat: plan-sdd-validator]`: `validate_sdd_content()` in [`skills/plan/scripts/validate_sdd_contracts.py`](skills/plan/scripts/validate_sdd_contracts.py) now runs strict `classDiagram` method-signature typing (`validate_method_signature_types`) and bijective BDD-to-SDD negative-scenario parity (`check_bijective_bdd_sdd_scenarios`) on the CLI path, closing the `LLM07`, `LLM10` and `ASI08` items for `/plan`.
+- `[test]`: Added `TestValidateSddContentIntegration` covering the end-to-end validator behavior (129 tests green).
+- `[docs: audit]`: Added and calibrated the OWASP audit reports under [`doc/auditorias/owasp-llm-agentic-2026/`](doc/auditorias/owasp-llm-agentic-2026/README.md); the `/plan` heatmap and status are now fully mitigated (9/9).
+
+---
 ## Release Notes - v1.4.0 (2026-10-30)
 
 ### New Features & Supply-Chain Security

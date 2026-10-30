@@ -45,6 +45,11 @@ Chosen option: **{{CHOSEN_OPTION}}**, because {{REASONING}}.
 * Trade-off 1: {{TRADE_OFF_1}}
 * Trade-off 2: {{TRADE_OFF_2}}
 
+## Security & Threat Considerations
+* Authentication / Authorization Impact: {{AUTH_IMPACT}}
+* Data Sensitivity & Secret Containment: {{SECRET_CONTAINMENT}}
+* OWASP LLM / Agentic Risk Mitigation: {{OWASP_MITIGATION}}
+
 ## Links & Traceability
 * Supersedes: [[{{SUPERSEDED_ADR}}]] (or None)
 * Justifies Contract: [[sdd-{{FEATURE_SLUG}}]]
@@ -79,6 +84,11 @@ State the business domain rule in precise, unambiguous domain terms agreed upon 
 * **Invariant 2:** {{INVARIANT_CONDITION_2}}
 * **Constraint 3:** {{BOUNDARY_LIMIT_3}}
 
+## Security Invariants & Access Controls
+* **Required Role / Permission:** {{REQUIRED_PERMISSION}}
+* **Input Validation & Sanitization:** {{VALIDATION_BOUNDARY}}
+* **Audit & Non-Repudiation Requirement:** {{AUDIT_TRAIL_RULE}}
+
 ## Calculations / State Transitions
 Describe exact mathematical formulas, state machine transitions, or validation logic:
 ```
@@ -102,7 +112,7 @@ feature: "{{FEATURE_SLUG}}"
 project: antigravity
 date: "{{DATE}}"
 description: "{{DESCRIPTION}}"
-status: resolved
+status: completed
 tags:
   - pivot
   - bugfix

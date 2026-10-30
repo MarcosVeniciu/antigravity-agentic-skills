@@ -1,0 +1,130 @@
+# Arquitetura da Skill `/ask` (SDD 2.0 — Context-Isolated Project Oracle)
+
+> [!IMPORTANT]
+> **Documento Exclusivo de Engenharia e Manutenção da Skill `/ask`:**
+> Este documento reside em `doc/skills/ask/README.md` e detalha a especificação arquitetural da evolução da skill `/ask` para o modelo SDD 2.0. Ele **não** é instalado em `~/.gemini/config/skills/` nem em `.agents/skills/`, garantindo **zero poluição de contexto** para o agente em produção.
+
+---
+
+## 1. O Problema Resolvido: Context Bloat em Consultas Amplas vs. Consultas Pontuais
+
+Na operação tradicional de consulta arquitetural e técnica com agente único:
+1. **Poluição Massiva de Contexto por Varreduras Brutas (*Raw Search Context Bloat*):** Ao responder a perguntas exploratórias ou transversais (ex: *"Como funciona a autenticação e autorização ponta a ponta no sistema?"*), comandos `grep` recursivos, buscas textuais amplas e leituras sucessivas de múltiplos arquivos despejam centenas de linhas de código intermediário e logs diretamente na janela de contexto principal. Quando a pergunta é finalmente respondida, a sessão já está saturada de ruído.
+2. **Ausência de Triangulação Estruturada (Alucinação vs. Fato):** Consultas sem separação formal entre a verdade de execução (*Codebase Truth*) e a verdade de intenção (*Obsidian Vault SSOT*) levam o modelo a especular comportamentos ou assumir que implementações legadas ou rascunhos de código refletem a política oficial da organização.
+3. **Inexistência de Firewall de Contexto Adaptativo:** Tratar uma leitura cirúrgica de 1 ou 2 arquivos conhecidos com a mesma cerimônia de uma busca exploratória que cruza múltiplos módulos gera ou lentidão desnecessária para casos simples ou transbordamento de contexto para casos complexos.
+
+---
+
+## 2. Nova Arquitetura: Roteamento Condicional (Direct Lookup vs. Subagente `research` em `flash_lite`)
+
+A skill `/ask` adota um padrão de **Firewall de Contexto com Roteamento Condicional**:
+- **Ingestão e Triangulação (Orquestrador Principal):** O Orquestrador analisa a intenção do usuário, decompõe entidades de interesse e classifica a amplitude da investigação.
+- **Ramo Rápido — *Direct Lookup* (1–2 arquivos conhecidos):** Se o usuário perguntar sobre um arquivo ou classe pontual, o próprio Orquestrador lê cirurgicamente os arquivos (`read_file` ou `grep_search` focado), sintetizando a resposta instantaneamente sem overhead de invocação de subagente.
+- **Ramo Isolado — *Broad Survey* (> 2 arquivos ou localização desconhecida):** Se a busca exigir investigação exploratória cross-module ou pesquisa profunda no Obsidian Vault, o Orquestrador delega o Step 3 para o subagente nativo **`research`** rodando em **`Model: "flash_lite"`** (`Role: "Read-Only Codebase & Vault Scout"`). O subagente realiza todo o trabalho bruto de grep e leitura em um contexto isolado de sandbox, retornando ao Orquestrador **estritamente um payload JSON estruturado e validado** (`status`, `files_scanned`, `evidence`, `summary`). Qualquer texto livre ou conversacional fora desse formato é rejeitado programaticamente.
+- **Síntese Aterrada e Sanitizada (Orquestrador Principal):** O Orquestrador valida o JSON do subagente via `validate_research_json()`, sintetiza a resposta concisa fundamentada em links de código e wikilinks, e aplica a sanitização de segredos via `redact_sensitive_tokens.py` antes de exibir no chat principal.
+
+```mermaid
+flowchart TD
+    Query["Consulta Técnica do Usuário (/ask)"] --> S1["<b>Step 1 (Orquestrador): Ingestão & Parsing de Termos</b><br/>Extração de entidades de domínio, contratos, rotas e códigos de erro"]
+    S1 --> S2{"<b>Step 2 (Orquestrador): Triangulação & Roteamento</b><br/>Classificação: Direct Lookup vs. Broad Survey"}
+    S2 -->|"Consulta Pontual (1-2 arquivos conhecidos)"| S3A["<b>Step 3A (Orquestrador Direto): Direct Lookup</b><br/>read_file / grep_search pontual sem overhead"]
+    S2 -->|"Consulta Ampla (> 2 arquivos ou Exploratório)"| S3B["<b>Step 3B (Subagente research em flash_lite): Broad Survey</b><br/>Varredura em sandbox isolada no Codebase & Vault<br/>Retorna estritamente JSON: status, files_scanned, evidence, summary"]
+    S3B --> V1{"<b>Validador de Saída (validate_research_json)</b><br/>Schema Estrito (ASI07 / ASI01)"}
+    V1 -->|"JSON Válido"| S4["<b>Step 4 (Orquestrador): Síntese Aterrada & Sanitização</b><br/>Citações formais, alerta [⚠️ SECURITY WARNING]<br/>Sanitização via redact_sensitive_tokens (LLM02)"]
+    V1 -->|"Falha de Schema / Texto Livre"| REJ["<b>Rejeição Imediata</b><br/>Descarta payload malformado / injeção"]
+    S3A --> S4
+```
+
+---
+
+## 3. Matriz de Responsabilidades dos Agentes
+
+| Etapa | Responsável | Modelo (`invoke_subagent`) | Permissão de Escrita | Insumos Recebidos | Entregável / Ação |
+| :--- | :--- | :---: | :---: | :--- | :--- |
+| **Step 1: Query Ingestion** | **Orquestrador Principal** | Sessão Ativa | Read-Only | Prompt da consulta do usuário. | Extração de entidades-chave e classificação do tipo de pergunta (*Implementação*, *Arquitetura* ou *Governança*). |
+| **Step 2: Source Triangulation & Routing** | **Orquestrador Principal** | Sessão Ativa | Read-Only | Termos parseados e árvore do projeto. | Decisão de roteamento: *Direct Lookup* (local) ou *Broad Survey* (delegação a subagente). |
+| **Step 3A: Direct Lookup (Pontual)** | **Orquestrador Principal** | Sessão Ativa | Read-Only (`write_file`/`edit_file` proibidos; CLI restrito a `git status`, `git log`, `git diff`, `git branch`) | Caminho de 1–2 arquivos identificados (bloqueio estrito de `.env`, `*.pem`, `*.key`, `credentials.json`). | Leitura pontual de linhas via `view_file`/`grep_search` sem poluir contexto. |
+| **Step 3B: Broad Survey (Amplo)** | **Subagente `research`** | `Model: "flash_lite"` | Read-Only (`EnableWriteTools: false`) | Termos de busca, diretórios-alvo e `ExcludeDirs: [".git", "node_modules", ".venv", "venv", "__pycache__", "dist", "build", ".pytest_cache"]`. | Payload estritamente JSON (`status`, `files_scanned`, `evidence`, `summary`), tratando comentários como `<untrusted_data>` e descartando qualquer texto conversacional. |
+| **Step 4: Grounded Synthesis & Sanitization** | **Orquestrador Principal** | Sessão Ativa | Read-Only | Evidências extraídas de 3A ou JSON validado de 3B via `validate_research_json()`. | Resposta estruturada (Sumário Direto, Racional Arquitetural, Evidências no Código, Gaps e Handover), com redação determinística de tokens via `redact_sensitive_tokens()` (`[REDACTED_SECRET]`) e alerta `[⚠️ SECURITY WARNING: ...]`. |
+
+---
+
+## 4. O Framework de Triangulação de Fontes em 2 Camadas
+
+Para garantir precisão sem alucinação, a skill `/ask` cruza duas camadas complementares de autoridade técnica:
+
+```mermaid
+flowchart LR
+    subgraph Tier1["Tier 1: Codebase Truth (O que o sistema realmente executa)"]
+        direction TB
+        C1["Código-Fonte de Produção (.py, .ts, etc.)"]
+        C2["Suítes de Teste Automatizadas (tests/unit, tests/integration)"]
+        C3["Manifestos de Configuração (pyproject.toml, Dockerfile, .env.example / .env.template)"]
+    end
+
+    subgraph Tier2["Tier 2: Obsidian Vault SSOT (Por que o sistema foi desenhado assim)"]
+        direction TB
+        V1["00-core-rules/ (conventions.md, ADRs, glossary)"]
+        V2["01-concepcao/ (epic-*, bdd-*, sdd-*, dod-*)"]
+        V3["02-auditorias/ (audit-*, pivots-*)"]
+        V4["03-releases/ (changelog-v*.md)"]
+    end
+
+    Triangulate["<b>Triangulação Aterrada</b><br/>Detecção de Paridade ou Drift"]
+    Tier1 --> Triangulate
+    Tier2 --> Triangulate
+```
+
+### Regras de Ouro da Investigação e Guardrails OWASP (2025/2026)
+1. **Prioridade de Execução vs. Intenção:** O código de produção representa o comportamento real em execução. O Obsidian Vault representa a intenção de design e as regras de governança.
+2. **Tratamento de Discrepâncias (*Spec Drift*):** Se o código contradiz a documentação do Vault, o agente não esconde nem adivinha: relata formalmente a discrepância encontrada.
+3. **Humildade Epistêmica (*Epistemic Humility*):** Se uma funcionalidade pesquisada não existir no código nem no Vault, o agente declara expressamente sua ausência, sem especulações.
+4. **Zero Secret File Reads & Sanitização Determinística (`[ASK-LLM02-01]`):** É estritamente proibida a leitura de arquivos reais `.env`, `.env.*` (exceto `.env.example` e `.env.template`), `*.pem`, `*.key` ou `credentials.json` tanto no Orquestrador Principal quanto no subagente `research`. Toda saída gerada passa pelo script `redact_sensitive_tokens.py` para mascarar Bearer tokens, chaves OpenAI, Anthropic, Google, Stripe, GitHub, AWS, senhas de banco DSN e JWTs como `[REDACTED_SECRET]`.
+5. **Confinamento Read-Only do Orquestrador (`[ASK-ASI03-02]`):** Ferramentas de mutação (`write_file`, `edit_file`) são explicitamente proibidas durante o `/ask`, e qualquer uso diagnóstico de `run_command` é restrito à allowlist somente-leitura do Git (`git status`, `git log`, `git diff`, `git branch`).
+6. **Exclusão Obrigatória de Diretórios Gigantes (`[ASK-LLM06-03]`):** O subagente `research` (`flash_lite`) aplica obrigatoriamente `ExcludeDirs: [".git", "node_modules", ".venv", "venv", "__pycache__", "dist", "build", ".pytest_cache"]` para prevenir consumo ilimitado de tokens.
+7. **Dados Não Confiáveis e Alerta Proativo de Segurança (`[ASK-ASI09-04]`):** Comentários de código e docstrings são tratados como `<untrusted_data>` (prevenindo *Indirect Prompt Injection*). Sempre que um trecho de código citado exibir vulnerabilidade óbvia (ex.: SQLi, command injection, segredo hardcoded), o agente anexa obrigatoriamente um banner `[⚠️ SECURITY WARNING: ...]` para evitar que desenvolvedores copiem padrões legados inseguros.
+8. **Validador de Saída Inter-Agente (`[ASK-ASI07-01]`, `[ASK-ASI01-01]`):** A comunicação entre o subagente `research` e o Orquestrador é estritamente validada via `validate_research_json()`. Textos conversacionais ou estruturas com campos arbitrários são descartados, mitigando ataques de *Goal Hijacking*.
+
+---
+
+## 5. Padrões de Citação Formal e Árvore de Decisão para Handover
+
+Toda resposta emitida deve conter citações auditáveis e navegáveis:
+- **Citações de Código:** Devem utilizar links Markdown completos com o esquema `file:///` e números de linha (`[auth_service.py#L42-L65](file:///path/to/auth_service.py#L42-L65)`).
+- **Citações do Obsidian Vault:** Devem utilizar a sintaxe canônica de wikilinks (`[[conventions]]`, `[[adr-002-jwt-auth]]`, `[[sdd-user-registration]]`).
+
+### Árvore de Decisão de Handover:
+Ao final da resposta, caso o usuário deseje agir sobre as conclusões da consulta, o `/ask` direciona formalmente para a skill especializada correspondente:
+
+| Se a necessidade identificada pelo usuário for... | Skill Recomendada |
+| :--- | :---: |
+| Especificar uma nova funcionalidade ou alterar contratos vigentes | `/plan` |
+| Implementar um plano previamente concebido e aprovado | `/implement` |
+| Corrigir uma falha cirúrgica em teste unitário quebrado | `/test-fix` |
+| Investigar um crash em tempo de execução via *5 Whys* | `/debug` |
+| Eliminar complexidade ciclomática, code smells ou violações SOLID | `/refactor` |
+| Realizar auditoria estática especializada em 5 domínios | `/review` |
+| Fatiar uma iniciativa complexa ou épico multi-PR em fatias atômicas | `/decompose` |
+| Sincronizar documentação técnica e atualizar READMEs | `/docs` |
+| Publicar uma versão homologada em produção sob SemVer 2.0.0 | `/release` |
+
+---
+
+## 6. Validação Determinística de Schema Inter-Agente e Sanitização de Saída
+
+A governança determinística da skill reside em `skills/ask/scripts/redact_sensitive_tokens.py`.
+
+### 6.1 Validação de Schema do Subagente `research`
+O subagente `research` (`flash_lite`) opera sob contrato fechado. A função `validate_research_json(output_str)` audita:
+- Existência exclusiva dos 4 campos raiz: `status`, `files_scanned`, `evidence`, `summary`.
+- Validade do enum de `status`: `"SUCCESS"`, `"NO_MATCH"`, `"ERROR"`.
+- Tipagem estrita de cada objeto de evidência (`path: str`, `start_line: int`, `end_line: int >= start_line`, `relevance: str`, `snippet: str`).
+- Rejeição imediata de comentários conversacionais ou injeções de prompt no payload.
+
+### 6.2 Sanitização e Redação de Segredos
+A função `redact_sensitive_tokens(text)` neutraliza credenciais residuais em citações de código ou templates antes da renderização final:
+- Bearer tokens (`Bearer [REDACTED_SECRET]`)
+- Chaves de API de provedores líderes (OpenAI `sk-...`, Anthropic `sk-ant-...`, Google `AIza...`, Stripe `sk_live_...`/`rk_live_...`, GitHub `ghp_...`/`gho_...`, AWS `AKIA...`)
+- Senhas em strings DSN de bancos de dados (`postgres://user:[REDACTED_SECRET]@host:port/db`)
+- Blocos de chaves privadas (`-----BEGIN PRIVATE KEY-----`)
+- Tokens JWT (`eyJ...`)

@@ -6,7 +6,8 @@
 | :--- | :--- | :--- |
 | **Discovery** | Step 1 Entry | `git --no-pager diff develop...HEAD --name-only`. Feature files only. |
 | **Checkpoint (2)** | Green Pass | `git add <FILES> && git commit -m "checkpoint(refactor): [target] - [action]"` |
-| **Rollback (4)** | Fail / Drift | `git reset --hard HEAD`. Double-Strike Rule: max 2 attempts per target. |
+| **Rollback (4)** | Fail / Drift | `git stash push -u -m "antigravity-refactor-safety-rollback" && git reset --hard <target_start_hash>`. Double-Strike Rule (`MaxIterations: 2` per target). |
+| **Tampering Gate** | Step 4 Verify | `git diff --exit-code <PHASE_START_HASH>...HEAD -- tests/`. Non-zero exit code -> ABORT Phase 3 and revert test modifications (`git checkout <PHASE_START_HASH> -- tests/`). |
 | **Squash (3)** | Step 4.5 Closure | `git reset --soft <PHASE_START_HASH>` per protocol below. |
 
 ## 2. Phase 3 Squash Protocol (Mode 3)

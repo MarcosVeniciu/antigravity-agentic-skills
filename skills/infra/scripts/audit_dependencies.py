@@ -15,18 +15,22 @@ Enforces:
 2. Anti-Slopsquatting & Typosquatting heuristics:
    - Flags recently created packages (< 60 days old).
    - Flags packages missing verifiable source repository URLs.
+   - Flags repository URL spoofing / slug mismatch ([SLOPSQUATTING_RISK: REPO_MISMATCH]).
    - Flags deprecated, yanked, or discontinued packages.
    - Flags scarce release history (< 2 releases when newly published).
-3. Source Import Parity (--scan-imports):
-   - Scans source trees (Python AST, Node ES/CJS imports, Dart 'package:' imports)
+3. Anti-SSRF & Registry Allowlisting ([INF-ASI02-04]):
+   - Enforces HTTPS-only connections to official registries and blocks private/loopback/link-local redirects.
+4. Source Import Parity (--scan-imports):
+   - Scans source trees (Python AST + dynamic imports, Node ES/CJS/dynamic imports, Dart 'package:' imports)
      and cross-references imported packages against declared manifest dependencies.
-4. Subagent Escalation Signal ([NEEDS_WEB_AUDIT]):
+5. Subagent Escalation Signal ([NEEDS_WEB_AUDIT]):
    - Emits structured escalation triggers for the `dependency-auditor` subagent
      when encountering unknown ecosystems, suspicious slopsquatting signals, or unmapped imports.
 """
 
 import argparse
 import ast
+import ipaddress
 import json
 import re
 import sys
@@ -45,6 +49,17 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 REPO_HOSTS = ("github.com", "gitlab.com", "bitbucket.org", "codeberg.org", "golang.org")
+
+ALLOWED_REGISTRY_HOSTS: Set[str] = {
+    "pypi.org",
+    "registry.npmjs.org",
+    "pub.dev",
+    "crates.io",
+    "proxy.golang.org",
+    "api.nuget.org",
+    "repo.packagist.org",
+    "api.osv.dev",
+}
 
 PYTHON_IMPORT_TO_PYPI: Dict[str, str] = {
     "bs4": "beautifulsoup4",
@@ -141,8 +156,54 @@ class PackageAuditResult:
 
 
 # -----------------------------------------------------------------------------
-# Shared Helpers
+# Shared Helpers & Anti-SSRF Gate
 # -----------------------------------------------------------------------------
+def _is_forbidden_host_or_ip(host: str) -> bool:
+    if not host or host in ("localhost", "localhost.localdomain"):
+        return True
+    try:
+        ip = ipaddress.ip_address(host.strip("[]"))
+        return (
+            ip.is_loopback
+            or ip.is_private
+            or ip.is_link_local
+            or ip.is_multicast
+            or ip.is_reserved
+            or ip.is_unspecified
+        )
+    except ValueError:
+        return False
+
+
+def is_allowed_registry_url(url: str) -> bool:
+    """
+    Validates that a URL uses HTTPS, does not target loopback/private/link-local IPs,
+    and belongs strictly to the official package registry allowlist ([INF-ASI02-04]).
+    """
+    if not isinstance(url, str) or not url.strip():
+        return False
+    try:
+        parsed = urllib.parse.urlparse(url.strip())
+    except ValueError:
+        return False
+    if parsed.scheme.lower() != "https":
+        return False
+    host = (parsed.hostname or "").lower().rstrip(".")
+    if _is_forbidden_host_or_ip(host):
+        return False
+    return host in ALLOWED_REGISTRY_HOSTS
+
+
+class SafeRegistryRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Blocks redirects to non-HTTPS URLs, private/loopback IPs, or unapproved hosts."""
+
+    def redirect_request(self, req: Any, fp: Any, code: int, msg: str, headers: Any, newurl: str) -> Any:
+        resolved_url = urllib.parse.urljoin(req.full_url, newurl)
+        if not is_allowed_registry_url(resolved_url):
+            raise urllib.error.URLError(f"SSRF Protection: Blocked redirect to untrusted URL '{resolved_url}'")
+        return super().redirect_request(req, fp, code, msg, headers, resolved_url)
+
+
 def normalize_pkg_name(name: str, ecosystem: str) -> str:
     cleaned = name.strip()
     if ecosystem in ("pypi", "python"):
@@ -174,7 +235,7 @@ def _parse_fallback_date(date_str: str) -> Optional[datetime]:
 
 
 def compute_age_days(dates: Iterable[Optional[str]]) -> Optional[int]:
-    parsed = [ dt for d in dates if (dt := parse_iso_date(d)) is not None ]
+    parsed = [dt for d in dates if (dt := parse_iso_date(d)) is not None]
     if not parsed:
         return None
     earliest = min(parsed)
@@ -207,6 +268,9 @@ def clean_exact_version(version_spec: Optional[str]) -> Optional[str]:
 
 
 def default_http_fetcher(url: str, timeout: float = 8.0) -> Tuple[int, Optional[Any]]:
+    if not is_allowed_registry_url(url):
+        return 0, f"SSRF Protection: Blocked request to untrusted registry URL '{url}'"
+
     req = urllib.request.Request(
         url,
         headers={
@@ -214,8 +278,9 @@ def default_http_fetcher(url: str, timeout: float = 8.0) -> Tuple[int, Optional[
             "User-Agent": "Antigravity-Infra-Dependency-Auditor/1.0",
         },
     )
+    opener = urllib.request.build_opener(SafeRegistryRedirectHandler())
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with opener.open(req, timeout=timeout) as resp:
             raw = resp.read().decode("utf-8", errors="replace")
             return resp.getcode(), _safe_json_loads(raw)
     except urllib.error.HTTPError as e:
@@ -262,6 +327,30 @@ def _check_version_membership(
     return clean_ver
 
 
+def _does_repo_match_package(pkg_name: str, repo_url: str) -> bool:
+    """
+    Checks whether the normalized package name (stripping scopes, prefixes, and punctuation)
+    correlates with the repository URL path/slug ([INF-ASI04-03]).
+    """
+    raw = pkg_name.strip().lower()
+    if raw.startswith("@") and "/" in raw:
+        raw = raw.split("/", 1)[1]
+    elif "/" in raw:
+        raw = raw.split("/")[-1]
+
+    candidates = {re.sub(r"[-_.]+", "", raw)}
+    for prefix in ("python-", "py-", "py", "dart-", "flutter-", "flutter_", "rust-", "go-", "node-"):
+        if raw.startswith(prefix) and len(raw) > len(prefix) + 1:
+            candidates.add(re.sub(r"[-_.]+", "", raw[len(prefix) :]))
+    for suffix in ("-py", "-python", "-js", "-dart", "-rs"):
+        if raw.endswith(suffix) and len(raw) > len(suffix) + 1:
+            candidates.add(re.sub(r"[-_.]+", "", raw[: -len(suffix)]))
+
+    cleaned_repo = re.sub(r"\.git$", "", repo_url.strip().lower())
+    norm_repo = re.sub(r"[-_.]+", "", cleaned_repo)
+    return any(c and c in norm_repo for c in candidates)
+
+
 def apply_slopsquatting_heuristics(res: PackageAuditResult, min_age_days: int = 60) -> None:
     if not res.exists:
         return
@@ -276,6 +365,12 @@ def apply_slopsquatting_heuristics(res: PackageAuditResult, min_age_days: int = 
         res.warnings.append(
             f"[SLOPSQUATTING_RISK: NO_REPO] '{res.name}' ({res.ecosystem}) has no verifiable source repository "
             "linked in registry metadata. Requires `dependency-auditor` web verification."
+        )
+    elif not _does_repo_match_package(res.name, res.repository_url):
+        res.needs_web_audit = True
+        res.warnings.append(
+            f"[SLOPSQUATTING_RISK: REPO_MISMATCH] Repository URL slug does not match package name "
+            f"('{res.name}' vs '{res.repository_url}'). Requires `dependency-auditor` web verification."
         )
     if res.release_count <= 1 and (res.age_days is None or res.age_days < 180):
         res.needs_web_audit = True
@@ -552,6 +647,96 @@ def _populate_packagist_metadata(res: PackageAuditResult, pkgs: List[Dict[str, A
         res.deprecated = True
         res.warnings.append(f"[ABANDONED] Composer package '{res.name}' is marked abandoned.")
     res.age_days = compute_age_days(p.get("time") for p in pkgs)
+
+
+
+OSV_ECOSYSTEM_MAP: Dict[str, str] = {
+    "pypi": "PyPI",
+    "python": "PyPI",
+    "npm": "npm",
+    "node": "npm",
+    "pub": "Pub",
+    "dart": "Pub",
+    "crates": "crates.io",
+    "rust": "crates.io",
+    "go": "Go",
+    "nuget": "NuGet",
+    "packagist": "Packagist",
+}
+
+
+def query_osv_vulnerabilities(
+    name: str, ecosystem: str, version: Optional[str] = None, timeout: float = 6.0
+) -> List[Dict[str, Any]]:
+    """
+    Queries Google Open Source Vulnerabilities (OSV) API (https://api.osv.dev/v1/query)
+    for known CVEs and security advisories affecting the package ([EV-INF-02]).
+    """
+    osv_eco = OSV_ECOSYSTEM_MAP.get(ecosystem.lower())
+    if not osv_eco:
+        return []
+
+    url = "https://api.osv.dev/v1/query"
+    if not is_allowed_registry_url(url):
+        return []
+
+    payload: Dict[str, Any] = {"package": {"name": name, "ecosystem": osv_eco}}
+    clean_ver = clean_exact_version(version) if version else None
+    if clean_ver:
+        payload["version"] = clean_ver
+
+    raw_body = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=raw_body,
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "Antigravity-Infra-Dependency-Auditor/1.0",
+        },
+        method="POST",
+    )
+    opener = urllib.request.build_opener(SafeRegistryRedirectHandler())
+    try:
+        with opener.open(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8", errors="replace"))
+            return data.get("vulns", [])
+    except Exception:
+        return []
+
+
+def run_native_cve_audit(ecosystem: str, manifest_path: Optional[Path] = None) -> List[str]:
+    """
+    Attempts to run local native CVE audit tools (pip-audit, npm audit, cargo audit)
+    if installed on the host machine ([EV-INF-02]).
+    """
+    import shutil
+    import subprocess
+
+    errors: List[str] = []
+    eco = ecosystem.lower()
+    try:
+        if eco in ("pypi", "python") and shutil.which("pip-audit"):
+            cmd = ["pip-audit", "--desc"]
+            if manifest_path and manifest_path.name in ("requirements.txt",):
+                cmd.extend(["-r", str(manifest_path)])
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            if proc.returncode != 0 and "No known vulnerabilities found" not in proc.stdout:
+                errors.append(f"[NATIVE_CVE_AUDIT: pip-audit] Found vulnerabilities:\n{proc.stdout.strip()}")
+        elif eco in ("npm", "node") and shutil.which("npm") and manifest_path:
+            cmd = ["npm", "audit", "--audit-level=high"]
+            proc = subprocess.run(cmd, cwd=str(manifest_path.parent), capture_output=True, text=True, timeout=30)
+            if proc.returncode != 0:
+                errors.append(f"[NATIVE_CVE_AUDIT: npm audit] High/Critical vulnerabilities:\n{proc.stdout.strip()}")
+        elif eco in ("crates", "rust") and shutil.which("cargo"):
+            cmd = ["cargo", "audit"]
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            if proc.returncode != 0:
+                errors.append(f"[NATIVE_CVE_AUDIT: cargo audit] Vulnerabilities found:\n{proc.stdout.strip()}")
+    except Exception as e:
+        # Graceful degradation if tool is unavailable or times out
+        pass
+    return errors
 
 
 def audit_package(
@@ -886,6 +1071,21 @@ def _scan_python_imports(source_dir: Path) -> Dict[str, List[str]]:
     return imports_map
 
 
+def _extract_dynamic_call_import(node: ast.Call) -> Optional[str]:
+    """Extracts literal module name from importlib.import_module('pkg') or __import__('pkg') ([INF-ASI08-05])."""
+    if not node.args or not isinstance(node.args[0], ast.Constant) or not isinstance(node.args[0].value, str):
+        return None
+    mod_arg = node.args[0].value.strip()
+    if not mod_arg or mod_arg.startswith("."):
+        return None
+    func = node.func
+    is_dunder = isinstance(func, ast.Name) and func.id == "__import__"
+    is_import_mod = (
+        isinstance(func, ast.Attribute) and func.attr == "import_module"
+    ) or (isinstance(func, ast.Name) and func.id == "import_module")
+    return mod_arg.split(".")[0] if (is_dunder or is_import_mod) else None
+
+
 def _extract_py_file_imports(py_file: Path) -> Set[str]:
     try:
         tree = ast.parse(py_file.read_text(encoding="utf-8", errors="replace"), filename=str(py_file))
@@ -898,19 +1098,23 @@ def _extract_py_file_imports(py_file: Path) -> Set[str]:
             mods.update(alias.name.split(".")[0] for alias in node.names if alias.name)
         elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
             mods.add(node.module.split(".")[0])
+        elif isinstance(node, ast.Call):
+            dyn_mod = _extract_dynamic_call_import(node)
+            if dyn_mod:
+                mods.add(dyn_mod)
     return mods
 
 
 def _scan_node_imports(source_dir: Path) -> Dict[str, List[str]]:
     js_files = _iter_source_files(source_dir, {".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"})
     import_re = re.compile(
-        r"""(?:import\s+(?:[^'"]+?\s+from\s+)?['"]([^'"]+)['"]|require\(\s*['"]([^'"]+)['"]\s*\))"""
+        r"""(?:import\s+(?:[^'"]+?\s+from\s+)?['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)|require\(\s*['"]([^'"]+)['"]\s*\))"""
     )
     imports_map: Dict[str, List[str]] = {}
     for js_file in js_files:
         text = js_file.read_text(encoding="utf-8", errors="replace")
         for m in import_re.finditer(text):
-            pkg = _normalize_node_import(m.group(1) or m.group(2) or "")
+            pkg = _normalize_node_import(m.group(1) or m.group(2) or m.group(3) or "")
             if pkg:
                 imports_map.setdefault(pkg, []).append(str(js_file))
     return imports_map
@@ -1004,6 +1208,16 @@ def _run_manifest_mode(args: argparse.Namespace) -> Tuple[int, List[PackageAudit
     imp_errors = (
         verify_import_parity(Path(args.scan_imports), eco, deps, local_names) if args.scan_imports else []
     )
+    if args.audit_cves:
+        print(f"🛡️  Scanning {len(deps)} package(s) for known CVEs (OSV API + native scanner)...")
+        for r in results:
+            vulns = query_osv_vulnerabilities(r.name, eco, r.latest_version or r.requested_version)
+            for v in vulns:
+                vid = v.get("id", "UNKNOWN_VULN")
+                summary = v.get("summary", "No description")
+                r.errors.append(f"[KNOWN_CVE_VULNERABILITY: {vid}] {r.name}: {summary}")
+        native_errs = run_native_cve_audit(eco, manifest_path)
+        imp_errors.extend(native_errs)
     return 0, results, imp_errors
 
 
@@ -1063,6 +1277,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ecosystem", default="pypi", help="Target ecosystem for --check (default: pypi).")
     parser.add_argument("--scan-imports", dest="scan_imports", default=None, help="Source dir for import parity.")
     parser.add_argument("--min-age-days", type=int, default=60, help="Minimum package age in days (default: 60).")
+    parser.add_argument("--audit-cves", action="store_true", help="Scan packages for known CVEs/vulnerabilities via OSV API & native audit tools ([EV-INF-02]).")
     parser.add_argument("--strict", action="store_true", help="Treat warnings as errors (exit code 1).")
     return parser
 
