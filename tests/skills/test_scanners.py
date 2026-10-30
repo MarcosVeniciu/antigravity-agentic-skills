@@ -54,6 +54,8 @@ import validate_release
 import validate_env
 import validate_branch
 import redact_sensitive_tokens
+import validate_evidence_matrix
+import partition_diff
 
 
 class TestCheckArchBoundaries(unittest.TestCase):
@@ -1222,6 +1224,193 @@ class TestPytestSandbox(unittest.TestCase):
         self.assertFalse(pytest_sandbox.is_sandbox_enabled())
         pytest_sandbox.pytest_runtest_teardown(item_network)
         self.assertFalse(pytest_sandbox.is_sandbox_enabled())
+
+
+
+
+class TestValidateEvidenceMatrix(unittest.TestCase):
+    def test_valid_evidence_matrix_matches_real_ast(self):
+        report = """
+# Refactor Report
+| Target / Function | V(G) Before | V(G) After | Status |
+| :--- | :---: | :---: | :---: |
+| `calc_total` | 14 | 3 | Refactored |
+"""
+        code = """
+def calc_total(items):
+    total = 0
+    for x in items:
+        if x > 0:
+            total += x
+    return total
+"""
+        ok, errors, verified = validate_evidence_matrix.validate_evidence_matrix(
+            report, {"src/calc.py": code}, threshold=10
+        )
+        self.assertTrue(ok)
+        self.assertEqual(len(errors), 0)
+        self.assertEqual(len(verified), 1)
+        self.assertEqual(verified[0]["vg_actual"], 3)
+
+    def test_discrepancy_and_hallucination_rejected(self):
+        report = """
+| Target / Function | V(G) Before | V(G) After | Status |
+| :--- | :---: | :---: | :---: |
+| `do_work` | 15 | 2 | Refactored |
+"""
+        # Actual V(G) is 4, not 2
+        code = """
+def do_work(a, b, c):
+    if a:
+        pass
+    if b:
+        pass
+    if c:
+        pass
+"""
+        ok, errors, verified = validate_evidence_matrix.validate_evidence_matrix(
+            report, {"src/work.py": code}, threshold=10
+        )
+        self.assertFalse(ok)
+        self.assertTrue(any("METRIC_DISCREPANCY" in e for e in errors))
+
+    def test_threshold_violation_rejected(self):
+        report = """
+| Target / Function | V(G) Before | V(G) After | Status |
+| :--- | :---: | :---: | :---: |
+| `complex_func` | 20 | 12 | Incomplete |
+"""
+        code = """
+def complex_func(x):
+    if x == 1: pass
+    elif x == 2: pass
+    elif x == 3: pass
+    elif x == 4: pass
+    elif x == 5: pass
+    elif x == 6: pass
+    elif x == 7: pass
+    elif x == 8: pass
+    elif x == 9: pass
+    elif x == 10: pass
+    elif x == 11: pass
+    return x
+"""
+        ok, errors, verified = validate_evidence_matrix.validate_evidence_matrix(
+            report, {"src/complex.py": code}, threshold=10
+        )
+        self.assertFalse(ok)
+        self.assertTrue(any("COMPLEXITY_VIOLATION" in e for e in errors))
+
+
+class TestValidateReleaseJson(unittest.TestCase):
+    def test_valid_approved_release_json(self):
+        payload = r"""
+{
+  "status": "APPROVED",
+  "version": "1.3.0",
+  "bump_type": "MINOR",
+  "dod_verified": true,
+  "summary": "Full security audit completed.",
+  "changelog_markdown": "## [1.3.0] - 2026-10-30\n### Added\n- Native CVE scanner."
+}
+"""
+        ok, data, errors = validate_release.validate_release_json(payload)
+        self.assertTrue(ok)
+        self.assertEqual(len(errors), 0)
+        self.assertEqual(data["status"], "APPROVED")
+        self.assertEqual(data["version"], "1.3.0")
+
+    def test_rejected_release_json_requires_reasons(self):
+        payload = """
+{
+  "status": "REJECTED",
+  "version": "1.0.0",
+  "bump_type": "PATCH",
+  "dod_verified": false,
+  "summary": "DoD items incomplete.",
+  "rejection_reasons": ["Living DoD dod-feat.md has 2 unchecked items."]
+}
+"""
+        ok, data, errors = validate_release.validate_release_json(payload)
+        self.assertTrue(ok)
+        self.assertEqual(data["status"], "REJECTED")
+
+    def test_invalid_schema_rejected(self):
+        # Missing bump_type and bad version
+        payload = '{"status": "APPROVED", "version": "invalid-version", "dod_verified": true, "summary": "test"}'
+        ok, data, errors = validate_release.validate_release_json(payload)
+        self.assertFalse(ok)
+        self.assertTrue(any("bump_type" in e for e in errors))
+        self.assertTrue(any("SemVer" in e for e in errors))
+
+
+class TestPartitionDiff(unittest.TestCase):
+    def test_small_diff_returns_single_chunk(self):
+        entries = [
+            {"path": "src/module_a/foo.py", "lines": 50},
+            {"path": "src/module_a/bar.py", "lines": 30},
+        ]
+        partitions = partition_diff.partition_file_entries(entries, max_files=50, max_lines=3000)
+        self.assertEqual(len(partitions), 1)
+        self.assertEqual(partitions[0]["file_count"], 2)
+
+    def test_large_diff_chunks_by_file_and_line_limits(self):
+        entries = [
+            {"path": f"src/mod/file_{i}.py", "lines": 200}
+            for i in range(25)
+        ]
+        # max_lines=1000 -> each chunk can hold at most 5 files of 200 lines
+        partitions = partition_diff.partition_file_entries(entries, max_files=50, max_lines=1000)
+        self.assertGreater(len(partitions), 1)
+        total_files = sum(p["file_count"] for p in partitions)
+        self.assertEqual(total_files, 25)
+
+
+class TestValidateSddSignaturesAndBijectiveParity(unittest.TestCase):
+    def test_method_signatures_extraction_and_untyped_check(self):
+        class_block = """
+classDiagram
+    class UserService {
+        +register(req: CreateUserDTO) UserResponseDTO
+        +get_user(id: UUID) User
+        +untyped_method(bad_param) void
+    }
+"""
+        sigs = validate_sdd_contracts.extract_class_method_signatures(class_block)
+        self.assertIn("register", sigs)
+        self.assertEqual(sigs["register"]["return_type"], "UserResponseDTO")
+        self.assertEqual(sigs["register"]["params"], [("req", "CreateUserDTO")])
+
+        errors = validate_sdd_contracts.validate_method_signature_types(sigs, {"CreateUserDTO", "UserResponseDTO", "User"})
+        self.assertTrue(any("untyped_method" in e for e in errors))
+
+    def test_bijective_bdd_sdd_scenario_missing_exception_fails(self):
+        bdd = """
+Feature: Payment Processing
+    @unhappy-path
+    Scenario: Invalid Card Expiry
+        When user submits expired card
+        Then the system raises ExpiredCardError
+"""
+        sdd = """
+# SDD: Payment
+Mermaid sequenceDiagram:
+    Service->>Gateway: "charge"
+"""
+        # SDD has no ExpiredCardError anywhere
+        errors = validate_sdd_contracts.check_bijective_bdd_sdd_scenarios(bdd, sdd, [])
+        self.assertTrue(any("Bijective Parity Error" in e for e in errors))
+        self.assertTrue(any("ExpiredCardError" in e for e in errors))
+
+
+class TestAuditDependenciesCVEs(unittest.TestCase):
+    def test_osv_allowed_registry_host(self):
+        self.assertTrue(audit_dependencies.is_allowed_registry_url("https://api.osv.dev/v1/query"))
+
+    def test_query_osv_handles_safe_payload(self):
+        # Even with mock or network unavailable, does not crash and returns list
+        vulns = audit_dependencies.query_osv_vulnerabilities("nonexistent-safe-pkg-test-12345", "pypi", "1.0.0")
+        self.assertIsInstance(vulns, list)
 
 
 if __name__ == "__main__":

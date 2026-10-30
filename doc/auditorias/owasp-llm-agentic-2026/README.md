@@ -18,18 +18,18 @@ Cada uma das 12 skills do projeto foi auditada em profundidade sob duas perspect
 
 | # | Skill | Fase no Ciclo SDD 2.0 | Modelo Agêntico | Status Geral | Relatório Detalhado |
 | :---: | :--- | :--- | :--- | :---: | :--- |
-| 1 | **`/decompose`** | Fase 0: Decomposição de Épicos | Orchestrator + `goldfish-dag-auditor` (`flash_lite`, RO) | 🟡 Atenção Moderada | [`audit-decompose.md`](./audit-decompose.md) |
-| 2 | **`/plan`** | Fase 1: Concepção BDD, SDD & Living DoD | Orchestrator + `bdd-architect` / `sdd-architect` (`inherit`) + Goldfish Council (3x `flash`, RO) | 🟡 Atenção Moderada | [`audit-plan.md`](./audit-plan.md) |
+| 1 | **`/decompose`** | Fase 0: Decomposição de Épicos | Orchestrator + `goldfish-dag-auditor` (`flash_lite`, RO) | 🟢 Totalmente Mitigado (5/5) | [`audit-decompose.md`](./audit-decompose.md) |
+| 2 | **`/plan`** | Fase 1: Concepção BDD, SDD & Living DoD | Orchestrator + `bdd-architect` / `sdd-architect` (`inherit`) + Goldfish Council (3x `flash`, RO) | 🟢 Totalmente Mitigado (8/8) | [`audit-plan.md`](./audit-plan.md) |
 | 3 | **`/implement`** | Fase 2: Implementação TDD em Lotes | Orchestrator + `batch-implementer` (`inherit`) + `goldfish-drift-auditor` (`flash_lite`, RO) | 🟢 Totalmente Mitigado (6/6) | [`audit-implement.md`](./audit-implement.md) |
-| 4 | **`/refactor`** | Fase 3: Refatoração SOLID & AST | Orchestrator + `solid-refactorer` (`inherit`) | 🟢 Robusto com Pontos de Atenção | [`audit-refactor.md`](./audit-refactor.md) |
-| 5 | **`/review`** | Fase 4: Auditoria em 5 Domínios | Orchestrator + 5x Subagentes Map-Reduce (`flash`) | 🟢 Robusto com Pontos de Atenção | [`audit-review.md`](./audit-review.md) |
+| 4 | **`/refactor`** | Fase 3: Refatoração SOLID & AST | Orchestrator + `solid-refactorer` (`inherit`) | 🟢 Totalmente Mitigado (7/7) | [`audit-refactor.md`](./audit-refactor.md) |
+| 5 | **`/review`** | Fase 4: Auditoria em 5 Domínios | Orchestrator + 5x Subagentes Map-Reduce (`flash`) | 🟢 Totalmente Mitigado (7/7) | [`audit-review.md`](./audit-review.md) |
 | 6 | **`/docs`** | Fase 5: Documentação & Feature Freeze | Orchestrator + `docs-scribe` (`flash`) | 🟢 Totalmente Mitigado (6/6) | [`audit-docs.md`](./audit-docs.md) |
-| 7 | **`/release`** | Gatekeeper: Publicação SemVer 2.0.0 | Orchestrator + `release-auditor` (`flash_lite`) | 🟡 Atenção Moderada | [`audit-release.md`](./audit-release.md) |
-| 8 | **`/debug`** | Suporte Forense: 5 Whys & MRE | Orchestrator + `forensic-prober` (`inherit`) | 🟡 Atenção Moderada | [`audit-debug.md`](./audit-debug.md) |
-| 9 | **`/test-fix`** | Suporte Reativo: Correção Cirúrgica | 100% Main Orchestrator (Double-Strike Rule) | 🟡 Atenção Moderada | [`audit-test-fix.md`](./audit-test-fix.md) |
-| 10 | **`/ask`** | Oráculo Read-Only da Base & Vault | Orchestrator + `research` (`flash_lite`, RO) | 🟢 Totalmente Mitigado | [`audit-ask.md`](./audit-ask.md) |
-| 11 | **`/infra`** | Governança: Deps, Anti-Slopsquatting & `.env` | Orchestrator + `audit_dependencies.py` + `dependency-auditor` (`flash`) | 🟡 Atenção Moderada | [`audit-infra.md`](./audit-infra.md) |
-| 12 | **`/obsidian`** | Governança da Memória SSOT (Vault) | 100% Main Orchestrator (`vault_patch`) | 🟡 Atenção Moderada | [`audit-obsidian.md`](./audit-obsidian.md) |
+| 7 | **`/release`** | Gatekeeper: Publicação SemVer 2.0.0 | Orchestrator + `release-auditor` (`flash_lite`) | 🟢 Totalmente Mitigado (6/6) | [`audit-release.md`](./audit-release.md) |
+| 8 | **`/debug`** | Suporte Forense: 5 Whys & MRE | Orchestrator + `forensic-prober` (`inherit`) | 🟢 Totalmente Mitigado (6/6) | [`audit-debug.md`](./audit-debug.md) |
+| 9 | **`/test-fix`** | Suporte Reativo: Correção Cirúrgica | 100% Main Orchestrator (Double-Strike Rule) | 🟢 Totalmente Mitigado (6/6) | [`audit-test-fix.md`](./audit-test-fix.md) |
+| 10 | **`/ask`** | Oráculo Read-Only da Base & Vault | Orchestrator + `research` (`flash_lite`, RO) | 🟢 Totalmente Mitigado (5/5) | [`audit-ask.md`](./audit-ask.md) |
+| 11 | **`/infra`** | Governança: Deps, Anti-Slopsquatting & `.env` | Orchestrator + `audit_dependencies.py` + `dependency-auditor` (`flash`) | 🟢 Totalmente Mitigado (7/7) | [`audit-infra.md`](./audit-infra.md) |
+| 12 | **`/obsidian`** | Governança da Memória SSOT (Vault) | 100% Main Orchestrator (`vault_patch`) | 🟢 Totalmente Mitigado (6/6) | [`audit-obsidian.md`](./audit-obsidian.md) |
 
 ---
 
@@ -108,26 +108,26 @@ Legenda:
 
 | Categoria OWASP | `/decompose` | `/plan` | `/implement` | `/refactor` | `/review` | `/docs` | `/release` | `/debug` | `/test-fix` | `/ask` | `/infra` | `/obsidian` |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **LLM01: Prompt Injection** | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🔴 | 🟡 |
-| **LLM02: Sensitive Info Disclosure** | 🟢 | 🟡 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | 🔴 | 🟡 | 🟢 | 🟡 | 🟡 |
-| **LLM03: Excessive Agency** | 🟢 | 🔴 | 🟡 | 🟡 | 🟡 | 🟡 | 🔴 | 🟡 | 🔴 | 🟡 | 🟢 | 🟡 |
-| **LLM04: Supply Chain Vulnerabilities** | ⚪ | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟡 | 🟡 | 🟢 | ⚪ | 🟡 | ⚪ |
-| **LLM05: Data & Model Poisoning** | 🟡 | 🟡 | 🟢 | 🟢 | 🟢 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟢 | 🔴 |
-| **LLM06: Unbounded Consumption** | 🟡 | 🔴 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟢 | 🟡 | 🟡 | 🟡 |
-| **LLM07: System Prompt Leakage / Misinfo** | 🟡 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 |
-| **LLM08: Hidden Context Exposure** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟡 | 🟢 | 🟢 | 🟡 |
-| **LLM09: Vector & Embedding Weaknesses** | ⚪ | 🟡 | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | 🟡 | ⚪ | 🟡 |
-| **LLM10: Improper Output Handling** | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🔴 |
-| **ASI01: Agent Goal Hijack** | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟡 | 🟡 | 🟡 | 🔴 | 🟡 | 🟡 | 🟡 |
-| **ASI02: Tool Misuse & Exploitation** | 🟢 | 🟡 | 🟡 | 🔴 | 🟡 | 🟡 | 🔴 | 🔴 | 🔴 | 🟢 | 🟡 | 🟡 |
-| **ASI03: Identity & Privilege Abuse** | 🟢 | 🔴 | 🟡 | 🟡 | 🔴 | 🔴 | 🔴 | 🟡 | 🟡 | 🟡 | 🟢 | 🔴 |
-| **ASI04: Agentic Supply Chain** | ⚪ | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟡 | 🟡 | 🟢 | ⚪ | 🔴 | ⚪ |
-| **ASI05: Unexpected Code Exec (RCE)** | ⚪ | 🔴 | 🟢 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🟡 | 🟢 | 🟢 | ⚪ |
-| **ASI06: Memory & Context Poisoning** | 🟡 | 🟡 | 🟢 | 🔴 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟢 | 🔴 |
-| **ASI07: Insecure Inter-Agent Comm** | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟢 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | ⚪ |
-| **ASI08: Cascading Failures** | 🔴 | 🟡 | 🟢 | 🟡 | 🟢 | 🟢 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟡 |
-| **ASI09: Human-Agent Trust Exploit** | 🟡 | 🟢 | 🟡 | 🟢 | 🟡 | 🟡 | 🔴 | 🟢 | 🟢 | 🟡 | 🟡 | 🟡 |
-| **ASI10: Rogue Agents (Goal Drift)** | 🟢 | 🟡 | 🟢 | 🟡 | 🟢 | 🟡 | 🟡 | 🟡 | 🟡 | 🟢 | 🟢 | 🟡 |
+| **LLM01: Prompt Injection** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **LLM02: Sensitive Info Disclosure** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **LLM03: Excessive Agency** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **LLM04: Supply Chain Vulnerabilities** | ⚪ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | ⚪ | 🟢 | ⚪ |
+| **LLM05: Data & Model Poisoning** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **LLM06: Unbounded Consumption** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **LLM07: System Prompt Leakage / Misinfo** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **LLM08: Hidden Context Exposure** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **LLM09: Vector & Embedding Weaknesses** | ⚪ | 🟢 | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | 🟢 | ⚪ | 🟢 |
+| **LLM10: Improper Output Handling** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **ASI01: Agent Goal Hijack** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **ASI02: Tool Misuse & Exploitation** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **ASI03: Identity & Privilege Abuse** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **ASI04: Agentic Supply Chain** | ⚪ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | ⚪ | 🟢 | ⚪ |
+| **ASI05: Unexpected Code Exec (RCE)** | ⚪ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | ⚪ |
+| **ASI06: Memory & Context Poisoning** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **ASI07: Insecure Inter-Agent Comm** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | ⚪ |
+| **ASI08: Cascading Failures** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **ASI09: Human-Agent Trust Exploit** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
+| **ASI10: Rogue Agents (Goal Drift)** | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 |
 
 ---
 

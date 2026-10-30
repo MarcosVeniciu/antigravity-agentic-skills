@@ -21,11 +21,11 @@ description: Orchestrates environment diagnostics, package manifest maintenance,
 | **1. Discover & Audit Deps** | Scan manifests, verify registry existence (PyPI, npm, pub.dev, crates.io, Go, NuGet, Packagist) via Anti-SSRF fetcher, and check anti-slopsquatting signals (age, releases, repo lineage mismatch). Escalate `[NEEDS_WEB_AUDIT]` flags to `dependency-auditor`. | [`infra-setup.md`](./references/infra-setup.md), [`audit_dependencies.py`](./scripts/audit_dependencies.py) |
 | **2. Configure** | Apply pinned manifests and multi-stage Dockerfiles after registry verification. | [`infra-setup.md`](./references/infra-setup.md) |
 | **3. Sync** | Sync `.env.example` per [`env-template.md`](./resources/env-template.md). | [`infra-setup.md`](./references/infra-setup.md) |
-| **4. Validate** | Enforce `.env` secret audits (including Anthropic, Stripe, GCP, DB URLs) and AST source-import vs. manifest parity (`--scan-imports` including dynamic imports). Ref: [`infra-example.md`](./examples/infra-example.md). | [`validate_env.py`](./scripts/validate_env.py), [`audit_dependencies.py`](./scripts/audit_dependencies.py) |
+| **4. Validate** | Enforce `.env` secret audits (including Anthropic, Stripe, GCP, DB URLs) known CVE vulnerabilities (`--audit-cves` via OSV/native audit), and AST source-import vs. manifest parity (`--scan-imports`). Ref: [`infra-example.md`](./examples/infra-example.md). | [`validate_env.py`](./scripts/validate_env.py), [`audit_dependencies.py`](./scripts/audit_dependencies.py) |
 
 ```bash
 python skills/infra/scripts/audit_dependencies.py --ecosystem pypi --check <pkg1> <pkg2>
-python skills/infra/scripts/audit_dependencies.py <manifest_file> --scan-imports <src_dir>
+python skills/infra/scripts/audit_dependencies.py <manifest_file> --scan-imports <src_dir> --audit-cves
 python skills/infra/scripts/validate_env.py --env .env --example .env.example --strict
 ```
 

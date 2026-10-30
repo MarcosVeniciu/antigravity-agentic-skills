@@ -30,11 +30,11 @@ A skill `/implement` governa a Fase 2 do ciclo SDD 2.0 (Desenvolvimento TDD Iter
 | Código | Categoria OWASP LLM (2025/2026) | Relevância na Skill | Defesas Existentes (Evidências no Projeto) | Gaps / Vulnerabilidades Identificadas | Status |
 | :--- | :--- | :---: | :--- | :--- | :---: |
 | **LLM01** | **Prompt Injection (Direta, Indireta ou Multimodal)** | Alta | Subagente `batch-implementer` isola insumos em `<spec_context>...</spec_context>` e trata docstrings como dados passivos ([`tdd-subagents.md:16`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-subagents.md#L16)). | Mitigado por delimitadores estritos e sandbox de rede. | 🟢 Conforme |
-| **LLM02** | **Sensitive Information Disclosure** | Média-Alta | Invariante na matriz de testes ([`tdd-test.md:17`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-test.md#L17)) prescrevendo teste de mascaramento: `"secret not in caplog, ***REDACTED***"`. | Proteção de segredos e bloqueio de exfiltração de rede no sandbox. | 🟢 Conforme |
+| **LLM02** | **Sensitive Information Disclosure** | Média-Alta | Invariante na matriz de testes ([`tdd-test.md:18`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-test.md#L18)) prescrevendo teste de mascaramento: `"secret not in caplog, ***REDACTED***"`. | Proteção de segredos e bloqueio de exfiltração de rede no sandbox. | 🟢 Conforme |
 | **LLM03** | **Excessive Agency** | Crítica | Escopo segregado por lotes em `task_list.md`. Post-batch scope guard determinístico no Step 2.5 e stash de salvaguarda antes de rollback (`[IMP-LLM03-01]`). | Ações do agente confinadas e reversíveis. | 🟢 Conforme |
 | **LLM04** | **Supply Chain Vulnerabilities** | Média | Anti-slopsquatting no system prompt do `batch-implementer`: veda pacotes fora do manifesto ou stdlib. | Dependências controladas estritamente. | 🟢 Conforme |
 | **LLM05** | **Data and Model Poisoning** | Média | Contratos arquiteturais selados em `01-concepcao/sdd-[slug].md` com validação determinística via AST. Schema YAML rígido em pivots (`[IMP-ASI06-01]`). | Envenenamento de pivots prevenido por schema com `authorized_by: "human"`. | 🟢 Conforme |
-| **LLM06** | **Unbounded Consumption** | Baixa-Média | Isolamento de contexto em subagente efêmero por lote; regra de Double-Strike interrompe após 2 falhas ([`tdd-code.md:28`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-code.md#L28)). Timeout de teste recomendado. | Consumo delimitado por subagente efêmero. | 🟢 Conforme |
+| **LLM06** | **Unbounded Consumption** | Baixa-Média | Isolamento de contexto em subagente efêmero por lote; regra de Double-Strike interrompe após 2 falhas ([`tdd-code.md:29`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-code.md#L29)). Timeout de teste recomendado. | Consumo delimitado por subagente efêmero. | 🟢 Conforme |
 | **LLM07** | **System Prompt Leakage / Misinformation** | Média | Context-Zero no `goldfish-drift-auditor` ([`tdd-subagents.md:17`](file:///e:/Codigos/antigravity-agentic-workflows/skills/implement/references/tdd-subagents.md#L17)); validação determinística de assinaturas via AST elimina alucinações. | Mitigado. | 🟢 Conforme |
 | **LLM08** | **Hidden Context Exposure** | Baixa | Tracebacks e histórico de tentativas de lotes anteriores são expurgados ao fechar o subagente `batch-implementer` ([`doc/skills/implement/README.md:20`](file:///e:/Codigos/antigravity-agentic-workflows/doc/skills/implement/README.md#L20)). | Nenhum vazamento detectado; isolamento atua prevenindo contaminação cruzada. | 🟢 Conforme |
 | **LLM09** | **Vector and Embedding Weaknesses** | Baixa | A skill não utiliza banco vetorial proprietário para RAG; opera sobre arquivos locais explícitos via caminhos relativos determinísticos. | Não aplicável diretamente ao fluxo da skill. | 🟢 Conforme |
@@ -105,10 +105,43 @@ A skill `/implement` governa a Fase 2 do ciclo SDD 2.0 (Desenvolvimento TDD Iter
 
 ### Quick Wins (Baixo Esforço / Alto Impacto)
 - [x] **Endurecimento de `check_sdd_drift.py`:** Remover a validação de partes de diretório (`any(is_in_pivots(part) for part in norm_path.split("/"))`), exigindo caminho relativo exato ou nome de classe qualificado para concessão de pivot.
-- [x] **Salvaguarda de Git Rollback em `tdd-git.md`:** Alterar a instrução de Double-Strike para executar `git stash push -m "rescue-strike-checkpoint"` antes de rodar `git reset --hard HEAD`.
+- [x] **Salvaguarda de Git Rollback em `tdd-git.md`:** Alterar a instrução de Double-Strike para executar `git stash push -u -m "antigravity-safety-rollback-strike2"` antes de rodar `git reset --hard HEAD` (preservando alterações e arquivos não rastreados via `-u`).
 - [x] **Adição de Validação de Asserções Específicas em `goldfish-drift-auditor`:** Adicionar no System Prompt do auditor a proibição expressa de asserções triviais (`assert x is not None`, `assert True`) para cenários marcados com `@security`.
 
 ### Evoluções Estruturais (Scripts / Arquitetura de Subagentes)
 - [x] **Schema YAML Rígido para Notas de Pivô (`[IMP-ASI06-01]`):** Modificar `check_sdd_drift.py` para processar apenas blocos ```yaml estruturados dentro de `02-auditorias/pivots-[slug].md`, exigindo o campo `authorized_by: "human"`.
 - [x] **Verificação de Integridade de Escopo Pós-Lote no Step 2.5 (`[IMP-ASI03-01]`):** Inserir um hook de validação no Orquestrador que confere se o git diff do lote tocou exclusivamente arquivos de `src/` e `tests/unit/` pertencentes ao Lote N planejado antes de gravar o checkpoint.
 - [x] **Isolamento de Execução de Testes (Sandbox Fixtures) (`[IMP-ASI05-01]`):** Criar plugin Pytest nativo (`skills/implement/scripts/pytest_sandbox.py`) que bloqueia chamadas externas de rede (`socket.connect`) com `RuntimeError` durante a execução de `pytest tests/unit/`.
+
+---
+
+## 6. Evidências de Testes e Validação Forense
+
+A conformidade e eficácia dos controles de segurança da skill `/implement` foram integralmente validadas através da suíte automatizada de testes e da inspeção dos guardrails:
+
+### 1. Suíte de Testes Automatizados (`tests/skills/test_scanners.py`)
+- **`TestCheckSddDrift.test_zero_drift_passes_full_gate`**: Comprova que classes e métodos aderentes ao SDD passam no gate.
+- **`TestCheckSddDrift.test_batch_mode_ignores_future_classes_but_catches_missing_method`**: Valida a verificação isolada de lote sem falsos positivos em classes futuras.
+- **`TestCheckSddDrift.test_pivots_file_authorizes_drift`**: Valida que blocos YAML estruturados com `authorized_by: "human"` autorizam desvios contratuais formais (`[IMP-ASI06-01]`).
+- **`TestCheckSddDrift.test_unplanned_file_not_bypassed_by_generic_word_in_pivots`**: Comprova que palavras genéricas em texto livre (ex.: `"src"`) não autorizam arquivos não planejados, eliminando totalmente o risco de evasão lexical (`[IMP-ASI06-01]`).
+- **`TestPytestSandbox.test_is_local_address_detection`**: Valida detecção determinística de endereços de loopback (`127.0.0.1`, `localhost`, `::1`, Unix sockets) vs endereços de rede externa (`8.8.8.8`, `api.openai.com`).
+- **`TestPytestSandbox.test_socket_blocking_in_sandbox`**: Valida interceptação de `socket.connect` com disparo de `RuntimeError` (`[IMP-ASI05-01]`).
+- **`TestPytestSandbox.test_socket_connect_ex_blocking_in_sandbox`**: Valida interceptação de `socket.connect_ex` bloqueando conexões externas com `RuntimeError`.
+- **`TestPytestSandbox.test_disable_sandbox_restores_original_socket`**: Confirma restauração higiênica dos métodos nativos de socket.
+- **`TestPytestSandbox.test_pytest_item_hook_controls_sandbox`**: Confirma ativação padrão do sandbox em testes unitários e bypass controlado apenas em testes explicitamente marcados com `@pytest.mark.allow_network`.
+
+*Resultado de Execução:* `python -m unittest tests/skills/test_scanners.py` $\rightarrow$ **61/61 testes aprovados (100% verde)**.
+
+### 2. Suíte de Integridade Estrutural das Skills (`tests/test_flow_skills_integrity.py`)
+- Validação de conformidade estrutural, frontmatter YAML, higiene de referências e separação estrita de diretórios (`references/`, `resources/`, `scripts/`).
+*Resultado de Execução:* `python -m pytest tests/test_flow_skills_integrity.py` $\rightarrow$ **52/52 testes aprovados (100% verde)**.
+
+### 3. Inspeção Forense dos Prompts e Pipelines de Governança
+- **`skills/implement/references/tdd-subagents.md`**:
+  - `batch-implementer`: Insumos de especificação delimitados estritamente em `<spec_context>`, anti-slopsquatting mandatário e execução de testes via `-p skills.implement.scripts.pytest_sandbox`.
+  - `goldfish-drift-auditor`: Read-only (`Write: false`), Context-Zero, modelo rápido `flash_lite`, e proibição explícita de asserções vazias/tautológicas (`assert True`, `assert res is not None`, `assert len(x) >= 0`) (`[IMP-ASI09-01]`).
+- **`skills/implement/SKILL.md`**:
+  - Step 2.5: Verificação determinística de integridade de escopo pós-lote (`git diff --name-only` e `git status --porcelain`) com aborto/reversão se arquivos protegidos forem tocados (`[IMP-ASI03-01]`).
+  - Step 3: Exit Gates sequenciais determinísticos (Suite com sandbox, Drift AST com autorização humana estrita, Audit semântico e Closure com Phase Squash).
+- **`skills/implement/references/tdd-git.md` e `tdd-code.md`**:
+  - Double-Strike com salvaguarda não-destrutiva mandatária: `git stash push -u -m "antigravity-safety-rollback-strike2"` antes de `git reset --hard HEAD` (`[IMP-LLM03-01]`).

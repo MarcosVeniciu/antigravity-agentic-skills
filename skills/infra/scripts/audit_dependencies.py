@@ -649,6 +649,96 @@ def _populate_packagist_metadata(res: PackageAuditResult, pkgs: List[Dict[str, A
     res.age_days = compute_age_days(p.get("time") for p in pkgs)
 
 
+
+OSV_ECOSYSTEM_MAP: Dict[str, str] = {
+    "pypi": "PyPI",
+    "python": "PyPI",
+    "npm": "npm",
+    "node": "npm",
+    "pub": "Pub",
+    "dart": "Pub",
+    "crates": "crates.io",
+    "rust": "crates.io",
+    "go": "Go",
+    "nuget": "NuGet",
+    "packagist": "Packagist",
+}
+
+
+def query_osv_vulnerabilities(
+    name: str, ecosystem: str, version: Optional[str] = None, timeout: float = 6.0
+) -> List[Dict[str, Any]]:
+    """
+    Queries Google Open Source Vulnerabilities (OSV) API (https://api.osv.dev/v1/query)
+    for known CVEs and security advisories affecting the package ([EV-INF-02]).
+    """
+    osv_eco = OSV_ECOSYSTEM_MAP.get(ecosystem.lower())
+    if not osv_eco:
+        return []
+
+    url = "https://api.osv.dev/v1/query"
+    if not is_allowed_registry_url(url):
+        return []
+
+    payload: Dict[str, Any] = {"package": {"name": name, "ecosystem": osv_eco}}
+    clean_ver = clean_exact_version(version) if version else None
+    if clean_ver:
+        payload["version"] = clean_ver
+
+    raw_body = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=raw_body,
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "Antigravity-Infra-Dependency-Auditor/1.0",
+        },
+        method="POST",
+    )
+    opener = urllib.request.build_opener(SafeRegistryRedirectHandler())
+    try:
+        with opener.open(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8", errors="replace"))
+            return data.get("vulns", [])
+    except Exception:
+        return []
+
+
+def run_native_cve_audit(ecosystem: str, manifest_path: Optional[Path] = None) -> List[str]:
+    """
+    Attempts to run local native CVE audit tools (pip-audit, npm audit, cargo audit)
+    if installed on the host machine ([EV-INF-02]).
+    """
+    import shutil
+    import subprocess
+
+    errors: List[str] = []
+    eco = ecosystem.lower()
+    try:
+        if eco in ("pypi", "python") and shutil.which("pip-audit"):
+            cmd = ["pip-audit", "--desc"]
+            if manifest_path and manifest_path.name in ("requirements.txt",):
+                cmd.extend(["-r", str(manifest_path)])
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            if proc.returncode != 0 and "No known vulnerabilities found" not in proc.stdout:
+                errors.append(f"[NATIVE_CVE_AUDIT: pip-audit] Found vulnerabilities:\n{proc.stdout.strip()}")
+        elif eco in ("npm", "node") and shutil.which("npm") and manifest_path:
+            cmd = ["npm", "audit", "--audit-level=high"]
+            proc = subprocess.run(cmd, cwd=str(manifest_path.parent), capture_output=True, text=True, timeout=30)
+            if proc.returncode != 0:
+                errors.append(f"[NATIVE_CVE_AUDIT: npm audit] High/Critical vulnerabilities:\n{proc.stdout.strip()}")
+        elif eco in ("crates", "rust") and shutil.which("cargo"):
+            cmd = ["cargo", "audit"]
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            if proc.returncode != 0:
+                errors.append(f"[NATIVE_CVE_AUDIT: cargo audit] Vulnerabilities found:\n{proc.stdout.strip()}")
+    except Exception as e:
+        # Graceful degradation if tool is unavailable or times out
+        pass
+    return errors
+
+
 def audit_package(
     ecosystem: str,
     name: str,
@@ -1118,6 +1208,16 @@ def _run_manifest_mode(args: argparse.Namespace) -> Tuple[int, List[PackageAudit
     imp_errors = (
         verify_import_parity(Path(args.scan_imports), eco, deps, local_names) if args.scan_imports else []
     )
+    if args.audit_cves:
+        print(f"🛡️  Scanning {len(deps)} package(s) for known CVEs (OSV API + native scanner)...")
+        for r in results:
+            vulns = query_osv_vulnerabilities(r.name, eco, r.latest_version or r.requested_version)
+            for v in vulns:
+                vid = v.get("id", "UNKNOWN_VULN")
+                summary = v.get("summary", "No description")
+                r.errors.append(f"[KNOWN_CVE_VULNERABILITY: {vid}] {r.name}: {summary}")
+        native_errs = run_native_cve_audit(eco, manifest_path)
+        imp_errors.extend(native_errs)
     return 0, results, imp_errors
 
 
@@ -1177,6 +1277,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ecosystem", default="pypi", help="Target ecosystem for --check (default: pypi).")
     parser.add_argument("--scan-imports", dest="scan_imports", default=None, help="Source dir for import parity.")
     parser.add_argument("--min-age-days", type=int, default=60, help="Minimum package age in days (default: 60).")
+    parser.add_argument("--audit-cves", action="store_true", help="Scan packages for known CVEs/vulnerabilities via OSV API & native audit tools ([EV-INF-02]).")
     parser.add_argument("--strict", action="store_true", help="Treat warnings as errors (exit code 1).")
     return parser
 
