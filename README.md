@@ -129,9 +129,17 @@ antigravity-agentic-workflows/
 ├── install.bat                   # 1-Click Windows installer launcher (File Explorer)
 ├── install.ps1                   # Native PowerShell installer (Windows 10/11 & Core)
 ├── install.sh                    # Native POSIX Bash installer (Linux / macOS / WSL)
+├── CHANGELOG.md                  # Release history (Keep a Changelog + SemVer)
+├── LICENSE                       # Project license
 ├── prompts/                      # System prompts & global governance
 │   └── gemini.md                 # Antigravity core protocol & active co-programming directives
 ├── skills/                       # 12 Self-Sufficient Agent Skills (Antigravity 2.0 / agentskills.io)
+│   └── <skill>/                  # Each skill: SKILL.md + examples/ references/ resources/ scripts/
+│       ├── SKILL.md              # Invariants & execution pipeline
+│       ├── examples/             # Reference execution traces
+│       ├── references/           # Protocols & checklists (obsidian: mcp-setup.md = MCP install guide)
+│       ├── resources/            # Templates
+│       └── scripts/              # Deterministic validators & scanners
 │   ├── ask/                      # /ask       - Support: Read-Only Project Oracle & Vault Search
 │   ├── debug/                    # /debug     - Support: Forensic Crash Investigator (5 Whys & RCA)
 │   ├── decompose/                # /decompose - Phase 0: Macro-Architecture & Epic Slicing
@@ -146,9 +154,11 @@ antigravity-agentic-workflows/
 │   └── test-fix/                 # /test-fix  - Support: Reactive Debugger & Surgical Production Fixes
 ├── doc/                          # Architectural documentation & authoritative engineering standards
 │   ├── README.md                 # Architectural overview & cross-cutting SDD 2.0 principles
-│   ├── <skill>/README.md         # Per-skill architectural specifications, subagents & evolution guides
-│   └── references/               # Authoritative external standards (OWASP Code Review Guide v2)
-│       └── OWASP_Code_Review_Guide_v2.pdf
+│   ├── skills/<skill>/README.md  # Per-skill architectural specifications, subagents & evolution guides
+│   ├── auditorias/               # OWASP LLM & Agentic 2026 audit reports
+│   │   └── owasp-llm-agentic-2026/  # README (heatmap) + audit-<skill>.md for each of the 12 skills
+│   └── references/               # Authoritative external standards (OWASP Code Review Guide v2,
+│                                 #   OWASP Top 10 for LLM Apps 2025, Agentic Top 10 crosswalk, cheat sheet)
 └── tests/                        # Automated integrity and scanner test suite
     ├── test_flow_skills_integrity.py  # Validation of frontmatter, structure & references
     └── skills/test_scanners.py        # Unit tests for automated AST, boundary & sink scanners
