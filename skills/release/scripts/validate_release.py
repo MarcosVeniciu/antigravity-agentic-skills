@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 """
 workflows-skill/release/scripts/validate_release.py
 Cross-platform Release Readiness and SemVer Validator.
@@ -318,6 +319,73 @@ def _run_semver_calculation_cli(base_ref: str, current_version: str) -> int:
     return 0
 
 
+
+def validate_release_json(raw_text: str) -> Tuple[bool, Dict[str, Any], List[str]]:
+    """
+    Validates structured inter-agent JSON response from release-auditor ([EV-REL-03]).
+    Extracts the JSON payload (either raw or wrapped in ```json ... ```).
+    Required schema:
+      - status: "APPROVED" | "REJECTED"
+      - version: string matching SemVer regex
+      - bump_type: "MAJOR" | "MINOR" | "PATCH"
+      - dod_verified: bool
+      - summary: non-empty str
+      - changelog_markdown: str
+      - rejection_reasons: List[str]
+    """
+    errors: List[str] = []
+    if not isinstance(raw_text, str) or not raw_text.strip():
+        return False, {}, ["Empty payload: release-auditor returned no data."]
+
+    cleaned = raw_text.strip()
+    # Extract json block if wrapped in markdown code fence
+    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", cleaned, re.DOTALL)
+    if match:
+        cleaned = match.group(1).strip()
+    elif not (cleaned.startswith("{") and cleaned.endswith("}")):
+        # Try to locate outermost braces
+        start = cleaned.find("{")
+        end = cleaned.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            cleaned = cleaned[start : end + 1]
+
+    try:
+        data = json.loads(cleaned)
+    except Exception as e:
+        return False, {}, [f"JSON Parse Error: release-auditor output is not valid JSON ({e})."]
+
+    if not isinstance(data, dict):
+        return False, {}, ["Invalid Schema: Root JSON must be an object/dict."]
+
+    # Required fields
+    required_fields = ["status", "version", "bump_type", "dod_verified", "summary"]
+    for rf in required_fields:
+        if rf not in data:
+            errors.append(f"Missing required field: '{rf}'")
+
+    if "status" in data and data["status"] not in ("APPROVED", "REJECTED"):
+        errors.append(f"Field 'status' must be 'APPROVED' or 'REJECTED' (got '{data['status']}')")
+
+    if "bump_type" in data and data["bump_type"] not in ("MAJOR", "MINOR", "PATCH"):
+        errors.append(f"Field 'bump_type' must be 'MAJOR', 'MINOR', or 'PATCH' (got '{data['bump_type']}')")
+
+    if "version" in data:
+        ver_ok, ver_msg, _ = validate_semver(str(data["version"]))
+        if not ver_ok:
+            errors.append(f"Field 'version' violates SemVer: {ver_msg}")
+
+    if "dod_verified" in data and not isinstance(data["dod_verified"], bool):
+        errors.append("Field 'dod_verified' must be a boolean.")
+
+    if data.get("status") == "APPROVED" and not data.get("dod_verified"):
+        errors.append("Conflict: 'status' is APPROVED but 'dod_verified' is false.")
+
+    if data.get("status") == "REJECTED" and not data.get("rejection_reasons"):
+        errors.append("Field 'rejection_reasons' must be non-empty when status is REJECTED.")
+
+    return len(errors) == 0, data, errors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Validate SemVer format, release branch, changelog, and DoD completeness."
@@ -362,12 +430,30 @@ def main() -> int:
         help="Require clean Git working tree before proceeding.",
     )
     parser.add_argument(
+        "--validate-json",
+        dest="validate_json",
+        default=None,
+        help="Validate JSON payload returned by release-auditor against schema ([EV-REL-03]).",
+    )
+    parser.add_argument(
         "--strict",
         action="store_true",
         help="Strict mode: fail on any warning.",
     )
 
     args = parser.parse_args()
+
+    if args.validate_json:
+        target_path = Path(args.validate_json)
+        raw_str = target_path.read_text(encoding="utf-8") if target_path.exists() else args.validate_json
+        ok, data, errs = validate_release_json(raw_str)
+        if not ok:
+            print("❌ [JSON SCHEMA ERROR] release-auditor output violates JSON schema:")
+            for err in errs:
+                print(f"   - {err}")
+            return 1
+        print(f"✅ [JSON SCHEMA OK] Validated release-auditor payload: status={data.get('status')} | version={data.get('version')} | DoD verified={data.get('dod_verified')}")
+        return 0
 
     if args.calculate_semver_base and not args.version:
         return _run_semver_calculation_cli(args.calculate_semver_base, args.current_version)

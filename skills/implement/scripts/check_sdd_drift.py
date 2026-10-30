@@ -8,8 +8,9 @@ against the approved Software Design Description (01-concepcao/sdd-[slug].md or 
 1. Class, Interface (<<Interface>>), and Exception (*Error / *Exception) presence.
 2. Public method parity between Mermaid classDiagram / YAML interfaces and actual classes.
 3. Optional File Impact Analysis drift check (--check-files) against planned SDD file paths.
-4. Respects documented technical pivots (--pivots 02-auditorias/pivots-[slug].md) so
-   formally recorded deviations pass as authorized pivots rather than silent spec drift.
+4. Respects documented technical pivots (--pivots 02-auditorias/pivots-[slug].md) with
+   rigid YAML schema (authorized_by: "human") so formally recorded deviations pass
+   as authorized pivots rather than silent spec drift.
 """
 
 import ast
@@ -261,17 +262,25 @@ def parse_structured_pivots(pivots_text: str) -> Tuple[Set[str], Set[str]]:
     """
     Extracts structured pivot authorizations from YAML blocks (```yaml ... ```)
     or YAML frontmatter inside a pivots markdown document.
-    Supports entries under `pivots:` list with `symbol` and/or `file` keys.
+    Enforces rigid schema: only dictionary entries under `pivots:` containing
+    `authorized_by: "human"` (case-insensitive) are accepted [IMP-ASI06-01].
+    Extracts:
+    - symbol: set of class/method/exception names
+    - file: set of exact relative file paths (normalized with forward slashes)
     """
     pivoted_symbols: Set[str] = set()
     pivoted_files: Set[str] = set()
     if not pivots_text:
         return pivoted_symbols, pivoted_files
 
-    yaml_blocks = re.findall(r"```ya?ml\r?\n(.*?)```", pivots_text, re.DOTALL)
+    yaml_blocks: List[str] = []
+    # Frontmatter YAML
     fm_match = re.match(r"^---\r?\n(.*?)\r?\n---", pivots_text, re.DOTALL)
     if fm_match:
         yaml_blocks.append(fm_match.group(1))
+
+    # Fenced YAML blocks
+    yaml_blocks.extend(re.findall(r"```ya?ml\r?\n(.*?)```", pivots_text, re.DOTALL))
 
     for block in yaml_blocks:
         try:
@@ -281,19 +290,29 @@ def parse_structured_pivots(pivots_text: str) -> Tuple[Set[str], Set[str]]:
         if not isinstance(data, dict):
             continue
         pivots_list = data.get("pivots", [])
-        if isinstance(pivots_list, list):
-            for entry in pivots_list:
-                if isinstance(entry, dict):
-                    sym = entry.get("symbol")
-                    if sym:
-                        pivoted_symbols.add(str(sym).strip())
-                    f_entry = entry.get("file")
-                    if f_entry:
-                        pivoted_files.add(str(f_entry).strip().replace("\\", "/"))
-                elif isinstance(entry, str):
-                    pivoted_symbols.add(entry.strip())
+        if not isinstance(pivots_list, list):
+            continue
+        for entry in pivots_list:
+            if not isinstance(entry, dict):
+                continue
+            # Mandatory human authorization check (case-insensitive) [IMP-ASI06-01]
+            auth_by = str(entry.get("authorized_by", "")).strip().lower()
+            if auth_by != "human":
+                continue
+
+            sym = entry.get("symbol")
+            if sym:
+                pivoted_symbols.add(str(sym).strip())
+
+            f_entry = entry.get("file")
+            if f_entry:
+                clean_f = str(f_entry).strip().replace("\\", "/")
+                while clean_f.startswith("./"):
+                    clean_f = clean_f[2:]
+                pivoted_files.add(clean_f)
 
     return pivoted_symbols, pivoted_files
+
 
 
 def check_drift(
@@ -334,9 +353,7 @@ def check_drift(
     structured_symbols, structured_files = parse_structured_pivots(pivots_text)
 
     def is_in_pivots(token: str) -> bool:
-        if token in structured_symbols or token in structured_files:
-            return True
-        return bool(pivots_text and re.search(rf"\b{re.escape(token)}\b", pivots_text))
+        return token in structured_symbols
 
     # 1. Check Classes / Interfaces and their Public Methods
     for expected_cls, expected_methods in sorted(spec.classes_and_methods.items()):
@@ -398,11 +415,13 @@ def check_drift(
                 for planned in spec.planned_files
             )
             if not matched:
-                pivoted = (
-                    (bool(pivots_text) and norm_path in pivots_text)
-                    or any(norm_path.endswith(sf) or sf.endswith(norm_path) for sf in structured_files)
-                    or is_in_pivots(fpath.name)
-                )
+                clean_norm = norm_path.lstrip("./")
+                pivoted = False
+                for sf in structured_files:
+                    clean_sf = sf.lstrip("./")
+                    if clean_norm == clean_sf or clean_norm.endswith("/" + clean_sf) or clean_sf.endswith("/" + clean_norm):
+                        pivoted = True
+                        break
                 findings.append(
                     DriftFinding(
                         category="UNPLANNED_FILE",
@@ -457,8 +476,8 @@ def print_report(
             print(f"   ❌ [{f.category}] {f.symbol}")
             print(f"      Details: {f.details}")
             print(
-                "      Action:  Align code with SDD contract OR document a Technical Pivot in "
-                "02-auditorias/pivots-[slug].md and update SDD."
+                "      Action:  Align code with SDD contract OR document an authorized Technical Pivot in "
+                "02-auditorias/pivots-[slug].md (YAML schema with authorized_by: 'human') and update SDD."
             )
         print(f"{'=' * 80}\n")
         return 1

@@ -103,6 +103,7 @@ Mesmo em cenários de depuração crítica sob incidentes, a arquitetura SDD 2.0
    Isso preserva integralmente o novo teste de regressão escrito em `tests/regression/` e quaisquer arquivos não relacionados do usuário.
 3. **Validação Determinística de Drift:** Após a suíte ficar 100% verde, o Orquestrador executa:
    ```bash
-   python skills/implement/scripts/check_sdd_drift.py 01-concepcao/sdd-[slug].md <modified_src_files> --batch --pivots 02-auditorias/pivots-[slug].md
+   python skills/review/scripts/scan_sinks.py <modified_src_files>
+python skills/implement/scripts/check_sdd_drift.py 01-concepcao/sdd-[slug].md <modified_src_files> --batch --pivots 02-auditorias/pivots-[slug].md
    ```
 4. **Registro de Technical Pivot Obrigatório:** Se a erradicação definitiva da falha exigir alterar uma assinatura pública prevista no SDD, o Orquestrador documenta a justificativa em `02-auditorias/pivots-[slug].md` via `@obsidian` antes de aprovar o gate.

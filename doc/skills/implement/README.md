@@ -25,15 +25,15 @@ flowchart TD
         S1["<b>Step 1: Batch Plan & Acceptance Criteria</b><br/>Lê BDD + SDD + DoD e estrutura task_list.md<br/>com Critérios de Aceite explícitos por Lote"]
         G1{"Gate Humano:<br/>Aprova task_list.md?"}
         Gov["<b>Step 2.5: Batch Governance</b><br/>Marca [x] nos Critérios do Lote em task_list.md,<br/>atualiza Living DoD e faz Git Checkpoint"]
-        S3_1["<b>Step 3.1: Full Test & Drift Gate</b><br/>pytest tests/unit/ -v +<br/>check_sdd_drift.py src/ --check-files"]
+        S3_1["<b>Step 3.1: Full Test & Drift Gate</b><br/>pytest tests/unit/ -v -p skills.implement.scripts.pytest_sandbox +<br/>check_sdd_drift.py src/ --check-files"]
         S3_3["<b>Step 3.3: Phase 2 Squash & Handover</b><br/>Mode 3 Squash Commit + Handover para /refactor"]
     end
 
     subgraph SubBatch["Step 2: Subagente batch-implementer (1x por Lote | Model: inherit)"]
         direction LR
-        R["<b>1. RED Phase</b><br/>Testes AAA para os<br/>cenários BDD do Lote"] --> G["<b>2. GREEN Phase</b><br/>Código mínimo tipado<br/>para os contratos SDD"]
-        G --> B["<b>3. BLUE Phase</b><br/>Micro-Refactor local<br/>(métodos <= 25 linhas)"]
-        B --> D["<b>4. Batch Drift Check</b><br/>check_sdd_drift.py --batch"]
+        R["<b>1. RED Phase</b><br/>Testes AAA para os<br/>cenários BDD do Lote<br/>(-p pytest_sandbox)"] --> G["<b>2. GREEN Phase</b><br/>Código mínimo tipado<br/>para os contratos SDD<br/>(-p pytest_sandbox)"]
+        G --> B["<b>3. BLUE Phase</b><br/>Micro-Refactor local<br/>(métodos <= 25 linhas)<br/>(-p pytest_sandbox)"]
+        B --> D["<b>4. Batch Drift Check</b><br/>check_sdd_drift.py --batch<br/>(schema YAML rígido)"]
     end
 
     subgraph SubVerify["Step 3.2: Verificador Cego Pós-TDD (Model: flash_lite | Read-Only)"]
@@ -56,9 +56,9 @@ flowchart TD
 | Etapa | Responsável | Modelo (`invoke_subagent`) | Permissão de Escrita | Insumos Recebidos | Entregável |
 | :--- | :--- | :---: | :--- | :--- | :--- |
 | **Step 1: Batch Plan & Acceptance Criteria** | **Orquestrador Principal** | Sessão Ativa | Escrita em `task_list.md` | `bdd-[slug].md`, `sdd-[slug].md`, `dod-[slug].md`. | `task_list.md` com **Critérios de Aceite** (arquivos-alvo, contratos SDD e cenários BDD mapeados por lote). |
-| **Step 2.1–2.4: Ciclo TDD do Lote $N$** | **Subagente `batch-implementer`** | `Model: "inherit"` | `EnableWriteTools: true` *(restrito a `src/` e `tests/unit/` do Lote $N$)* | Critérios de Aceite do Lote $N$ + `<spec_context>` (`bdd-[slug].md`, `sdd-[slug].md`) + `src/` existente. | Testes AAA (`--tb=short`, zero rede) + Código tipado (apenas stdlib/manifesto) + Micro-refactor + `check_sdd_drift.py --batch` 100% verde. |
+| **Step 2.1–2.4: Ciclo TDD do Lote $N$** | **Subagente `batch-implementer`** | `Model: "inherit"` | `EnableWriteTools: true` *(restrito a `src/` e `tests/unit/` do Lote $N$)* | Critérios de Aceite do Lote $N$ + `<spec_context>` (`bdd-[slug].md`, `sdd-[slug].md`) + `src/` existente. | Testes AAA (`--tb=short -p skills.implement.scripts.pytest_sandbox`, zero rede via `[IMP-ASI05-01]`) + Código tipado (apenas stdlib/manifesto) + Micro-refactor + `check_sdd_drift.py --batch` 100% verde. |
 | **Step 2.5: Governança do Lote & Scope Guard** | **Orquestrador Principal** | Sessão Ativa | Escrita + Git Commit | Resumo enxuto de conclusão do Lote $N$ + `git status --porcelain` / `git diff --name-only`. | Validação determinística de escopo (aborta/reverte se `.env`, `.github/` ou `skills/` forem tocados), `task_list.md` e `dod-[slug].md` atualizados + Git Checkpoint do lote. |
-| **Step 3.1: Full Exit Drift Gate** | **Orquestrador Principal** | Sessão Ativa | CLI (`check_sdd_drift.py`) | `01-concepcao/sdd-[slug].md`, `src/` e `02-auditorias/pivots-[slug].md`. | Validação determinística AST de 100% das classes, interfaces, métodos, exceções e arquivos (autorização de pivots restrita a caminhos exatos ou bloco YAML `pivots:`). |
+| **Step 3.1: Full Exit Drift Gate** | **Orquestrador Principal** | Sessão Ativa | CLI (`pytest`, `check_sdd_drift.py`) | `01-concepcao/sdd-[slug].md`, `src/` e `02-auditorias/pivots-[slug].md`. | Validação determinística AST de 100% das classes, interfaces, métodos, exceções e arquivos (autorização de pivots restrita a bloco YAML `pivots:` com `authorized_by: "human"` `[IMP-ASI06-01]`). Suíte rodando com sandbox de isolamento de rede (`-p skills.implement.scripts.pytest_sandbox` `[IMP-ASI05-01]`). |
 | **Step 3.2: Verificação de Aceite Pós-TDD** | **Subagente `goldfish-drift-auditor`** | `Model: "flash_lite"` | `EnableWriteTools: false` (Read-Only) | `task_list.md`, `bdd-[slug].md`, `dod-[slug].md` e `tests/unit/`. | Veredito `[PASS]: 100%_ACCEPTANCE_VERIFIED` comprovando zero cenários BDD esquecidos e rejeitando asserções triviais (`assert True`, `assert res is not None`, `assert len(x) >= 0`). |
 | **Step 3.3: Fechamento & Handover** | **Orquestrador Principal** | Sessão Ativa | Git Squash Commit | Aprovação do Drift Gate e do `goldfish-drift-auditor`. | Commit semântico consolidado da Fase 2 e recomendação de abertura do `/refactor`. |
 
@@ -68,14 +68,14 @@ flowchart TD
 
 Localizado em [`skills/implement/scripts/check_sdd_drift.py`](../../skills/implement/scripts/check_sdd_drift.py), o script opera em dois modos complementares:
 1. **Modo Lote (`--batch`):** Verifica apenas as classes já criadas nos arquivos do lote atual, garantindo que todos os seus métodos públicos previstos no SDD foram implementados (sem acusar falso-positivo pelas classes que só serão criadas nos lotes seguintes).
-2. **Modo Exit Gate Completo (`--check-files`):** Exige que **todas** as classes de produção, interfaces (`<<Interface>>`), métodos públicos e exceções (`*Error`/`*Exception`) do SDD existam no código, e que qualquer arquivo modificado fora da tabela *File Impact Analysis* possua justificativa documentada em `--pivots 02-auditorias/pivots-[slug].md` (mediante caminho relativo exato, nome exato do arquivo ou estrutura YAML `pivots:`, prevenindo bypass por substrings de diretório como `src`).
+2. **Modo Exit Gate Completo (`--check-files`):** Exige que **todas** as classes de produção, interfaces (`<<Interface>>`), métodos públicos e exceções (`*Error`/`*Exception`) do SDD existam no código, e que qualquer arquivo modificado fora da tabela *File Impact Analysis* possua justificativa documentada em `--pivots 02-auditorias/pivots-[slug].md` (mediante bloco YAML estruturado `pivots:` contendo obrigatoriamente `authorized_by: "human"`, prevenindo bypass por texto livre ou regex permissivo `[IMP-ASI06-01]`).
 
 ---
 
 ## 5. Guardrails de Segurança Agentic (OWASP Top 10 for LLM & Agentic 2026)
 
-1. **Prevenção de Bypass de Pivots (`[IMP-ASI06-01]`):** `check_sdd_drift.py` proíbe correspondência de segmentos de diretório (ex.: `"src"`) ao autorizar arquivos fora do SDD. Apenas caminhos relativos exatos (`norm_path`), nomes exatos de arquivos ou blocos YAML estruturados (`pivots:`) concedem isenção.
+1. **Schema YAML Rígido e Prevenção de Bypass de Pivots (`[IMP-ASI06-01]`):** `check_sdd_drift.py` exige que qualquer pivot técnico esteja documentado exclusivamente em bloco YAML estruturado (`pivots:`) contendo obrigatoriamente `authorized_by: "human"`. O fallback de regex permissivo em texto livre foi totalmente eliminado, e a validação de arquivos não planejados exige correspondência com os arquivos autorizados por humanos.
 2. **Salvaguarda de Rollback Não-Destrutivo (`[IMP-LLM03-01]`):** Ao atingir o limite da regra *Double-Strike* (> 2 falhas), o rollback é obrigatoriamente precedido por `git stash push -u -m "antigravity-safety-rollback-strike2"` (ou `git checkout -- <batch_files>`), protegendo arquivos não rastreados ou trabalho em andamento do desenvolvedor antes de `git reset --hard HEAD`.
 3. **Post-Batch Scope Guard Determinístico (`[IMP-ASI03-01]`):** No Step 2.5, o Orquestrador audita `git status --porcelain` e `git diff --name-only` antes do checkpoint. Qualquer modificação fora dos arquivos planejados de `src/` e `tests/unit/` do Lote $N$ (como `.env`, `.github/` ou `skills/`) dispara aborto e reversão imediatos.
-4. **Delimitadores Anti-Prompt Injection & Anti-Slopsquatting (`[IMP-ASI05-01]`):** O prompt do `batch-implementer` isola especificações com `<spec_context>...</spec_context>`, veda a importação de pacotes ausentes no manifesto do projeto (`pyproject.toml` / `requirements.txt`) e executa `pytest` sem I/O de rede/socket (`--tb=short`, `--timeout=30` quando disponível).
+4. **Isolamento de Execução de Testes e Anti-Slopsquatting (`[IMP-ASI05-01]`):** O plugin pytest [`pytest_sandbox.py`](../../skills/implement/scripts/pytest_sandbox.py) intercepta chamadas de socket (`socket.connect`), bloqueando acessos a redes externas durante a execução de testes unitários (`RuntimeError`), permitindo apenas conexões loopback locais para mocks. O prompt do `batch-implementer` isola especificações com `<spec_context>...</spec_context>`, veda a importação de pacotes ausentes no manifesto do projeto (`pyproject.toml` / `requirements.txt`) e executa `pytest` com o plugin `-p skills.implement.scripts.pytest_sandbox`.
 5. **Rigor Semântico no Auditor Cego (`[IMP-ASI09-01]`):** O `goldfish-drift-auditor` (`flash_lite`) proíbe expressamente asserções tautológicas ou triviais (`assert True`, `assert res is not None`, `assert len(x) >= 0`), exigindo validação concreta de estado, exceção ou redação (`***REDACTED***`), especialmente em cenários `@security` e `@concurrency`.
