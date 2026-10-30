@@ -1,73 +1,30 @@
-# Operational Guide: Performance & Resource Efficiency Audit
+# Performance & Resources (`references/review-performance.md`)
 
-This guide governs the surgical audit of algorithmic complexity, data volumetrics, I/O bottlenecks, N+1 query patterns, and resource efficiency across the git diff.
+Template: [`../resources/audit-report-template.md`](../resources/audit-report-template.md).
 
----
+## 1. Performance Invariants & Inspection Rules
 
-## Operational Workload Context
+| Pattern | Invariant Rule |
+| :--- | :--- |
+| **N+1 Queries** | Flag DB queries (`db.query()`) or HTTP calls in loops. Batch with `IN (...)`. |
+| **Complexity** | Flag nested loops ($O(N^2)$) and linear searches in loops. Convert to hash set/dict ($O(1)$). |
+| **Memory** | Prohibit bulk loading large tables (`SELECT *`) or files (`.read()`). Use chunked streams/generators. |
+| **Leaks** | Sockets, HTTP clients, files, DB sessions without deterministic cleanup. Enforce `with` context. |
+| **Unindexed** | Filter/join columns on high-volume tables causing full scans. Require indexed queries. |
 
-Every performance observation must be evaluated against the feature's operational context:
-- **Volumetria de Dados:** Expected collection sizes (dozens, thousands, millions of records).
-- **Frequência de Execução:** High-throughput endpoint (1,000 req/s) vs. daily asynchronous batch job.
-- **SLA de Latência:** Maximum allowable latency budget (< 50ms for synchronous APIs vs. minutes for pipelines).
+## 2. Surgical Optimization Patterns (Mode B)
 
----
-
-## Phase 1 — In-Depth Code Inspection (Evidence Gathering)
-
-### 1. Padrão N+1 & Custo de I/O Iterativo
-- **Consultas em Laços:** Flag database queries (`db.query()`, `repository.find()`) or remote HTTP calls executed inside iterative loops (`for item in items`).
-- **Nota Arquitetural:** The N+1 problem is primarily an **iterative I/O and network latency accumulation** defect, not necessarily an asymptotic CPU bottleneck. A single batched network round-trip is orders of magnitude faster than N round-trips.
-
-### 2. Complexidade Assintótica ($O(N^2)$ ou Pior)
-- **Laços Aninhados:** Iterating over collection $N$ and performing an inner iteration over collection $M$ without indexing.
-- **Busca Linear em Laços:** Using `if item in my_list` inside an outer loop when `my_list` could be converted into a hash set or dictionary for $O(1)$ lookups.
-
-### 3. Gerenciamento de Memória & Streaming
-- **Carga Integral em Memória:** Loading entire tables (`SELECT *`) or reading massive files (`.read()`) into RAM without streaming or pagination.
-- **Iteradores & Geradores:** Identify opportunities to use Python generators (`yield`) or chunked streams to keep memory consumption constant $O(1)$.
-
-### 4. Gestão de Conexões & Recursos
-- **Vazamento de Conexões:** Sockets, HTTP clients, file handles, or database sessions opened without deterministic cleanup (`with` context manager or `try/finally`).
-- **Consultas sem Índices:** Unindexed filters on large tables leading to full table scans.
-
----
-
-## Phase 2 — Surgical Application & Optimizations (Mode B Only)
-
-- **Batch Queries (Eliminating N+1):**
-  ```python
-  # Before: N+1 queries executed inside loop
-  for user in users:
-      orders = db.query(Order).filter(Order.user_id == user.id).all()
-  
-  # After: 1 single batched query with IN clause
-  user_ids = [u.id for u in users]
-  all_orders = db.query(Order).filter(Order.user_id.in_(user_ids)).all()
-  orders_by_user = collections.defaultdict(list)
-  for o in all_orders:
-      orders_by_user[o.user_id].append(o)
-  ```
-- **Lookup Optimization with Semantic Safety:**
-  - Convert lists to `set` for $O(1)$ lookup **only if order and duplicates are irrelevant** to downstream logic.
-  - If order matters, use an order-preserving dict index (`dict.fromkeys(items)`).
-- **Streaming Large Files:**
-  ```python
-  # Safe chunked streaming
-  def stream_large_file(filepath: Path, chunk_size=8192):
-      with open(filepath, "rb") as f:
-          while chunk := f.read(chunk_size):
-              yield chunk
-  ```
-
----
-
-## Phase 3 — Audit Report Format
-
-When recording findings for `02-auditorias/audit-performance-[slug].md`, instantiate [`../resources/audit-report-template.md`](../resources/audit-report-template.md) and populate the Forensic Traceability Matrix and detailed findings:
-
-```markdown
-| ID | File & Line | Pattern Detected / Resource | Primary Evidence / Tool | Severity | Status & Traceability |
-| :--- | :--- | :--- | :--- | :---: | :---: |
-| `PRF-01` | `src/services/report.py:88` | N+1 Database Query in Loop | Query Profiler / AST Scan | High | 🔴 **Non-Compliant** ([see Finding 1](#-finding-1-n1-query-batching)) |
+```python
+orders = db.query(Order).filter(Order.user_id.in_(user_ids)).all()
+allowed_ids = set(permitted_list)
+valid = [i for i in items if i.id in allowed_ids]
+def stream_file(p, sz=8192):
+    with open(p, "rb") as f:
+        while chunk := f.read(sz): yield chunk
 ```
+
+## 3. Forensic Report (`02-auditorias/audit-performance-[slug].md`)
+
+| ID | File:Line | Pattern | Evidence / Tool | Severity | Status |
+| :--- | :--- | :--- | :--- | :---: | :---: |
+| `PRF-01` | `report.py:88` | N+1 Query | AST Scan / Profiler | High | 🔴 Non-Compliant |

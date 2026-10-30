@@ -1,62 +1,30 @@
-# Operational Reference: Living DoD & Evidence Matrix Standard
+# Refactoring Definition of Done (`references/refactor-dod.md`)
 
-This guide specifies how to update the Living Definition of Done (`01-concepcao/dod-[slug].md`) and format the Refactoring Evidence Matrix for Phase 3 (`/refactor`).
+## 1. Phase 3 Gates
 
----
+| Gate | Technical Directive | Pass Criteria |
+| :--- | :--- | :--- |
+| **Entry** | `python -m pytest tests/unit/ -v` | 100% green before edits. |
+| **4.1 AST** | `python skills/refactor/scripts/ast_complexity.py <FILES> --threshold 10` | $V(G) \le 10$; zero $O(N^2)$. |
+| **4.2 Drift** | `python skills/implement/scripts/check_sdd_drift.py 01-concepcao/sdd-[slug].md <FILES> --check-files --pivots 02-auditorias/pivots-[slug].md` | Exit 0 (zero SDD drift). |
+| **4.3 Matrix** | Schema below; ref: [`refactor-report-template.md`](../resources/refactor-report-template.md) | All targets mapped. |
+| **4.4 DoD** | Update Section 3 in `01-concepcao/dod-[slug].md`. | All items `[x]`. |
+| **4.5 Squash** | Mode 3 Squash per [`refactor-git.md`](./refactor-git.md). | Single Phase 3 commit. |
 
-## 1. Living Definition of Done (DoD) Integration
+## 2. Evidence Matrix Schema
 
-In the Antigravity lifecycle, the Living DoD serves as the single source of truth (SSOT) for feature completeness.
-Phase 3 is governed by Section 3 of `01-concepcao/dod-[slug].md`.
+| Target Element | Smell / Principle | Technique Applied | $V(G)$ Pre | $V(G)$ Post | Test Status |
+| :--- | :--- | :--- | :---: | :---: | :--- |
+| `<file>::<func>` | `<Smell / Principle>` | `<Action Applied>` | `<int>` | $\le 10$ | `100% Green` |
 
-### Phase 3 Checklist Criteria:
-Before concluding Phase 3, the agent must verify and check all items under Phase 3:
+## 3. Living DoD Template (`01-concepcao/dod-[slug].md`)
 
 ```markdown
-## 3. Refactoring & Audits (Phases 3 and 4 - /refactor and /review)
-- [x] **Phase 3: Final Refactoring (`/refactor`)**
-  - [x] Mandatory entry gate satisfied: 100% unit tests green before refactoring.
-  - [x] Scope strictly confined to `git diff develop...HEAD`.
-  - [x] Clean Code applied: guard clauses, method extraction, and named constants.
-  - [x] SOLID principles applied across feature modules (SRP, OCP, LSP, ISP, DIP).
-  - [x] AST cyclomatic complexity verified: $V(G) \le 10$ across all modified functions.
-  - [x] Asymptotic performance heuristics verified: no $O(N^2)$ loops or linear searches in loops.
-  - [x] Zero regressions: 100% unit tests passing green with no test assertion edits.
-  - [x] Refactoring Evidence Matrix documented.
-  - [x] Mode 3 Phase Squash executed with semantic commit message.
+## 3. Refactoring & Audits (Phases 3 and 4)
+- [x] Entry gate: 100% unit tests green before refactoring.
+- [x] Scope confined to `git diff develop...HEAD`.
+- [x] Clean Code (guards, helpers, constants) & SOLID (SRP, OCP, LSP, ISP, DIP) applied.
+- [x] AST complexity ($V(G) \le 10$) & asymptotic performance (zero $O(N^2)$) verified.
+- [x] Zero regressions: 100% green tests with zero assertion edits.
+- [x] Evidence matrix documented; Mode 3 Phase Squash executed.
 ```
-
----
-
-## 2. Refactoring Evidence Matrix Standard
-
-Upon completing the refactoring iterations, compile and present the **Refactoring Evidence Matrix** using [`../resources/refactor-report-template.md`](../resources/refactor-report-template.md). This report must be documented in the chat handover and preserved in the execution log.
-
-### Matrix Structure:
-
-| Target Element | Code Smell / Principle | Technique Applied | $V(G)$ Before | $V(G)$ After | Test Suite Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `<file_path>::<function_name>` | `<Code Smell or SOLID Principle>` | `<Refactoring Action>` | `<int>` | `<int>` | `100% Green` |
-
-### Required Columns:
-1. **Target Element:** File path and qualified function or class name (e.g. `src/services/billing.py::calculate_invoice`).
-2. **Code Smell / Principle:** Specific defect or design principle addressed (e.g., Deep Nesting, SRP Violation, Direct Infrastructure Coupling / DIP).
-3. **Technique Applied:** Concrete transformation used (e.g., Guard Clauses, Extract Helper Methods, Dependency Injection via Protocol).
-4. **$V(G)$ Before:** McCabe cyclomatic complexity metric before refactoring (from `ast_complexity.py`).
-5. **$V(G)$ After:** McCabe cyclomatic complexity metric after refactoring (must be $\le 10$).
-6. **Test Suite Status:** Explicit confirmation of test pass status (e.g. `100% Green (42/42 tests passing)`).
-
----
-
-## 3. Pre-Handover Quality Gate Checklist
-
-Ensure all questions are answered affirmatively before issuing the Phase 3 handover recommendation:
-
-- [ ] Did all unit tests pass before touching any production code?
-- [ ] Were all modifications strictly confined to files in `git diff develop...HEAD`?
-- [ ] Does `ast_complexity.py` report $V(G) \le 10$ for every modified Python function?
-- [ ] Did `ast_complexity.py` return zero $O(N^2)$ nested loop warnings?
-- [ ] Were all unit test files kept 100% untouched without altering assertions?
-- [ ] Did all unit tests pass green on the final refactored code?
-- [ ] Was the Living DoD updated in `01-concepcao/dod-[slug].md`?
-- [ ] Were intermediate micro-checkpoints squashed via `git reset --soft` (Mode 3)?
