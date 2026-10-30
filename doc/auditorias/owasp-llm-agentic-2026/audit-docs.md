@@ -4,7 +4,7 @@
 **Skill Auditada:** [`skills/docs/SKILL.md`](file:///e:/Codigos/antigravity-agentic-workflows/skills/docs/SKILL.md)  
 **Documentação Arquitetural:** [`doc/skills/docs/README.md`](file:///e:/Codigos/antigravity-agentic-workflows/doc/skills/docs/README.md)  
 **Modelo de Execução da Skill:** Orquestrador Principal (`inherit`) + Subagente Especialista `docs-scribe` (`Model: "flash"`)  
-**Status Geral de Segurança Agentic:** 🟢 Robusto com Pontos de Atenção
+**Status Geral de Segurança Agentic:** 🟢 Totalmente Mitigado / 100% Conforme (6/6 itens)
 
 ---
 
@@ -119,6 +119,6 @@ A skill divide seu fluxo de trabalho em três etapas arquiteturais bem definidas
 - [x] **QW-DOC-03:** Harmonizar o comando de commit nos guidelines: substituir `git commit -am` em [`skills/docs/references/docs-guidelines.md:32`](file:///e:/Codigos/antigravity-agentic-workflows/skills/docs/references/docs-guidelines.md#L32) por staging explícito (`git add <files>` seguido de `git commit -m ...`), em alinhamento com a invariante de segurança do projeto contra inclusão acidental de arquivos não rastreados.
 
 ### Evoluções Estruturais (Scripts / Arquitetura de Subagentes)
-- [ ] **EV-DOC-01:** Implementar script estático AST em Python (`skills/docs/scripts/inject_docstrings.py`) para realizar a inserção cirúrgica de docstrings e wikilinks Obsidian de forma determinística, permitindo restringir o subagente `docs-scribe` exclusivamente à criação e edição de arquivos `.md`.
+- [x] **EV-DOC-01:** Implementar script estático AST em Python (`skills/docs/scripts/inject_docstrings.py`) para realizar a inserção cirúrgica de docstrings e wikilinks Obsidian de forma determinística, permitindo restringir o subagente `docs-scribe` exclusivamente à criação e edição de arquivos `.md`.
 - [x] **EV-DOC-02:** Adicionar filtro e salvaguarda nos guidelines para APIs públicas e frameworks baseados em metadados (FastAPI, Typer, Pydantic), evitando poluição de schemas OpenAPI e contratos externos com wikilinks internos do Obsidian.
-- [ ] **EV-DOC-03:** Criar linter de manifestos para checagem de integridade de comandos de onboarding antes de publicá-los no `README.md` raiz.
+- [x] **EV-DOC-03:** Criar linter de manifestos para checagem de integridade de comandos de onboarding antes de publicá-los no `README.md` raiz.

@@ -20,10 +20,10 @@ Cada uma das 12 skills do projeto foi auditada em profundidade sob duas perspect
 | :---: | :--- | :--- | :--- | :---: | :--- |
 | 1 | **`/decompose`** | Fase 0: Decomposição de Épicos | Orchestrator + `goldfish-dag-auditor` (`flash_lite`, RO) | 🟡 Atenção Moderada | [`audit-decompose.md`](./audit-decompose.md) |
 | 2 | **`/plan`** | Fase 1: Concepção BDD, SDD & Living DoD | Orchestrator + `bdd-architect` / `sdd-architect` (`inherit`) + Goldfish Council (3x `flash`, RO) | 🟡 Atenção Moderada | [`audit-plan.md`](./audit-plan.md) |
-| 3 | **`/implement`** | Fase 2: Implementação TDD em Lotes | Orchestrator + `batch-implementer` (`inherit`) + `goldfish-drift-auditor` (`flash_lite`, RO) | 🟢 Robusto com Pontos de Atenção | [`audit-implement.md`](./audit-implement.md) |
+| 3 | **`/implement`** | Fase 2: Implementação TDD em Lotes | Orchestrator + `batch-implementer` (`inherit`) + `goldfish-drift-auditor` (`flash_lite`, RO) | 🟢 Totalmente Mitigado (6/6) | [`audit-implement.md`](./audit-implement.md) |
 | 4 | **`/refactor`** | Fase 3: Refatoração SOLID & AST | Orchestrator + `solid-refactorer` (`inherit`) | 🟢 Robusto com Pontos de Atenção | [`audit-refactor.md`](./audit-refactor.md) |
 | 5 | **`/review`** | Fase 4: Auditoria em 5 Domínios | Orchestrator + 5x Subagentes Map-Reduce (`flash`) | 🟢 Robusto com Pontos de Atenção | [`audit-review.md`](./audit-review.md) |
-| 6 | **`/docs`** | Fase 5: Documentação & Feature Freeze | Orchestrator + `docs-scribe` (`flash`) | 🟢 Robusto com Pontos de Atenção | [`audit-docs.md`](./audit-docs.md) |
+| 6 | **`/docs`** | Fase 5: Documentação & Feature Freeze | Orchestrator + `docs-scribe` (`flash`) | 🟢 Totalmente Mitigado (6/6) | [`audit-docs.md`](./audit-docs.md) |
 | 7 | **`/release`** | Gatekeeper: Publicação SemVer 2.0.0 | Orchestrator + `release-auditor` (`flash_lite`) | 🟡 Atenção Moderada | [`audit-release.md`](./audit-release.md) |
 | 8 | **`/debug`** | Suporte Forense: 5 Whys & MRE | Orchestrator + `forensic-prober` (`inherit`) | 🟡 Atenção Moderada | [`audit-debug.md`](./audit-debug.md) |
 | 9 | **`/test-fix`** | Suporte Reativo: Correção Cirúrgica | 100% Main Orchestrator (Double-Strike Rule) | 🟡 Atenção Moderada | [`audit-test-fix.md`](./audit-test-fix.md) |
@@ -122,8 +122,8 @@ Legenda:
 | **ASI02: Tool Misuse & Exploitation** | 🟢 | 🟡 | 🟡 | 🔴 | 🟡 | 🟡 | 🔴 | 🔴 | 🔴 | 🟢 | 🟡 | 🟡 |
 | **ASI03: Identity & Privilege Abuse** | 🟢 | 🔴 | 🟡 | 🟡 | 🔴 | 🔴 | 🔴 | 🟡 | 🟡 | 🟡 | 🟢 | 🔴 |
 | **ASI04: Agentic Supply Chain** | ⚪ | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟡 | 🟡 | 🟢 | ⚪ | 🔴 | ⚪ |
-| **ASI05: Unexpected Code Exec (RCE)** | ⚪ | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🟡 | 🟢 | 🟢 | ⚪ |
-| **ASI06: Memory & Context Poisoning** | 🟡 | 🟡 | 🔴 | 🔴 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟢 | 🔴 |
+| **ASI05: Unexpected Code Exec (RCE)** | ⚪ | 🔴 | 🟢 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🟡 | 🟢 | 🟢 | ⚪ |
+| **ASI06: Memory & Context Poisoning** | 🟡 | 🟡 | 🟢 | 🔴 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟢 | 🔴 |
 | **ASI07: Insecure Inter-Agent Comm** | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟢 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | ⚪ |
 | **ASI08: Cascading Failures** | 🔴 | 🟡 | 🟢 | 🟡 | 🟢 | 🟢 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 | 🟡 |
 | **ASI09: Human-Agent Trust Exploit** | 🟡 | 🟢 | 🟡 | 🟢 | 🟡 | 🟡 | 🔴 | 🟢 | 🟢 | 🟡 | 🟡 | 🟡 |
