@@ -18,6 +18,9 @@ description: Governs the Obsidian knowledge vault by indexing notes, creating at
 
 ## Execution Pipeline
 
+> **Prerequisite:** Obsidian MCP configured, Obsidian open with the project's vault selected. Setup, shared API Key across vaults, and troubleshooting: [`mcp-setup.md`](./references/mcp-setup.md).
+
+
 | Step | Directive | Refs |
 | :--- | :--- | :--- |
 | **1. Index** | Run `search_query` with sanitized metadata keys (`[OBS-LLM09-04]`). Check `backlinks` on `00-core-rules/`. | [`obsidian-protocol.md`](./references/obsidian-protocol.md) |
