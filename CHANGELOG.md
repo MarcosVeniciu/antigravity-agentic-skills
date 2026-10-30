@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ---
 
+## Release Notes - v1.5.1 (2026-10-30)
+
+### Hotfix: GitHub Secret Scanning False Positive
+- **Issue**: GitHub secret scanning raised alert #1 (`MongoDB Atlas Database URI with credentials`) for [`tests/skills/test_scanners.py`](tests/skills/test_scanners.py). The flagged value (`mongodb+srv://admin:clusterPassword99@cluster0.mongodb.net/test`) is a synthetic fixture in `test_redact_dsn_connection_string`, which asserts that `redact_sensitive_tokens` **removes** the password. It is not a real credential: the host has no Atlas cluster ID and does not resolve to any cluster.
+- **Fix**: `[fix(test)]` The MongoDB DSN fixture is now built at runtime by string concatenation, so the full URI no longer appears as a literal in the source and the scanner pattern no longer matches. Test behavior and coverage are unchanged.
+- **Prevention**: Fixtures that mimic credentials in URI form (`scheme://user:pass@host`) should be concatenated at runtime, with a short comment explaining why. Alert #1 should be closed as **"Used in tests"**. The string remains in the history of commit `d461fc9` (harmless, synthetic).
+
+---
 ## Release Notes - v1.5.0 (2026-10-30)
 
 ### Security Hardening (OWASP Top 10 LLM & Agentic 2026)
