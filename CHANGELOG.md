@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ---
 
+## Release Notes - v1.3.1 (2026-10-29)
+
+### Performance & Context Optimization
+- [refactor: level-3-datasheet-compression]: Rewrote 59 operational Markdown files across all 12 skills (SKILL.md, 
+eferences/*.md, and examples/*.md) into **Level 3 Datasheet Table** format while preserving 
+esources/* templates and scripts/*.py untouched:
+  - **Character & Line Reduction:** Reduced total character volume across the 59 files from 347,333 to 103,310 chars (**-244,023 chars | -70.3%**), and line count from 6,036 to 1,643 lines (**-4,393 lines | -72.8%**).
+  - **Context Token Savings:** Reduced estimated runtime prompt consumption from ~86,833 to ~25,827 tokens (**~61,000 tokens saved** across the skill suite; **-76.0%** reduction across the 12 SKILL.md entrypoints).
+  - **Blind Comprehension Validation:** Verified 100% behavioral, invariant, CLI, and subagent comprehension across all 12 compressed skills using context-isolated lash_lite blind-tester subagents and standardized Actor and SystemPrompt columns across subagent registries.
+- [refactor: lifecycle-handover]: Centralized the **Development Lifecycle & Context-Hygiene Handover** table in [prompts/gemini.md](prompts/gemini.md) (Section 4) and removed redundant per-skill Flow: / [NEXT STEP] handover blocks and inline Mermaid diagrams from runtime SKILL.md files (migrating missing visual flowcharts to [doc/debug/README.md](doc/debug/README.md) and [doc/obsidian/README.md](doc/obsidian/README.md)).
+
+---
+
 ## Release Notes - v1.3.0 (2026-10-29)
 
 ### New Features
