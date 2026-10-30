@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ---
 
+## Release Notes - v1.4.0 (2026-10-30)
+
+### New Features & Supply-Chain Security
+- `[feat: infra-anti-slopsquatting]`: Added multi-ecosystem dependency existence, anti-slopsquatting, and import parity auditing to `/infra` ([`skills/infra/SKILL.md`](skills/infra/SKILL.md)):
+  - **Multi-Ecosystem Registry Auditor (`audit_dependencies.py`)**: Native, zero-external-dependency auditor querying public APIs across 7 major package ecosystems: Python (PyPI), Node/TypeScript (npm), Dart/Flutter (pub.dev), Rust (crates.io), Go (proxy.golang.org), .NET (NuGet), and PHP (Packagist).
+  - **Anti-Slopsquatting & Typosquatting Defense**: Heuristic detection of hallucinated packages (HTTP 404), invalid version specs, recently created packages (< 60 days), unlinked source repositories, yanked/deprecated releases, and single-release anomalies.
+  - **Source Import Parity (`--scan-imports`)**: Cross-checks imported modules against declared manifest dependencies across Python AST, Node/TS imports, and Dart/Flutter `package:...` imports to prevent unmanifested or hallucinated module usage.
+  - **`dependency-auditor` Subagent (`Model: flash`)**: Integrated high-speed inspection subagent equipped with `search_web` to verify official documentation, authentic repository lineage, and submodule APIs whenever registry metadata signals risk (`[NEEDS_WEB_AUDIT]`).
+  - **Architecture Documentation**: Updated [`doc/infra/README.md`](doc/infra/README.md) and root [`README.md`](README.md) documenting the hybrid script-first + subagent topology and anti-slopsquatting invariants.
+
+---
+
 ## Release Notes - v1.3.1 (2026-10-29)
 
 ### Performance & Context Optimization
