@@ -387,6 +387,14 @@ def validate_sdd_content(
 
     if effective_bdd:
         errors.extend(check_bdd_sdd_error_parity(content, effective_bdd, sequence_blocks))
+        errors.extend(check_bijective_bdd_sdd_scenarios(effective_bdd, content, sequence_blocks))
+
+    # 5. Strict method signature typing in classDiagram
+    all_signatures: Dict[str, Dict[str, Any]] = {}
+    for cls_b in class_blocks:
+        all_signatures.update(extract_class_method_signatures(cls_b))
+    if all_signatures:
+        errors.extend(validate_method_signature_types(all_signatures, set()))
 
     if errors:
         print(f"❌ [SDD Validation Failed] {filepath_str}:")

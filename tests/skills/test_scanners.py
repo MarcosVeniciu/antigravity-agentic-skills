@@ -1403,6 +1403,44 @@ Mermaid sequenceDiagram:
         self.assertTrue(any("ExpiredCardError" in e for e in errors))
 
 
+class TestValidateSddContentIntegration(unittest.TestCase):
+    """Garante que validate_sdd_content() aciona as checagens de assinatura e paridade bijetora."""
+
+    def _run(self, sdd, bdd=None):
+        import contextlib
+        import io
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            ok = validate_sdd_contracts.validate_sdd_content(sdd, "sdd.md", bdd_content=bdd)
+        return ok, buf.getvalue()
+
+    def test_untyped_parameter_in_class_diagram_is_reported(self):
+        sdd = "```mermaid\nclassDiagram\n    class Svc {\n        +charge(amount)\n    }\n```\n"
+        ok, out = self._run(sdd)
+        self.assertFalse(ok)
+        self.assertIn("Signature Parity Error", out)
+        self.assertIn("amount", out)
+
+    def test_typed_parameter_has_no_signature_error(self):
+        sdd = "```mermaid\nclassDiagram\n    class Svc {\n        +charge(amount: int) bool\n    }\n```\n"
+        _, out = self._run(sdd)
+        self.assertNotIn("Signature Parity Error", out)
+
+    def test_bdd_error_missing_in_sdd_is_reported(self):
+        bdd = "@unhappy-path\nScenario: Expired card\n  Then raises ExpiredCardError\n"
+        sdd = "# SDD\nraises PaymentError\n"
+        ok, out = self._run(sdd, bdd)
+        self.assertFalse(ok)
+        self.assertIn("Bijective Parity Error", out)
+        self.assertIn("ExpiredCardError", out)
+
+    def test_bdd_error_declared_in_sdd_has_no_bijective_error(self):
+        bdd = "@unhappy-path\nScenario: Expired card\n  Then raises ExpiredCardError\n"
+        sdd = "# SDD\nraises ExpiredCardError\n"
+        _, out = self._run(sdd, bdd)
+        self.assertNotIn("Bijective Parity Error", out)
+
+
 class TestAuditDependenciesCVEs(unittest.TestCase):
     def test_osv_allowed_registry_host(self):
         self.assertTrue(audit_dependencies.is_allowed_registry_url("https://api.osv.dev/v1/query"))
