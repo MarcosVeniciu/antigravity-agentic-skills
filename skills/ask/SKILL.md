@@ -3,81 +3,31 @@ name: ask
 description: Answers conceptual, architectural, and codebase inquiries in strictly read-only mode, delegating broad multi-file searches to the built-in research subagent (flash_lite) to prevent context pollution.
 ---
 
-# Skill: Project Oracle (`/ask` — SDD 2.0)
+# Skill: Project Oracle (`/ask`)
 
-Operates as the **knowledge consultation bridge** across the project repository, architecture records, and the Obsidian Vault, answering conceptual, behavioral, and implementation questions in **Strictly Read-Only Mode**, while protecting the main conversation context window via conditional delegation to the built-in **`research` subagent (`Model: "flash_lite"`)**.
-
----
-
-## Universal Operational Guardrails
-
-- **Zero Modifications (Strict Read-Only Mode):**
-  - Creating, updating, appending to, or deleting any file in the workspace or Obsidian Vault is strictly forbidden.
-- **Zero Mutating Commands:**
-  - Running modifying terminal commands (package installations, database migrations, build scripts that generate tracked artifacts, Git commits, branch checkouts) is strictly prohibited.
-  - Permitted terminal usage is strictly limited to non-modifying diagnostics (`git --no-pager log`, `git status`, `python --version`).
-- **Context-Window Protection (`research` in `Model: "flash_lite"`):**
-  - For broad or exploratory inquiries that require scanning multiple modules and Vault directories, delegate Step 3 to the built-in read-only `research` subagent (`Model: "flash_lite"`) so raw `grep_search` outputs and intermediate file reads do not bloat the main conversation context.
-- **Grounded Evidence Requirement:**
-  - Speculation, guessing, and hallucinating system behavior are strictly prohibited.
-  - Every technical claim must be explicitly anchored in code lines (`file:///path#L10-L25`) or Obsidian Vault notes (`[[note]]`).
+| Invariant | Operational Rule |
+| :--- | :--- |
+| **Read-Only** | Zero file writes. Diagnostics only (`git log`, `git status`). |
+| **Context Isolation** | 1–2 files: direct. > 2 files / Vault: `research` (`flash_lite`). |
+| **Humility** | Zero guessing. Ground claims in code or Vault. Declare gaps. |
 
 ---
 
-## Execution Pipeline in 4 Steps (Orchestrator + Conditional `research` Subagent)
+## Execution Pipeline
 
-```mermaid
-flowchart TD
-    Query["User Question / Inquiry (/ask)"] --> S1["<b>Step 1 (Orchestrator): Query Ingestion & Keyword Parsing</b><br/>Extract entities, workflows, contracts, and error tokens"]
-    S1 --> S2["<b>Step 2 (Orchestrator): Source Triangulation & Routing</b><br/>Classify Narrow Lookup vs. Broad Survey"]
-    S2 -->|"Narrow (1-2 known files)"| S3A["<b>Step 3A (Orchestrator Direct): Quick Read-Only Lookup</b><br/>Direct read_file / grep_search"]
-    S2 -->|"Broad / Exploratory"| S3B["<b>Step 3B (Subagent research in flash_lite): Context-Isolated Survey</b><br/>Scan Codebase & Vault in sandbox; return exact citations"]
-    S3A & S3B --> S4["<b>Step 4 (Orchestrator): Grounded Response Synthesis</b><br/>Format structured answer with formal citations"]
-```
-
-### Step 1: Query Ingestion & Keyword Parsing *(Main Orchestrator)*
-1. Parse the incoming inquiry to identify core technical subjects:
-   - Domain entities, interfaces, or classes.
-   - Specific user journeys or API endpoints.
-   - Architectural policies, conventions, or design patterns.
-   - Stack traces, error codes, or configuration variables.
-2. Isolate whether the inquiry seeks:
-   - *Current Implementation:* "Where and how is X implemented?"
-   - *Architectural Rationale:* "Why was X designed this way?"
-   - *Governance / Policy:* "What is our convention regarding Y?"
-
-### Step 2: Source Triangulation & Routing *(Main Orchestrator)*
-Determine the authoritative sources required to answer the inquiry:
-- **Codebase Truth (Source of Execution):** Code files, test suites, and manifests (`pyproject.toml`, `package.json`).
-- **Obsidian Vault (Source of Intent & Decisions):**
-  - `00-core-rules/`: Conventions, domain glossary, and ADRs.
-  - `01-concepcao/`: Feature BDD scenarios and SDD blueprints.
-  - `02-auditorias/`: Domain audit reports and technical pivot logs.
-  - `03-releases/`: Consolidated changelogs and release notes.
-- **Guideline Reference:** See [`./references/ask-sources.md`](./references/ask-sources.md).
-
-### Step 3: Evidence-Based Investigation *(Direct or `research` Subagent in `Model: "flash_lite"`)*
-1. **Routing Decision (Context Firewall):**
-   - **Narrow Inquiry (1–2 known files):** Execute `grep_search`, `find_by_name`, or `read_file` directly in the Main Orchestrator.
-   - **Broad / Cross-Module Inquiry (> 2 files or unknown location across Codebase + Vault):** Invoke the built-in read-only **`research`** subagent (`TypeName: "research"`, `Model: "flash_lite"`, `Role: "Read-Only Codebase & Vault Scout"`) to execute the multi-file search in an isolated context window and return strictly the verified evidence table (`file:///path#L10-L25` and `[[note-name]]`).
-2. Cross-reference claims between documentation and actual implementation:
-   - If documentation contradicts code, document the discrepancy explicitly.
-3. If the requested information is absent or undocumented, state the absence transparently (epistemic humility).
-
-### Step 4: Grounded Response Synthesis & Citations *(Main Orchestrator)*
-1. Construct a structured, concise response directly in the conversation:
-   - **Direct Answer:** Executive summary answering the query in 1-2 sentences.
-   - **Architectural Rationale:** Policy or intent anchored in Vault wikilinks (`[[note-name]]`).
-   - **Implementation Evidence:** Concrete logic anchored in file paths with line references (`file:///path#L10-L25`).
-   - **Gaps & Edge Cases:** Uncovered areas or discrepancies discovered.
-   - **Recommended Next Action:** If modifications are needed, recommend the appropriate skill (`/plan`, `/implement`, `/test-fix`, or `/debug`).
-2. **Review Examples:** Consult [`./examples/ask-example.md`](./examples/ask-example.md).
+| Step | Directive | Refs |
+| :--- | :--- | :--- |
+| **1. Parse** | Extract symbols, error tokens, routes. Classify intent. | [`ask-sources.md`](./references/ask-sources.md) |
+| **2. Route** | Set scope: Direct (1–2 files) vs Broad (> 2 files / Vault). | [`ask-sources.md`](./references/ask-sources.md) |
+| **3. Evidence** | Direct: `view_file`. Broad: dispatch `research` (`flash_lite`). | [`ask-sources.md`](./references/ask-sources.md) |
+| **4. Synthesize** | Output Summary, Vault Intent (`[[note]]`), Code, Gaps. | [`ask-example.md`](./examples/ask-example.md) |
 
 ---
 
-## Bundled References & Examples
+## Subagent Specification (`research`)
 
-- **Operational Guide:**
-  - [`references/ask-sources.md`](./references/ask-sources.md) — Source triangulation framework, conditional `research` (`Model: "flash_lite"`) delegation rules, Obsidian navigation taxonomy, and citation standards.
-- **Session Walkthroughs:**
-  - [`examples/ask-example.md`](./examples/ask-example.md) — Representative ask consultations (architectural query, code-tracing query, handling documentation gaps).
+| Field | Configuration |
+| :--- | :--- |
+| **TypeName / Model** | `research` / `"flash_lite"` (Read-only, `EnableWriteTools: false`) |
+| **Tools** | `grep_search`, `find_by_name`, `view_file`, `search_vault` |
+| **SystemPrompt** | Role: Codebase & Vault Scout. Scan query terms. Return citation table (`file:///path#Lxx-Lyy`, `[[note]]`) with 1-sentence finding. Zero file writes. |
